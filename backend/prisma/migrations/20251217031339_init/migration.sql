@@ -1,0 +1,12 @@
+-- CreateTable
+CREATE TABLE "Image" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "url" TEXT NOT NULL,
+    "thumb" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "tags" TEXT NOT NULL,
+    "views" INTEGER NOT NULL DEFAULT 0,
+    "likes" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

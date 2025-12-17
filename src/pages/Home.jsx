@@ -1,6 +1,17 @@
 import { Search, Monitor, User, Image as ImageIcon, Smartphone, Heart } from 'lucide-react';
 
+import { useState, useEffect } from 'react';
+
 export default function Home() {
+    const [wallpapers, setWallpapers] = useState([]);
+
+    useEffect(() => {
+        fetch('/api/wallpapers')
+            .then(res => res.json())
+            .then(data => setWallpapers(data))
+            .catch(err => console.error(err));
+    }, []);
+
     return (
         <div className="bg-gray-50 min-h-screen pb-20">
             {/* 顶部导航栏 */}
@@ -70,32 +81,15 @@ export default function Home() {
                 </h3>
                 {/* Simple CSS Columns for Masonry effect */}
                 <div className="columns-2 gap-4 space-y-4">
-                    <ImageCard
-                        src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        tag="4K"
-                    />
-                    <ImageCard
-                        src="https://images.unsplash.com/photo-1574169208507-84376144848b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        tag="头像"
-                        liked
-                    />
-                    <ImageCard
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        tag="美女"
-                    />
-                    <ImageCard
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        tag="人像"
-                    />
-                    <ImageCard
-                        src="https://images.unsplash.com/photo-1620121692029-d088224ddc74?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        tag="抽象"
-                    />
-                    <ImageCard
-                        src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        tag="霓虹"
-                        liked
-                    />
+                    {wallpapers.map(item => (
+                        <ImageCard
+                            key={item.id}
+                            src={item.thumb}
+                            tag={item.tags ? item.tags.split(',')[0] : '壁纸'}
+                            liked={item.likes > 0}
+                        />
+                    ))}
+                    {wallpapers.length === 0 && <p className="text-gray-400 text-sm text-center col-span-2 py-10">加载中...</p>}
                 </div>
             </div>
         </div>

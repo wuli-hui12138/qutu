@@ -1,0 +1,45 @@
+趣图匣子 (FunPic Box) 后端架构与功能规划书1. 系统架构设计 (System Architecture)针对图片类小程序，采用读写分离和动静分离的架构策略是核心。1.1 架构图 (Mermaid)graph TD
+    User[用户 (微信小程序)]
+    
+    subgraph "流量接入层"
+        CDN[CDN 内容分发网络]
+        LB[负载均衡 / API 网关]
+    end
+    
+    subgraph "业务逻辑层 (API Service)"
+        Auth[用户认证服务]
+        Content[内容管理服务]
+        Interact[互动/收藏服务]
+        Search[搜索服务]
+    end
+    
+    subgraph "数据存储层"
+        MySQL[(MySQL 主业务库)]
+        Redis[(Redis 缓存/计数器)]
+        OSS[(对象存储 OSS/COS)]
+    end
+    
+    subgraph "第三方/辅助服务"
+        WeChatAPI[微信官方 API]
+        ContentAudit[内容安全审核]
+    end
+
+    %% 链路关系
+    User --请求图片资源--> CDN
+    CDN --回源--> OSS
+    
+    User --API请求--> LB
+    LB --> Auth & Content & Interact & Search
+    
+    Content --读写元数据--> MySQL
+    Content --图片上传--> OSS
+    Content --内容送审--> ContentAudit
+    
+    Interact --点赞/下载数--> Redis
+    Interact --持久化--> MySQL
+    
+    Auth --code2Session--> WeChatAPI
+1.2 技术选型建议模块推荐技术栈 (Node.js 方案)替代方案 (Python)说明开发语言TypeScript (NestJS 或 Koa)Python (FastAPI)TS 类型安全，便于维护数据库MySQL 8.0 / PostgreSQL-存储用户、图片元数据、分类信息缓存Redis-存储热点图片列表、用户Session、点赞数对象存储阿里云 OSS / 腾讯云 COS-核心组件，必须上 CDN搜索引擎MySQL Like (初期) / MeilisearchElasticsearch初期数据少用数据库搜，后期上引擎2. 核心功能模块 (Backend Features)后端需要实现四大核心模块：用户模块、内容模块、交互模块、系统模块。2.1 用户模块 (User Service)微信一键登录:接收前端 code，调用微信 auth.code2Session 接口换取 openid 和 session_key。生成自定义 Token (JWT) 返回给前端。用户信息维护:更新用户昵称、头像（需存储到自己的 OSS，微信不再直接提供头像 URL）。记录用户注册时间、最后登录时间。2.2 内容中心 (Content Service) - 最核心图片上传与处理:原图上传: 支持 Admin 后台上传高清图。自动缩略图: 上传后自动生成 thumbnail (列表用) 和 preview (详情用) 以及 raw (下载用) 三种规格。EXIF 信息提取: 提取分辨率、大小、色系（用于按颜色搜索）。图片列表 (瀑布流):分页接口 (Cursor-based Pagination 优于 Offset)。支持按 最新、最热、推荐 排序。分类与标签:多级分类（如：手机壁纸 -> 风景 -> 城市）。标签系统（Tags），用于多维度检索（如 #赛博朋克 #霓虹）。图片详情:获取单张图片完整信息、作者信息、相关推荐（基于标签的简单推荐算法）。2.3 交互模块 (Interaction Service)收藏/喜欢:用户对图片进行收藏，存入 user_favorites 表。接口需防抖，避免恶意刷请求。下载记录:用户点击下载时触发，记录下载次数（用于热度排序）。注意: 这是一个“写”操作，高并发下建议先写入 Redis，定时同步到 MySQL。分享追踪:记录分享次数，生成带参数的小程序码（用于追踪是通过谁分享进来的）。2.4 内容安全与风控 (Security & Compliance) - 红线功能图片鉴黄/鉴暴:接入微信 security.imgSecCheck 或第三方（阿里云绿网）API。所有用户上传（如果开放UGC）或管理员上传的图片必须经过审核才能公开展示。文本检测:用户昵称、评论（如有）、搜索关键词需进行敏感词过滤。3. 数据库设计概要 (Database Schema)以下是核心表的简要设计 (ER模型思路)：users (用户表)id (PK, BigInt)openid (Unique, Varchar) - 微信唯一标识nickname (Varchar)avatar_url (Varchar)role (Enum: user, admin)images (图片资源表)id (PK)title (Varchar)category_id (FK)url_raw (Varchar) - 原图OSS地址url_thumb (Varchar) - 缩略图地址width / height (Int) - 宽高，用于前端计算瀑布流占位dominant_color (Varchar) - 主色调（如 #FF0000），用于加载前的骨架屏颜色status (Enum: pending, active, rejected) - 审核状态stats_images (图片统计表 - 避免高频更新主表)image_id (PK, FK)view_count (Int)download_count (Int)like_count (Int)user_collections (用户收藏表)user_id (FK)image_id (FK)created_at (Timestamp)4. API 接口设计示例 (RESTful)为了配合前端开发，你需要提供如下风格的接口：POST /api/v1/auth/wechat-login - 微信登录GET  /api/v1/wallpapers?page=1&size=10&sort=hot - 获取首页瀑布流GET  /api/v1/wallpapers/:id - 获取详情POST /api/v1/wallpapers/:id/collect - 收藏/取消收藏POST /api/v1/wallpapers/:id/download - 记录下载GET  /api/v1/categories - 获取分类列表GET  /api/v1/user/profile - 获取我的资料5. 开发阶段建议第一阶段 (MVP):只做管理员后台上传，暂不开放用户上传（规避大量审核风险）。核心实现：首页列表、详情页、高清下载、简单的个人收藏。第二阶段:增加“搜索”功能。增加“专题”功能（Banner 轮播对应的集合）。第三阶段:如果流量大，引入 Redis 缓存热点图片数据。引入 ElasticSearch 做全文检索。
+
+
+
