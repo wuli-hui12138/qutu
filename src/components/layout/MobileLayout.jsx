@@ -15,20 +15,29 @@ export default function MobileLayout() {
 
                 {!hideNav && (
                     <div className="absolute bottom-0 w-full h-20 bg-white border-t border-gray-100 flex items-start pt-3 justify-around z-40">
-                        <NavLink to="/"
-                            className={({ isActive }) => clsx("flex flex-col items-center transition-colors", isActive ? "text-purple-600" : "text-gray-400")}>
-                            <Home size={24} strokeWidth={isActive ? 2.5 : 2} />
-                            <span className="text-[10px] mt-1">首页</span>
+                        <NavLink to="/" className={({ isActive }) => clsx("flex flex-col items-center transition-colors", isActive ? "text-purple-600" : "text-gray-400")}>
+                            {({ isActive }) => (
+                                <>
+                                    <Home size={24} strokeWidth={isActive ? 2.5 : 2} />
+                                    <span className="text-[10px] mt-1">首页</span>
+                                </>
+                            )}
                         </NavLink>
-                        <NavLink to="/discover"
-                            className={({ isActive }) => clsx("flex flex-col items-center transition-colors", isActive ? "text-purple-600" : "text-gray-400")}>
-                            <Compass size={24} strokeWidth={isActive ? 2.5 : 2} />
-                            <span className="text-[10px] mt-1">发现</span>
+                        <NavLink to="/discover" className={({ isActive }) => clsx("flex flex-col items-center transition-colors", isActive ? "text-purple-600" : "text-gray-400")}>
+                            {({ isActive }) => (
+                                <>
+                                    <Compass size={24} strokeWidth={isActive ? 2.5 : 2} />
+                                    <span className="text-[10px] mt-1">发现</span>
+                                </>
+                            )}
                         </NavLink>
-                        <NavLink to="/profile"
-                            className={({ isActive }) => clsx("flex flex-col items-center transition-colors", isActive ? "text-purple-600" : "text-gray-400")}>
-                            <User size={24} strokeWidth={isActive ? 2.5 : 2} />
-                            <span className="text-[10px] mt-1">我的</span>
+                        <NavLink to="/profile" className={({ isActive }) => clsx("flex flex-col items-center transition-colors", isActive ? "text-purple-600" : "text-gray-400")}>
+                            {({ isActive }) => (
+                                <>
+                                    <User size={24} strokeWidth={isActive ? 2.5 : 2} />
+                                    <span className="text-[10px] mt-1">我的</span>
+                                </>
+                            )}
                         </NavLink>
                     </div>
                 )}
