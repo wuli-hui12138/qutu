@@ -5,6 +5,7 @@ import Discover from './pages/Discover';
 import Detail from './pages/Detail';
 import Profile from './pages/Profile';
 import Collection from './pages/Collection';
+import Upload from './pages/Upload';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="discover" element={<Discover />} />
           <Route path="profile" element={<Profile />} />
           <Route path="detail/:id" element={<Detail />} />
+          <Route path="upload" element={<Upload />} />
           <Route path="collection/:id" element={<Collection />} />
         </Route>
       </Routes>

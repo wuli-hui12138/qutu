@@ -27,6 +27,11 @@ export class WallpapersController {
     return this.wallpapersService.findOne(+id);
   }
 
+  @Get('related/:tag')
+  findRelated(@Param('tag') tag: string) {
+    return this.wallpapersService.findRelated(tag);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateWallpaperDto: UpdateWallpaperDto) {
     return this.wallpapersService.update(+id, updateWallpaperDto);

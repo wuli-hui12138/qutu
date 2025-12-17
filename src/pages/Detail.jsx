@@ -1,19 +1,47 @@
-import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Heart, Share2, Download, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { ChevronLeft, Heart, Share2, Download, Check, Image as ImageIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Detail() {
     const navigate = useNavigate();
+    const { id } = useParams();
+    const [image, setImage] = useState(null);
+    const [related, setRelated] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setLoading(true);
+        fetch(`/api/wallpapers/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                setImage(data);
+                // Fetch related if tags exist
+                if (data && data.tags) {
+                    const firstTag = data.tags.split(',')[0];
+                    fetch(`/api/wallpapers/related/${firstTag}`)
+                        .then(res => res.json())
+                        .then(rel => setRelated(rel.filter(item => item.id !== data.id))) // Exclude current
+                        .catch(err => console.error(err));
+                }
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
+    }, [id]);
 
     const handleDownload = () => {
         setShowModal(true);
-        // Auto hide after 3 seconds if needed, but prototype shows buttons
     };
 
+    if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">加载中...</div>;
+    if (!image) return <div className="h-screen bg-black flex items-center justify-center text-white">未找到图片</div>;
+
     return (
-        <div className="h-screen w-full bg-black relative flex flex-col">
+        <div className="min-h-screen w-full bg-black relative flex flex-col pb-10">
             {/* 沉浸式顶部 */}
             <div className="absolute top-0 w-full pt-14 px-4 z-40 flex justify-between items-center pointer-events-none">
                 <div
@@ -30,35 +58,31 @@ export default function Detail() {
                 </div>
             </div>
 
-            {/* Fullscreen Image */}
-            <div className="flex-1 w-full h-full relative">
+            {/* Main Image Container */}
+            <div className="w-full h-[85vh] relative shrink-0">
                 <img
-                    src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                    src={image.url}
                     className="w-full h-full object-cover"
-                    alt="Detail"
+                    alt={image.title}
                 />
 
                 {/* 底部渐变遮罩 */}
-                <div className="absolute bottom-0 w-full bg-gradient-to-t from-black via-black/50 to-transparent flex flex-col justify-end pb-10 px-5 pt-32">
-
-                    {/* 作者信息 */}
+                <div className="absolute bottom-0 w-full bg-gradient-to-t from-black via-black/50 to-transparent flex flex-col justify-end pb-8 px-5 pt-32">
+                    {/* 作者信息 (Mock) */}
                     <div className="flex items-center mb-6">
-                        <img
-                            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                            className="w-10 h-10 rounded-full border-2 border-white"
-                        />
-                        <div className="ml-3 text-shadow">
-                            <p className="text-white text-sm font-bold">@Milad Fakurian</p>
-                            <p className="text-gray-300 text-[10px] mt-0.5">发布于 2023-10-12</p>
+                        <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-700 flex items-center justify-center text-white text-xs">
+                            Q
                         </div>
-                        <button className="ml-auto bg-purple-600 text-white text-xs px-4 py-1.5 rounded-full font-medium active:scale-95 transition">关注</button>
+                        <div className="ml-3 text-shadow">
+                            <p className="text-white text-sm font-bold">{image.title}</p>
+                            <p className="text-gray-300 text-[10px] mt-0.5">发布于 {new Date(image.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <button className="ml-auto bg-purple-600/80 backdrop-blur text-white text-xs px-4 py-1.5 rounded-full font-medium active:scale-95 transition">关注</button>
                     </div>
 
                     {/* 标签 */}
-                    <div className="flex gap-2 mb-6">
-                        <Tag text="#抽象艺术" />
-                        <Tag text="#液体流体" />
-                        <Tag text="#4K壁纸" />
+                    <div className="flex gap-2 mb-6 flex-wrap">
+                        {image.tags ? image.tags.split(',').map(tag => <Tag key={tag} text={`#${tag}`} />) : <Tag text="#壁纸" />}
                     </div>
 
                     {/* 操作按钮 */}
@@ -68,20 +92,37 @@ export default function Detail() {
                             className="flex-1 bg-white text-gray-900 h-12 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition"
                         >
                             <Download size={18} />
-                            下载原图
+                            下载
                         </button>
                         <div className="flex gap-4">
-                            <CircleBtn icon={<Heart size={20} />} activeColor="bg-red-500 border-none" />
+                            <CircleBtn icon={<Heart size={20} />} activeColor={image.likes > 0 ? "bg-red-500 border-none" : ""} />
                             <CircleBtn icon={<Share2 size={20} />} />
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* Related Images Section */}
+            {related.length > 0 && (
+                <div className="px-4 py-6">
+                    <h3 className="text-white font-bold mb-4 flex items-center text-sm">
+                        <ImageIcon size={16} className="mr-2 text-purple-400" />
+                        更多相关推荐
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                        {related.map(item => (
+                            <Link to={`/detail/${item.id}`} key={item.id} className="aspect-[3/4] rounded-lg overflow-hidden relative active:opacity-80 transition">
+                                <img src={item.thumb} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Download Success Modal */}
             <AnimatePresence>
                 {showModal && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
@@ -102,7 +143,7 @@ export default function Detail() {
                                 <Check size={32} />
                             </div>
                             <h3 className="font-bold text-gray-800 text-lg mb-2">保存成功</h3>
-                            <p className="text-center text-gray-500 text-sm mb-6">图片已保存至系统相册，快去设置为壁纸吧！</p>
+                            <p className="text-center text-gray-500 text-sm mb-6">图片已保存至系统相册</p>
 
                             <div className="flex w-full gap-3">
                                 <button
@@ -115,7 +156,7 @@ export default function Detail() {
                                     onClick={() => navigate(-1)}
                                     className="flex-1 py-2 rounded-full bg-purple-600 text-white text-sm active:bg-purple-700"
                                 >
-                                    继续浏览
+                                    返回列表
                                 </button>
                             </div>
                         </motion.div>
@@ -137,3 +178,4 @@ function CircleBtn({ icon, activeColor }) {
         </button>
     )
 }
+

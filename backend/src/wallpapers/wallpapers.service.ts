@@ -8,7 +8,6 @@ export class WallpapersService {
   constructor(private prisma: PrismaService) { }
 
   create(createWallpaperDto: CreateWallpaperDto) {
-    // @ts-ignore
     return this.prisma.image.create({ data: createWallpaperDto });
   }
 
@@ -20,6 +19,20 @@ export class WallpapersService {
 
   findOne(id: number) {
     return this.prisma.image.findUnique({ where: { id } });
+  }
+
+  async findRelated(tag: string) {
+    return this.prisma.image.findMany({
+      where: {
+        tags: {
+          contains: tag
+        }
+      },
+      take: 6,
+      orderBy: {
+        views: 'desc'
+      }
+    });
   }
 
   update(id: number, updateWallpaperDto: UpdateWallpaperDto) {

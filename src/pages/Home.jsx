@@ -84,6 +84,7 @@ export default function Home() {
                     {wallpapers.map(item => (
                         <ImageCard
                             key={item.id}
+                            id={item.id}
                             src={item.thumb}
                             tag={item.tags ? item.tags.split(',')[0] : '壁纸'}
                             liked={item.likes > 0}
@@ -98,9 +99,9 @@ export default function Home() {
 
 import { Link } from 'react-router-dom';
 
-function ImageCard({ src, tag, liked }) {
+function ImageCard({ id, src, tag, liked }) {
     return (
-        <Link to="/detail/1" className="block break-inside-avoid rounded-xl overflow-hidden shadow-sm bg-white mb-4 active:opacity-90 transition-opacity">
+        <Link to={`/detail/${id}`} className="block break-inside-avoid rounded-xl overflow-hidden shadow-sm bg-white mb-4 active:opacity-90 transition-opacity">
             <img src={src} className="w-full" alt="img" loading="lazy" />
             <div className="p-2 flex justify-between items-center">
                 <span className="text-[10px] bg-gray-100 px-1 rounded text-gray-500">{tag}</span>
