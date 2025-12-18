@@ -49,6 +49,7 @@ export default function Upload() {
                 setStatus('success');
                 setTimeout(() => navigate('/'), 1500);
             } else {
+                console.error('Upload failed with status:', res.status);
                 setStatus('error');
             }
         } catch (err) {
