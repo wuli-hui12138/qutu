@@ -6,6 +6,9 @@ import Detail from './pages/Detail';
 import Profile from './pages/Profile';
 import Collection from './pages/Collection';
 import Upload from './pages/Upload';
+import Settings from './pages/Settings';
+import TagManagement from './pages/TagManagement';
+import CategoryManagement from './pages/CategoryManagement';
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
           <Route path="detail/:id" element={<Detail />} />
           <Route path="upload" element={<Upload />} />
           <Route path="collection/:tag" element={<Collection />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="settings/tags" element={<TagManagement />} />
+          <Route path="settings/categories" element={<CategoryManagement />} />
         </Route>
       </Routes>
     </BrowserRouter>

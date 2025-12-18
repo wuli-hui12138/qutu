@@ -44,7 +44,7 @@ export default function Profile() {
                             <MenuItem to="/collection/Liked" icon={<Heart size={16} />} color="text-red-500 bg-red-50" label="我的喜欢" />
                             <MenuItem to="/collection/History" icon={<History size={16} />} color="text-blue-500 bg-blue-50" label="浏览历史" />
                             <MenuItem to="/collection/Help" icon={<HelpCircle size={16} />} color="text-green-500 bg-green-50" label="帮助与反馈" />
-                            <MenuItem to="/collection/Settings" icon={<Settings size={16} />} color="text-gray-500 bg-gray-50" label="设置" />
+                            <MenuItem to="/settings" icon={<Settings size={16} />} color="text-gray-500 bg-gray-50" label="设置" />
                         </div>
                     </div>
                 </div>

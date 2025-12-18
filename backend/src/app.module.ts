@@ -5,6 +5,9 @@ import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WallpapersModule } from './wallpapers/wallpapers.module';
+import { TagsModule } from './tags/tags.module';
+import { CategoriesModule } from './categories/categories.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -14,6 +17,8 @@ import { WallpapersModule } from './wallpapers/wallpapers.module';
       serveRoot: '/uploads',
     }),
     WallpapersModule,
+    TagsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

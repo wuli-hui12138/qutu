@@ -21,3 +21,13 @@ model Image {
   likes     Int      @default(0)
   createdAt DateTime @default(now())
 }
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+}

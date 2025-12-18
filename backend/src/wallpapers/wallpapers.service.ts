@@ -99,6 +99,25 @@ export class WallpapersService {
     for (const img of initialData) {
       await this.prisma.image.create({ data: img });
     }
-    return { message: `Seeded ${initialData.length} images` };
+
+    // Seed Categories
+    const catCount = await this.prisma.category.count();
+    if (catCount === 0) {
+      const cats = ['手机壁纸', '电脑壁纸', '个性头像', '动态图', '极致简约', '暗黑系'];
+      for (const name of cats) {
+        await this.prisma.category.create({ data: { name } });
+      }
+    }
+
+    // Seed Tags
+    const tagCount = await this.prisma.tag.count();
+    if (tagCount === 0) {
+      const tags = ['4K', '赛博朋克', '森系', '极简', '二次元', '治愈系', '美学'];
+      for (const name of tags) {
+        await this.prisma.tag.create({ data: { name } });
+      }
+    }
+
+    return { message: `Seeded images, categories, and tags` };
   }
 }
