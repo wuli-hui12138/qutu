@@ -23,7 +23,7 @@ export class WallpapersController {
       },
     }),
   }))
-  create(
+  async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() createWallpaperDto: any
   ) {
@@ -40,7 +40,15 @@ export class WallpapersController {
       url: `/uploads/${file.filename}`,
       thumb: `/uploads/${file.filename}`,
     };
-    return this.wallpapersService.create(data);
+
+    try {
+      const result = await this.wallpapersService.create(data);
+      console.log('Upload success: Image saved to DB with ID', result.id);
+      return result;
+    } catch (err) {
+      console.error('Database Save Error:', err);
+      throw err;
+    }
   }
 
   @Post('seed')
