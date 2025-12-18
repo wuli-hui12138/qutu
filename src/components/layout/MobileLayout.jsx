@@ -7,8 +7,8 @@ export default function MobileLayout() {
     const hideNav = location.pathname.includes('/detail');
 
     return (
-        <div className="flex justify-center min-h-screen bg-gray-200">
-            <div className="w-full max-w-[375px] bg-gray-50 relative flex flex-col shadow-2xl overflow-hidden min-h-screen">
+        <div className="flex justify-center h-screen bg-gray-200 overflow-hidden">
+            <div className="w-full max-w-[375px] bg-gray-50 relative flex flex-col shadow-2xl overflow-hidden h-full">
                 <div className="flex-1 overflow-y-auto hide-scrollbar pb-20">
                     <Outlet />
                 </div>

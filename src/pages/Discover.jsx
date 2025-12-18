@@ -59,12 +59,12 @@ export default function Discover() {
                     </div>
 
                     <h3 className="font-bold text-gray-800 mb-3">色彩索引</h3>
-                    <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
-                        <ColorDot color="bg-red-500" />
-                        <ColorDot color="bg-blue-500" />
-                        <ColorDot color="bg-green-500" />
-                        <ColorDot color="bg-yellow-400" />
-                        <ColorDot color="bg-black" />
+                    <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
+                        <ColorDot color="bg-red-500" label="红色" />
+                        <ColorDot color="bg-blue-500" label="蓝色" />
+                        <ColorDot color="bg-green-500" label="绿色" />
+                        <ColorDot color="bg-yellow-400" label="黄色" />
+                        <ColorDot color="bg-black" label="黑色" />
                     </div>
                 </div>
             </div>
@@ -73,14 +73,18 @@ export default function Discover() {
 }
 
 function Tag({ text, color = "bg-gray-100 text-gray-600" }) {
-    return <span className={`px-3 py-1 rounded-full text-sm ${color}`}>{text}</span>
+    return (
+        <Link to={`/collection/${text}`} className={`px-3 py-1 rounded-full text-sm block cursor-pointer active:scale-95 transition ${color}`}>
+            {text}
+        </Link>
+    )
 }
 
 import { Link } from 'react-router-dom';
 
 function StyleCard({ title, img }) {
     return (
-        <Link to="/collection/1" className="block relative h-24 rounded-lg overflow-hidden group cursor-pointer active:opacity-90">
+        <Link to={`/collection/${title}`} className="block relative h-24 rounded-lg overflow-hidden group cursor-pointer active:opacity-90">
             <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">{title}</span>
@@ -89,6 +93,11 @@ function StyleCard({ title, img }) {
     )
 }
 
-function ColorDot({ color }) {
-    return <div className={`w-10 h-10 rounded-full ${color} shrink-0 shadow-sm border border-white`}></div>
+function ColorDot({ color, label }) {
+    return (
+        <Link to={`/collection/${label}`} className="flex flex-col items-center gap-1 shrink-0 group">
+            <div className={`w-10 h-10 rounded-full ${color} shadow-sm border border-white active:scale-90 transition`} title={label}></div>
+            <span className="text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition">{label}</span>
+        </Link>
+    )
 }

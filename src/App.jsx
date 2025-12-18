@@ -17,7 +17,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="detail/:id" element={<Detail />} />
           <Route path="upload" element={<Upload />} />
-          <Route path="collection/:id" element={<Collection />} />
+          <Route path="collection/:tag" element={<Collection />} />
         </Route>
       </Routes>
     </BrowserRouter>
