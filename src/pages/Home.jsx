@@ -1,4 +1,4 @@
-import { Search, Monitor, User, Image as ImageIcon, Smartphone, Heart } from 'lucide-react';
+import { Search, Monitor, User, Image as ImageIcon, Smartphone, Heart, PlusSquare } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 
@@ -17,10 +17,11 @@ export default function Home() {
             {/* 顶部导航栏 */}
             <div className="pt-14 pb-2 px-4 bg-white sticky top-0 z-30 flex items-center justify-between">
                 <div className="font-bold text-xl tracking-wider text-gray-800">趣图匣子</div>
-                <div className="flex items-center justify-around w-20 h-8 bg-white/60 border border-black/10 rounded-full backdrop-blur-sm">
-                    <div className="w-1 h-1 bg-black rounded-full"></div>
-                    <div className="w-1 h-1 bg-black rounded-full"></div>
-                    <div className="w-1 h-1 bg-black rounded-full"></div>
+                {/* Header Icons */}
+                <div className="flex items-center gap-4">
+                    <Link to="/upload" className="text-gray-800 active:scale-95 transition">
+                        <PlusSquare size={24} />
+                    </Link>
                 </div>
             </div>
 

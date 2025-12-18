@@ -7,8 +7,8 @@ import { PrismaService } from '../prisma.service';
 export class WallpapersService {
   constructor(private prisma: PrismaService) { }
 
-  create(createWallpaperDto: CreateWallpaperDto) {
-    return this.prisma.image.create({ data: createWallpaperDto });
+  create(data: any) {
+    return this.prisma.image.create({ data });
   }
 
   findAll() {
