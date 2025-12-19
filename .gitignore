@@ -1,24 +1,30 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Qutu Specific
+backend/dist/
+backend/node_modules/
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+backend/uploads/
+uploads/
+
 # Logs
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
+# Editor
+.vscode/
+.idea/
 *.sw?
