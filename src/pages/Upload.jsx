@@ -9,7 +9,8 @@ export default function Upload() {
     const [formData, setFormData] = useState({
         title: '',
         category: '',
-        tags: ''
+        tags: '',
+        description: ''
     });
     const [status, setStatus] = useState('idle');
     const [availableCategories, setAvailableCategories] = useState([]);
@@ -69,6 +70,7 @@ export default function Upload() {
         data.append('title', formData.title);
         data.append('category', formData.category);
         data.append('tags', formData.tags);
+        data.append('description', formData.description);
 
         try {
             const res = await fetch('/api/wallpapers', { method: 'POST', body: data });
@@ -128,8 +130,8 @@ export default function Upload() {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, category: cat.name })}
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${formData.category === cat.name
-                                            ? 'bg-purple-600 text-white shadow-md scale-105'
-                                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                        ? 'bg-purple-600 text-white shadow-md scale-105'
+                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                         }`}
                                 >
                                     {cat.name}
@@ -153,8 +155,8 @@ export default function Upload() {
                                 type="button"
                                 onClick={() => toggleTag(tag.name)}
                                 className={`px-3 py-1.5 rounded-full text-xs transition-all border ${formData.tags.split(',').includes(tag.name)
-                                        ? 'bg-purple-50 border-purple-200 text-purple-600'
-                                        : 'bg-white border-gray-100 text-gray-400 hover:border-purple-100'
+                                    ? 'bg-purple-50 border-purple-200 text-purple-600'
+                                    : 'bg-white border-gray-100 text-gray-400 hover:border-purple-100'
                                     }`}
                             >
                                 #{tag.name}
@@ -175,16 +177,36 @@ export default function Upload() {
                     />
                 </div>
 
+                <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">描述 (可选)</label>
+                    <textarea
+                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all shadow-sm text-sm h-24 resize-none"
+                        placeholder="关于这张图的更多细节..."
+                        value={formData.description}
+                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    />
+                </div>
+
+                <div className="bg-amber-50 rounded-xl p-4 flex gap-3 items-start border border-amber-100">
+                    <div className="w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-white text-[10px] font-bold">!</div>
+                    <div className="space-y-1">
+                        <p className="text-[11px] font-bold text-amber-900">审核说明</p>
+                        <p className="text-[10px] text-amber-700 leading-relaxed">
+                            为了维护内容质量，新上传的图片将进入后台审核队列。审核通过后将正式公开展示。
+                        </p>
+                    </div>
+                </div>
+
                 <button
                     disabled={status === 'loading'}
                     className={`w-full py-4 rounded-2xl text-white font-bold text-lg mt-4 flex items-center justify-center transition-all shadow-lg
-                        ${status === 'success' ? 'bg-green-500' : 'bg-purple-600 active:scale-95'}
+                        ${status === 'success' ? 'bg-green-500 shadow-green-100' : 'bg-black active:scale-95 shadow-gray-200'}
                         ${status === 'loading' ? 'opacity-70 animate-pulse' : ''}
                     `}
                 >
-                    {status === 'loading' && '发布中...'}
-                    {status === 'success' && <><Check className="mr-2" /> 发布成功</>}
-                    {status === 'idle' && '完成发布'}
+                    {status === 'loading' && '同步数据中...'}
+                    {status === 'success' && <><Check className="mr-2" /> 发布成功(待审核)</>}
+                    {status === 'idle' && '确认发布'}
                     {status === 'error' && '发布失败，请重试'}
                 </button>
             </form>

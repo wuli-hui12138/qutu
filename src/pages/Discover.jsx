@@ -1,103 +1,188 @@
-import { useState } from 'react';
-
-const CATEGORIES = ['推荐', '风格', '色彩', '情感', '明星', '动漫', '游戏'];
+import { useState, useEffect } from 'react';
+import { Search, Heart, Filter, X, ChevronRight, Hash, Layers } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 
 export default function Discover() {
-    const [activeCategory, setActiveCategory] = useState('推荐');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [wallpapers, setWallpapers] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [tags, setTags] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Filters from URL
+    const activeCategory = searchParams.get('category') || '';
+    const activeTag = searchParams.get('tag') || '';
+    const searchQuery = searchParams.get('q') || '';
+
+    useEffect(() => {
+        const fetchFilters = async () => {
+            try {
+                const [catsRes, tagsRes] = await Promise.all([
+                    fetch('/api/categories'),
+                    fetch('/api/tags')
+                ]);
+                setCategories(await catsRes.json());
+                setTags(await tagsRes.json());
+            } catch (err) {
+                console.error('Fetch filters fail', err);
+            }
+        };
+        fetchFilters();
+    }, []);
+
+    useEffect(() => {
+        const fetchWallpapers = async () => {
+            setLoading(true);
+            try {
+                let url = '/api/wallpapers?';
+                if (activeCategory) url += `category=${encodeURIComponent(activeCategory)}&`;
+                if (activeTag) url += `tag=${encodeURIComponent(activeTag)}&`;
+                if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`;
+
+                const res = await fetch(url);
+                setWallpapers(await res.json());
+            } catch (err) {
+                console.error('Fetch wallpapers fail', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchWallpapers();
+    }, [activeCategory, activeTag, searchQuery]);
+
+    const setFilter = (type, value) => {
+        const newParams = new URLSearchParams(searchParams);
+        if (value) {
+            newParams.set(type, value);
+        } else {
+            newParams.delete(type);
+        }
+        setSearchParams(newParams);
+    };
 
     return (
-        <div className="flex flex-col h-screen bg-white">
-            {/* 顶部 */}
-            <div className="pt-14 pb-2 px-4 bg-white sticky top-0 z-30 border-b border-gray-50">
-                <div className="font-bold text-xl tracking-wider text-gray-800">发现灵感</div>
-                <div className="absolute top-14 right-4 flex items-center justify-around w-20 h-8 bg-gray-100 rounded-full">
-                    <div className="w-1 h-1 bg-black rounded-full"></div>
-                    <div className="w-1 h-1 bg-black rounded-full"></div>
-                    <div className="w-1 h-1 bg-black rounded-full"></div>
-                </div>
-            </div>
-
-            {/* 热门搜索标签 */}
-            <div className="px-4 py-4 shrink-0">
-                <h4 className="text-sm font-bold text-gray-400 mb-3">大家都在搜</h4>
-                <div className="flex flex-wrap gap-2">
-                    <Tag text="赛博朋克" />
-                    <Tag text="情侣头像" color="bg-purple-50 text-purple-600" />
-                    <Tag text="极简" />
-                    <Tag text="萌宠" />
-                    <Tag text="新年壁纸" color="bg-red-50 text-red-500" />
-                </div>
-            </div>
-
-            {/* 分类主体 (Split Layout) */}
-            <div className="flex flex-1 overflow-hidden border-t border-gray-100">
-                {/* 左侧边栏 */}
-                <div className="w-24 bg-gray-50 h-full overflow-y-auto hide-scrollbar pb-20">
-                    <div className="py-4 flex flex-col gap-1">
-                        {CATEGORIES.map(cat => (
-                            <div
-                                key={cat}
-                                onClick={() => setActiveCategory(cat)}
-                                className={`w-full py-3 px-4 text-sm cursor-pointer transition-colors relative
-                        ${activeCategory === cat ? 'bg-white font-bold text-purple-700' : 'text-gray-500 hover:bg-gray-100'}`}
+        <div className="bg-white min-h-screen pb-20">
+            {/* Header with Search */}
+            <div className="pt-14 pb-4 px-4 bg-white sticky top-0 z-30 space-y-4 shadow-sm shadow-gray-100/50">
+                <div className="flex items-center justify-between">
+                    <h1 className="font-black text-2xl tracking-tighter text-gray-900">探索发现</h1>
+                    <div className="flex items-center gap-2">
+                        {(activeCategory || activeTag || searchQuery) && (
+                            <button
+                                onClick={() => setSearchParams({})}
+                                className="text-[10px] font-bold text-red-500 uppercase tracking-widest flex items-center gap-1"
                             >
-                                {activeCategory === cat && <div className="absolute left-0 top-0 bottom-0 w-1 bg-purple-600"></div>}
-                                {cat}
-                            </div>
+                                <X size={10} /> Reset
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" size={18} />
+                    <input
+                        type="text"
+                        placeholder="模糊检索：尝试输入关键词..."
+                        className="w-full bg-gray-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:ring-2 focus:ring-black placeholder:text-gray-300 transition-all"
+                        value={searchQuery}
+                        onChange={(e) => setFilter('q', e.target.value)}
+                    />
+                </div>
+            </div>
+
+            {/* Filter Section */}
+            <div className="px-4 py-4 space-y-6">
+                {/* Categories */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-gray-400">
+                        <Layers size={14} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">分类检索</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {categories.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setFilter('category', activeCategory === cat.name ? '' : cat.name)}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${activeCategory === cat.name
+                                        ? 'bg-black text-white border-black shadow-md shadow-black/10'
+                                        : 'bg-white text-gray-500 border-gray-100'
+                                    }`}
+                            >
+                                {cat.name}
+                            </button>
                         ))}
                     </div>
                 </div>
 
-                {/* 右侧内容 */}
-                <div className="flex-1 p-4 overflow-y-auto hide-scrollbar pb-24 h-full">
-                    <h3 className="font-bold text-gray-800 mb-3">风格精选</h3>
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                        <StyleCard title="暗黑" img="https://images.unsplash.com/photo-1531297461136-82lw9z554974?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" />
-                        <StyleCard title="暖色" img="https://images.unsplash.com/photo-1490750967868-bcdf92dd236d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" />
-                        <StyleCard title="蒸汽波" img="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" />
-                        <StyleCard title="森系" img="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" />
+                {/* Popular Tags */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-gray-400">
+                        <Hash size={14} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">标签云集</span>
                     </div>
-
-                    <h3 className="font-bold text-gray-800 mb-3">色彩索引</h3>
-                    <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-                        <ColorDot color="bg-red-500" label="红色" />
-                        <ColorDot color="bg-blue-500" label="蓝色" />
-                        <ColorDot color="bg-green-500" label="绿色" />
-                        <ColorDot color="bg-yellow-400" label="黄色" />
-                        <ColorDot color="bg-black" label="黑色" />
+                    <div className="flex flex-wrap gap-2">
+                        {tags.map(tag => (
+                            <button
+                                key={tag.id}
+                                onClick={() => setFilter('tag', activeTag === tag.name ? '' : tag.name)}
+                                className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${activeTag === tag.name
+                                        ? 'bg-purple-600 text-white'
+                                        : 'bg-gray-100 text-gray-500'
+                                    }`}
+                            >
+                                #{tag.name}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
-        </div>
-    )
-}
 
-function Tag({ text, color = "bg-gray-100 text-gray-600" }) {
-    return (
-        <Link to={`/collection/${text}`} className={`px-3 py-1 rounded-full text-sm block cursor-pointer active:scale-95 transition ${color}`}>
-            {text}
-        </Link>
-    )
-}
+            {/* Results Grid */}
+            <div className="px-4 mt-2">
+                <div className="flex items-center gap-2 mb-4 text-gray-400">
+                    <Filter size={14} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Match Results ({wallpapers.length})</span>
+                </div>
 
-import { Link } from 'react-router-dom';
-
-function StyleCard({ title, img }) {
-    return (
-        <Link to={`/collection/${title}`} className="block relative h-24 rounded-lg overflow-hidden group cursor-pointer active:opacity-90">
-            <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">{title}</span>
+                {loading ? (
+                    <div className="py-20 flex flex-col items-center justify-center gap-3">
+                        <div className="w-8 h-8 border-t-2 border-black rounded-full animate-spin"></div>
+                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Filtering Space</span>
+                    </div>
+                ) : (
+                    <div className="columns-2 gap-3 space-y-3 pb-10">
+                        {wallpapers.map(item => (
+                            <ImageCard
+                                key={item.id}
+                                id={item.id}
+                                src={item.thumb}
+                                tag={item.tags && item.tags.length > 0 ? item.tags[0].name : '壁纸'}
+                                liked={item.likes > 0}
+                            />
+                        ))}
+                        {wallpapers.length === 0 && (
+                            <div className="col-span-2 py-32 text-center space-y-2">
+                                <div className="text-3xl opacity-20">📭</div>
+                                <p className="text-gray-300 text-[11px] font-bold uppercase tracking-widest">No matching pixels found</p>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
-        </Link>
-    )
+        </div>
+    );
 }
 
-function ColorDot({ color, label }) {
+function ImageCard({ id, src, tag, liked }) {
     return (
-        <Link to={`/collection/${label}`} className="flex flex-col items-center gap-1 shrink-0 group">
-            <div className={`w-10 h-10 rounded-full ${color} shadow-sm border border-white active:scale-90 transition`} title={label}></div>
-            <span className="text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition">{label}</span>
+        <Link to={`/detail/${id}`} className="block break-inside-avoid rounded-2xl overflow-hidden shadow-sm bg-white mb-3 active:scale-[0.98] transition border border-gray-50">
+            <img src={src} className="w-full" alt="img" loading="lazy" />
+            <div className="p-2 flex justify-between items-center bg-white">
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                    <span className="text-[9px] font-black text-black bg-gray-100 px-2 py-0.5 rounded tracking-tighter">#{tag}</span>
+                </div>
+                <Heart size={12} className={liked ? "fill-black text-black" : "text-gray-200"} />
+            </div>
         </Link>
     )
 }

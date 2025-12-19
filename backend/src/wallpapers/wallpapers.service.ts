@@ -8,7 +8,7 @@ export class WallpapersService {
   constructor(private prisma: PrismaService) { }
 
   async create(data: any) {
-    const { category, tags, collections, ...rest } = data;
+    const { category, tags, ...rest } = data;
 
     // Process tags (comma separated string -> connectOrCreate)
     const tagArray = tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [];
@@ -40,8 +40,43 @@ export class WallpapersService {
     });
   }
 
-  findAll() {
+  // User facing: only approved
+  findAll(query?: any) {
+    const where: any = { status: 'APPROVED' };
+
+    if (query?.category) {
+      where.category = { name: query.category };
+    }
+
+    if (query?.tag) {
+      where.tags = { some: { name: query.tag } };
+    }
+
+    if (query?.search) {
+      where.title = { contains: query.search };
+    }
+
     return this.prisma.image.findMany({
+      where,
+      include: {
+        category: true,
+        tags: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  // Admin facing: all statuses
+  findAllAdmin(query?: string) {
+    const where: any = {};
+    if (query) {
+      where.OR = [
+        { title: { contains: query } },
+        { description: { contains: query } }
+      ];
+    }
+    return this.prisma.image.findMany({
+      where,
       include: {
         category: true,
         tags: true
@@ -63,6 +98,7 @@ export class WallpapersService {
   async findRelated(tagName: string) {
     return this.prisma.image.findMany({
       where: {
+        status: 'APPROVED',
         tags: {
           some: {
             name: tagName
@@ -81,19 +117,44 @@ export class WallpapersService {
   }
 
   update(id: number, updateWallpaperDto: UpdateWallpaperDto) {
-    // Basic update - for complex relation updates, this needs more logic
     return this.prisma.image.update({
       where: { id },
       data: updateWallpaperDto as any,
     });
   }
 
-  remove(id: number) {
+  updateStatus(id: number, status: string) {
+    return this.prisma.image.update({
+      where: { id },
+      data: { status }
+    });
+  }
+
+  async remove(id: number) {
+    const image = await this.prisma.image.findUnique({ where: { id } });
+    if (image) {
+      // Try to delete files
+      const fs = require('fs');
+      const path = require('path');
+      const root = path.join(__dirname, '..', '..', 'uploads');
+
+      try {
+        const filesToDelete = [
+          path.join(root, path.basename(image.url)),
+          path.join(root, path.basename(image.thumb))
+        ];
+        filesToDelete.forEach(p => {
+          if (fs.existsSync(p)) fs.unlinkSync(p);
+        });
+      } catch (e) {
+        console.error('Failed to delete files:', e);
+      }
+    }
     return this.prisma.image.delete({ where: { id } });
   }
 
   async seed() {
-    // 1. Seed Categories
+    // Categories and Tags seeding...
     const categories = ['手机壁纸', '电脑壁纸', '个性头像', '动态图', '极致简约', '暗黑系'];
     for (const name of categories) {
       await this.prisma.category.upsert({
@@ -103,7 +164,6 @@ export class WallpapersService {
       });
     }
 
-    // 2. Seed Tags
     const tags = ['4K', '赛博朋克', '森系', '极简', '二次元', '治愈系', '美学', 'City', 'Girl', 'Portrait', 'Abstract', 'Neon'];
     for (const name of tags) {
       await this.prisma.tag.upsert({
@@ -113,57 +173,12 @@ export class WallpapersService {
       });
     }
 
-    // 3. Seed Collections (Topics)
-    const collections = [
-      { name: '赛博霓虹', description: '跨越未来的霓虹美学', cover: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400' },
-      { name: '极致极简', description: '生活减法，视觉加法', cover: 'https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400' }
-    ];
-    for (const coll of collections) {
-      await this.prisma.collection.upsert({
-        where: { name: coll.name },
-        update: {},
-        create: coll
-      });
-    }
+    // Update existing images to APPROVED if any
+    await this.prisma.image.updateMany({
+      where: { status: 'PENDING' },
+      data: { status: 'APPROVED' }
+    });
 
-    // 4. Seed Images
-    const initialImages = [
-      {
-        url: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=800",
-        thumb: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400",
-        title: "Neon City",
-        category: "手机壁纸",
-        tags: "4K,City,Neon"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1574169208507-84376144848b?w=800",
-        thumb: "https://images.unsplash.com/photo-1574169208507-84376144848b?w=400",
-        title: "Portrait",
-        category: "个性头像",
-        tags: "Girl,Portrait"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=800",
-        thumb: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400",
-        title: "Abstract Gradient",
-        category: "手机壁纸",
-        tags: "Abstract,4K"
-      }
-    ];
-
-    for (const img of initialImages) {
-      const { category, tags, ...rest } = img;
-      await this.prisma.image.create({
-        data: {
-          ...rest,
-          category: { connect: { name: category } },
-          tags: {
-            connect: tags.split(',').map(name => ({ name }))
-          }
-        }
-      });
-    }
-
-    return { message: `Seeded images, categories, tags, and collections` };
+    return { message: `Seeded categories, tags, and approved existing images` };
   }
 }

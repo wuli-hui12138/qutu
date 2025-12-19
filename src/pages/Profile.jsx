@@ -41,9 +41,9 @@ export default function Profile() {
 
                         {/* Menu List */}
                         <div className="space-y-4">
-                            <MenuItem to="/collection/Liked" icon={<Heart size={16} />} color="text-red-500 bg-red-50" label="我的喜欢" />
-                            <MenuItem to="/collection/History" icon={<History size={16} />} color="text-blue-500 bg-blue-50" label="浏览历史" />
-                            <MenuItem to="/collection/Help" icon={<HelpCircle size={16} />} color="text-green-500 bg-green-50" label="帮助与反馈" />
+                            <MenuItem to="/discover" icon={<Heart size={16} />} color="text-red-500 bg-red-50" label="我的喜欢" />
+                            <MenuItem to="/discover" icon={<History size={16} />} color="text-blue-500 bg-blue-50" label="浏览历史" />
+                            <MenuItem to="/discover" icon={<HelpCircle size={16} />} color="text-green-500 bg-green-50" label="帮助与反馈" />
                             <MenuItem to="/settings" icon={<Settings size={16} />} color="text-gray-500 bg-gray-50" label="设置" />
                         </div>
                     </div>
@@ -55,7 +55,7 @@ export default function Profile() {
 
 function StatItem({ num, label }) {
     return (
-        <Link to={`/collection/${label}`} className="text-center active:scale-95 transition">
+        <Link to={`/discover?category=${label}`} className="text-center active:scale-95 transition">
             <div className="text-xl font-bold text-gray-800">{num}</div>
             <div className="text-xs text-gray-400">{label}</div>
         </Link>

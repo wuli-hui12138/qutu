@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
@@ -70,9 +70,14 @@ export class WallpapersController {
     return this.wallpapersService.seed();
   }
 
+  @Get('admin')
+  findAllAdmin(@Query('search') search: string) {
+    return this.wallpapersService.findAllAdmin(search);
+  }
+
   @Get()
-  findAll() {
-    return this.wallpapersService.findAll();
+  findAll(@Query('category') category: string, @Query('tag') tag: string, @Query('search') search: string) {
+    return this.wallpapersService.findAll({ category, tag, search });
   }
 
   @Get(':id')
@@ -83,6 +88,11 @@ export class WallpapersController {
   @Get('related/:tag')
   findRelated(@Param('tag') tag: string) {
     return this.wallpapersService.findRelated(tag);
+  }
+
+  @Patch(':id/status')
+  updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    return this.wallpapersService.updateStatus(+id, status);
   }
 
   @Patch(':id')

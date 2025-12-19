@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, Hash, LayoutGrid, Info, ShieldCheck } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, ChevronRight, Hash, LayoutGrid, Info, ShieldCheck, Image as ImageIcon } from 'lucide-react';
 
 export default function Settings() {
     const navigate = useNavigate();
@@ -14,36 +14,61 @@ export default function Settings() {
 
             <div className="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-6">
                 <div>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">管理菜单</h3>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden text-sm">
-                        <SettingsItem
-                            icon={<Hash size={18} className="text-purple-500" />}
-                            label="图片标签管理"
-                            onClick={() => navigate('/settings/tags')}
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">业务管理</h3>
+                    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden text-sm">
+                        <LinkSection
+                            icon={<Hash size={20} className="text-purple-600" />}
+                            title="图片标签库"
+                            desc="预设及维护快捷标签"
+                            to="/settings/tags"
                         />
-                        <SettingsItem
-                            icon={<LayoutGrid size={18} className="text-blue-500" />}
-                            label="图片分类管理"
-                            onClick={() => navigate('/settings/categories')}
+                        <LinkSection
+                            icon={<LayoutGrid size={20} className="text-blue-600" />}
+                            title="分类中心"
+                            desc="管理全局业务分类"
+                            to="/settings/categories"
+                        />
+                        <LinkSection
+                            icon={<ImageIcon size={20} className="text-emerald-600" />}
+                            title="内容审核"
+                            desc="素材管理与状态控制"
+                            to="/settings/images"
                         />
                     </div>
                 </div>
 
                 <div>
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">其他</h3>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden text-sm">
+                    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden text-sm">
                         <SettingsItem icon={<ShieldCheck size={18} className="text-green-500" />} label="隐私政策" />
                         <SettingsItem icon={<Info size={18} className="text-gray-500" />} label="关于趣图匣子" />
                     </div>
                 </div>
 
                 <div className="pt-4">
-                    <button className="w-full py-4 bg-white text-red-500 font-bold rounded-2xl shadow-sm border border-gray-100 active:bg-gray-50 transition">
+                    <button className="w-full py-4 bg-white text-gray-400 font-bold rounded-2xl shadow-sm border border-gray-100 active:bg-gray-50 transition text-sm">
                         退出登录
                     </button>
                 </div>
             </div>
         </div>
+    );
+}
+
+function LinkSection({ icon, title, desc, to }) {
+    return (
+        <Link to={to} className="flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer border-b border-gray-50 last:border-0 group">
+            <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    {icon}
+                </div>
+                <div className="flex flex-col">
+                    <span className="font-bold text-gray-800">{title}</span>
+                    <span className="text-[10px] text-gray-400 font-medium">{desc}</span>
+                </div>
+            </div>
+            <ChevronRight size={16} className="text-gray-300" />
+        </Link>
     );
 }
 

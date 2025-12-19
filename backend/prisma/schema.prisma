@@ -11,17 +11,18 @@ datasource db {
 }
 
 model Image {
-  id          Int          @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   url         String
   thumb       String
   title       String
-  category    Category?    @relation(fields: [categoryId], references: [id])
+  description String?
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  category    Category? @relation(fields: [categoryId], references: [id])
   categoryId  Int?
   tags        Tag[]
-  collections Collection[]
-  views       Int          @default(0)
-  likes       Int          @default(0)
-  createdAt   DateTime     @default(now())
+  views       Int       @default(0)
+  likes       Int       @default(0)
+  createdAt   DateTime  @default(now())
 }
 
 model Category {
@@ -34,13 +35,4 @@ model Tag {
   id     Int     @id @default(autoincrement())
   name   String  @unique
   images Image[]
-}
-
-model Collection {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  cover       String?
-  images      Image[]
-  createdAt   DateTime @default(now())
 }
