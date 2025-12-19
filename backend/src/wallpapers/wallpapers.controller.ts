@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, Upl
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
+import * as fs from 'fs';
+import sharp from 'sharp';
 import { WallpapersService } from './wallpapers.service';
 import { CreateWallpaperDto } from './dto/create-wallpaper.dto';
 import { UpdateWallpaperDto } from './dto/update-wallpaper.dto';
@@ -31,19 +33,31 @@ export class WallpapersController {
       console.error('Upload failed: File is missing in request');
       throw new Error('File is missing');
     }
-    console.log('--- Upload Request ---');
-    console.log('File:', file.originalname, 'Size:', file.size);
-    console.log('Body:', createWallpaperDto);
+
+    const originalPath = file.path;
+    const thumbFilename = `thumb-${file.filename}`;
+    const thumbPath = join(file.destination, thumbFilename);
+
+    console.log('--- Processing Thumbnail ---');
+    try {
+      await sharp(originalPath)
+        .resize(400) // Fit to width 400px, keeping aspect ratio
+        .webp({ quality: 80 }) // Convert to webp for better compression
+        .toFile(thumbPath);
+      console.log('Thumbnail created:', thumbFilename);
+    } catch (err) {
+      console.error('Thumbnail Generation Error:', err);
+      // Fallback to original if thumbnail fails
+    }
 
     const data = {
       ...createWallpaperDto,
       url: `/uploads/${file.filename}`,
-      thumb: `/uploads/${file.filename}`,
+      thumb: fs.existsSync(thumbPath) ? `/uploads/${thumbFilename}` : `/uploads/${file.filename}`,
     };
 
     try {
       const result = await this.wallpapersService.create(data);
-      console.log('Upload success: Image saved to DB with ID', result.id);
       return result;
     } catch (err) {
       console.error('Database Save Error:', err);

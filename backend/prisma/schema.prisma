@@ -11,23 +11,36 @@ datasource db {
 }
 
 model Image {
-  id        Int      @id @default(autoincrement())
-  url       String
-  thumb     String
-  title     String
-  category  String
-  tags      String   // Comma separated tags
-  views     Int      @default(0)
-  likes     Int      @default(0)
-  createdAt DateTime @default(now())
+  id          Int          @id @default(autoincrement())
+  url         String
+  thumb       String
+  title       String
+  category    Category?    @relation(fields: [categoryId], references: [id])
+  categoryId  Int?
+  tags        Tag[]
+  collections Collection[]
+  views       Int          @default(0)
+  likes       Int          @default(0)
+  createdAt   DateTime     @default(now())
 }
 
 model Category {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  images Image[]
 }
 
 model Tag {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  images Image[]
+}
+
+model Collection {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  cover       String?
+  images      Image[]
+  createdAt   DateTime @default(now())
 }

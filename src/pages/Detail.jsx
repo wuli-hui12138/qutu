@@ -18,8 +18,8 @@ export default function Detail() {
             .then(data => {
                 setImage(data);
                 // Fetch related if tags exist
-                if (data && data.tags) {
-                    const firstTag = data.tags.split(',')[0];
+                if (data && data.tags && data.tags.length > 0) {
+                    const firstTag = data.tags[0].name;
                     fetch(`/api/wallpapers/related/${firstTag}`)
                         .then(res => res.json())
                         .then(rel => setRelated(rel.filter(item => item.id !== data.id))) // Exclude current
@@ -61,7 +61,7 @@ export default function Detail() {
             {/* Main Image Container */}
             <div className="w-full h-[85vh] relative shrink-0">
                 <img
-                    src={image.url}
+                    src={image.thumb || image.url}
                     className="w-full h-full object-cover"
                     alt={image.title}
                 />
@@ -82,17 +82,24 @@ export default function Detail() {
 
                     {/* 标签 */}
                     <div className="flex gap-2 mb-6 flex-wrap">
-                        {image.tags ? image.tags.split(',').map(tag => <Tag key={tag} text={`#${tag}`} />) : <Tag text="#壁纸" />}
+                        {image.tags && image.tags.length > 0
+                            ? image.tags.map(tag => <Tag key={tag.id} text={`#${tag.name}`} />)
+                            : <Tag text="#壁纸" />
+                        }
                     </div>
 
                     {/* 操作按钮 */}
                     <div className="flex justify-between items-center gap-4">
                         <button
-                            onClick={handleDownload}
+                            onClick={() => {
+                                // Open original image in a new tab for user to save
+                                window.open(image.url, '_blank');
+                                setShowModal(true);
+                            }}
                             className="flex-1 bg-white text-gray-900 h-12 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition"
                         >
                             <Download size={18} />
-                            下载
+                            下载原图
                         </button>
                         <div className="flex gap-4">
                             <CircleBtn icon={<Heart size={20} />} activeColor={image.likes > 0 ? "bg-red-500 border-none" : ""} />
