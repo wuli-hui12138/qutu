@@ -7,7 +7,6 @@ import { AppService } from './app.service';
 import { WallpapersModule } from './wallpapers/wallpapers.module';
 import { TagsModule } from './tags/tags.module';
 import { CategoriesModule } from './categories/categories.module';
-import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
