@@ -54,64 +54,21 @@ export default function Profile() {
 
                         {/* 数据概览 */}
                         <div className="flex justify-between py-8">
-                            <StatItem num={likedImages.length} label="我的喜欢" />
-                            <StatItem num={history.length} label="最近浏览" />
-                            <StatItem num="0" label="收藏夹" />
+                            <StatItem
+                                num={likedImages.length}
+                                label="我的喜欢"
+                                onClick={() => navigate('/collection?type=likes')}
+                            />
+                            <StatItem
+                                num={history.length}
+                                label="最近浏览"
+                                onClick={() => navigate('/collection?type=history')}
+                            />
+                            <StatItem
+                                num="0"
+                                label="我的创作"
+                            />
                         </div>
-                    </div>
-                </div>
-
-                {/* 我的喜欢 横向列表 */}
-                <div className="mt-8 space-y-4">
-                    <div className="px-6 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Heart size={16} className="text-red-500" />
-                            <h3 className="font-black text-sm uppercase tracking-widest text-gray-900">我喜欢的</h3>
-                        </div>
-                        <Link to="/collection?type=likes" className="text-[10px] font-black text-gray-300 uppercase tracking-widest hover:text-indigo-600 transition-colors">查看全部</Link>
-                    </div>
-                    <div className="flex gap-3 overflow-x-auto hide-scrollbar px-6 pb-2">
-                        {likedImages.length > 0 ? likedImages.slice(0, 5).map(img => (
-                            <Link
-                                to={`/detail/${img.id}`}
-                                key={img.id}
-                                className="flex-none w-32 aspect-[3/4] bg-gray-100 rounded-2xl overflow-hidden active:scale-95 transition"
-                            >
-                                <img src={img.thumb} className="w-full h-full object-cover" alt={img.title} />
-                            </Link>
-                        )) : (
-                            <div className="w-full h-32 bg-gray-50 rounded-2xl flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-100 italic text-gray-300 text-[10px] font-bold">
-                                <Heart size={20} className="mb-1" />
-                                NOTHING LIKED YET
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* 浏览历史 横向列表 */}
-                <div className="mt-8 space-y-4">
-                    <div className="px-6 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Clock size={16} className="text-indigo-500" />
-                            <h3 className="font-black text-sm uppercase tracking-widest text-gray-900">浏览历史</h3>
-                        </div>
-                        <Link to="/collection?type=history" className="text-[10px] font-black text-gray-300 uppercase tracking-widest hover:text-indigo-600 transition-colors">查看全部</Link>
-                    </div>
-                    <div className="flex gap-3 overflow-x-auto hide-scrollbar px-6 pb-2">
-                        {history.length > 0 ? history.slice(0, 5).map(item => (
-                            <Link
-                                to={`/detail/${item.id}`}
-                                key={item.id + '-' + item.time}
-                                className="flex-none w-24 aspect-[4/5] bg-gray-100 rounded-xl overflow-hidden active:scale-95 transition relative group"
-                            >
-                                <img src={item.thumb} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition" alt={item.title} />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                            </Link>
-                        )) : (
-                            <div className="w-full h-24 bg-gray-50 rounded-xl flex items-center justify-center text-gray-300 text-[10px] font-bold uppercase tracking-widest gap-2">
-                                <History size={16} /> No History
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -125,9 +82,12 @@ export default function Profile() {
     )
 }
 
-function StatItem({ num, label }) {
+function StatItem({ num, label, onClick }) {
     return (
-        <div className="text-center group active:scale-95 transition cursor-pointer">
+        <div
+            onClick={onClick}
+            className="text-center group active:scale-95 transition cursor-pointer"
+        >
             <div className="text-2xl font-black text-gray-900 tracking-tighter group-hover:text-indigo-600 transition-colors">{num}</div>
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{label}</div>
         </div>

@@ -112,24 +112,18 @@ export default function Detail() {
                             <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Captured at {new Date(image.createdAt).toLocaleDateString()}</p>
                         </div>
 
+                        {/* 分类与标签 (移动到描述上方，支持展开/收起) */}
+                        <ExpandableTags categories={image.categories} tags={image.tags} />
+
+                        {/* 图片描述 (移动到标签下方) */}
                         {image.description && (
-                            <div className="flex items-start gap-2 bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                            <div className="flex items-start gap-2 bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 mt-6 min-h-[80px]">
                                 <Info size={14} className="text-purple-400 mt-0.5 shrink-0" />
                                 <p className="text-gray-200 text-xs leading-relaxed font-medium">
                                     {image.description}
                                 </p>
                             </div>
                         )}
-                    </div>
-
-                    {/* 分类与标签 */}
-                    <div className="flex gap-2 mb-8 flex-wrap">
-                        {image.categories && image.categories.length > 0 &&
-                            image.categories.map(cat => <CategoryTag key={cat.id} text={cat.name} />)
-                        }
-                        {image.tags && image.tags.length > 0 &&
-                            image.tags.map(tag => <Tag key={tag.id} text={`#${tag.name}`} />)
-                        }
                     </div>
 
                     {/* 操作按钮 */}
@@ -220,12 +214,36 @@ export default function Detail() {
     )
 }
 
+function ExpandableTags({ categories = [], tags = [] }) {
+    const [expanded, setExpanded] = useState(false);
+    const hasMore = tags.length > 8;
+    const displayTags = expanded ? tags : tags.slice(0, 8);
+
+    return (
+        <div className="flex flex-col gap-3">
+            <div className="flex gap-2 flex-wrap mb-2">
+                {categories.map(cat => <CategoryTag key={cat.id} text={cat.name} />)}
+                {displayTags.map(tag => <Tag key={tag.id} text={`#${tag.name}`} />)}
+
+                {hasMore && (
+                    <button
+                        onClick={() => setExpanded(!expanded)}
+                        className="bg-white/5 backdrop-blur-md text-indigo-300 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-400/20 active:scale-95 transition"
+                    >
+                        {expanded ? '收起' : `展开+${tags.length - 8}`}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
+
 function Tag({ text }) {
-    return <span className="bg-white/10 backdrop-blur-md text-white/80 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/5">{text}</span>
+    return <span className="bg-white/5 backdrop-blur-md text-white/60 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/5">{text}</span>
 }
 
 function CategoryTag({ text }) {
-    return <span className="bg-indigo-600/40 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-400/20">{text}</span>
+    return <span className="bg-indigo-600/30 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-400/20">{text}</span>
 }
 
 function CircleBtn({ icon, activeColor, onClick }) {

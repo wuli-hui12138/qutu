@@ -1,0 +1,10 @@
+-- CreateTable
+CREATE TABLE "Banner" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "title" TEXT,
+    "imageUrl" TEXT NOT NULL,
+    "link" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { WallpapersModule } from './wallpapers/wallpapers.module';
 import { TagsModule } from './tags/tags.module';
 import { CategoriesModule } from './categories/categories.module';
+import { BannersModule } from './banners/banners.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CategoriesModule } from './categories/categories.module';
     WallpapersModule,
     TagsModule,
     CategoriesModule,
+    BannersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,4 @@
-import { Search, Monitor, User, Image as ImageIcon, Smartphone, PlusSquare, ArrowRight } from 'lucide-react';
+import { Search, Monitor, User, Image as ImageIcon, Smartphone, PlusSquare, ArrowRight, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import ImageCard from '../components/ImageCard';
@@ -61,27 +61,9 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* 快速分类导航 */}
-            <div className="px-1 mb-10">
-                <div className="flex gap-5 overflow-x-auto hide-scrollbar px-3 py-2">
-                    {(categories.length > 0 ? categories : [
-                        { name: '手机壁纸', icon: <Smartphone size={24} />, color: 'bg-blue-50 text-blue-600' },
-                        { name: '个性头像', icon: <User size={24} />, color: 'bg-rose-50 text-rose-500' },
-                        { name: '动态视频', icon: <Monitor size={24} />, color: 'bg-amber-50 text-amber-500' },
-                        { name: '背景图片', icon: <ImageIcon size={24} />, color: 'bg-emerald-50 text-emerald-500' }
-                    ]).map((cat, idx) => (
-                        <div
-                            key={cat.id || idx}
-                            onClick={() => navigate(`/discover?category=${cat.name}`)}
-                            className="flex-none flex flex-col items-center gap-3 cursor-pointer group"
-                        >
-                            <div className={`w-16 h-16 ${cat.color || 'bg-gray-50 text-gray-400'} rounded-[24px] flex items-center justify-center shadow-sm group-active:scale-95 transition-all duration-300 border border-white`}>
-                                {cat.icon || <ImageIcon size={24} />}
-                            </div>
-                            <span className="text-[11px] font-black text-gray-600 tracking-tighter uppercase whitespace-nowrap">{cat.name}</span>
-                        </div>
-                    ))}
-                </div>
+            {/* 动态 Banner 区域 (替换原分类导航) */}
+            <div className="px-4 mb-10 overflow-hidden">
+                <BannerSection />
             </div>
 
             {/* 瀑布流内容 */}
@@ -108,7 +90,7 @@ export default function Home() {
                 <div className="columns-2 gap-3 space-y-3 pb-10">
                     {wallpapers.map(item => (
                         <ImageCard
-                            key={item.id}
+                            key={`wall-${item.id}`} // Ensure unique key
                             id={item.id}
                             src={item.thumb}
                             title={item.title}
@@ -129,4 +111,66 @@ export default function Home() {
             </div>
         </div>
     )
+}
+
+function BannerSection() {
+    const [banners, setBanners] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        fetch('/api/banners?active=true')
+            .then(res => res.json())
+            .then(data => setBanners(data || []))
+            .catch(err => console.error(err));
+    }, []);
+
+    useEffect(() => {
+        if (banners.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentIndex(prev => (prev + 1) % banners.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [banners.length]);
+
+    if (banners.length === 0) {
+        return (
+            <div className="w-full aspect-[21/9] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-[32px] flex items-center justify-center border border-dashed border-gray-100 italic text-[10px] font-black text-gray-300 tracking-[0.2em] uppercase">
+                Awaiting Pixels
+            </div>
+        );
+    }
+
+    const currentBanner = banners[currentIndex];
+
+    return (
+        <div className="relative w-full aspect-[21/9] rounded-[32px] overflow-hidden shadow-2xl shadow-indigo-500/10 group cursor-pointer active:scale-[0.98] transition-all duration-500">
+            <img
+                src={currentBanner.imageUrl}
+                className="w-full h-full object-cover"
+                alt="Banner"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex flex-col justify-end p-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <span className="text-white/60 text-[8px] font-black uppercase tracking-[0.3em] mb-1">Featured Spot</span>
+                        <h4 className="text-white font-black text-sm tracking-tight">{currentBanner.title || '探索无限灵感'}</h4>
+                    </div>
+                    <ChevronRight size={16} className="text-white" />
+                </div>
+            </div>
+
+            {/* Pagination Dots */}
+            {banners.length > 1 && (
+                <div className="absolute top-4 right-6 flex gap-1.5">
+                    {banners.map((_, idx) => (
+                        <button
+                            key={`dot-${idx}`}
+                            onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+                            className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-4 bg-white' : 'w-1 bg-white/30'}`}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 }

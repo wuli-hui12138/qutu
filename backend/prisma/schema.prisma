@@ -35,3 +35,13 @@ model Tag {
   name   String  @unique
   images Image[]
 }
+
+model Banner {
+  id        Int      @id @default(autoincrement())
+  title     String?
+  imageUrl  String
+  link      String?
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
