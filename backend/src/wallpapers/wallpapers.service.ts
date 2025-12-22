@@ -71,6 +71,13 @@ export class WallpapersService {
       where.title = { contains: query.search };
     }
 
+    if (query?.ids) {
+      const idArray = query.ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+      if (idArray.length > 0) {
+        where.id = { in: idArray };
+      }
+    }
+
     return this.prisma.image.findMany({
       where,
       include: {

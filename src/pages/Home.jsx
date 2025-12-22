@@ -1,13 +1,20 @@
-import { Search, Monitor, User, Image as ImageIcon, Smartphone, Heart, PlusSquare, ArrowRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Search, Monitor, User, Image as ImageIcon, Smartphone, PlusSquare, ArrowRight, History, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import ImageCard from '../components/ImageCard';
 
 export default function Home() {
     const navigate = useNavigate();
     const [wallpapers, setWallpapers] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+
         // Fetch Approved Wallpapers and Categories
         Promise.all([
             fetch('/api/wallpapers').then(res => res.json()),
@@ -16,68 +23,89 @@ export default function Home() {
             setWallpapers(walls);
             setCategories(cats);
         }).catch(err => console.error(err));
+
+        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     return (
-        <div className="bg-gray-50 min-h-screen pb-20">
-            {/* 顶部导航栏 */}
-            <div className="pt-14 pb-2 px-4 bg-white sticky top-0 z-30 flex items-center justify-between">
-                <div className="font-bold text-xl tracking-wider text-gray-800 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white text-xs font-black">QT</div>
-                    趣图匣子
-                </div>
-                <div className="flex items-center gap-4">
-                    <Link to="/upload" className="text-gray-800 active:scale-95 transition">
-                        <PlusSquare size={24} />
-                    </Link>
+        <div className="bg-white min-h-screen pb-24">
+            {/* 沉浸式顶部导航栏 */}
+            <div className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 px-4 pt-10 pb-4 ${scrolled ? 'bg-white/80 backdrop-blur-xl shadow-sm' : 'bg-transparent'
+                }`}>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center text-white text-[10px] font-black shadow-lg shadow-black/20">QT</div>
+                        <div className={`font-black text-xl tracking-tighter transition-colors ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>
+                            趣图匣子
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate('/upload')} className="w-10 h-10 bg-black/5 rounded-full flex items-center justify-center active:scale-90 transition">
+                            <PlusSquare size={20} className="text-gray-900" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* 搜索框入口 - 引导至发现页 */}
-            <div className="px-4 py-2 bg-white sticky top-[88px] z-20 shadow-sm shadow-gray-100/50">
+            {/* 沉浸式搜索条 - 浮动且透明度变化 */}
+            <div className="pt-32 px-4 mb-8">
                 <div
                     onClick={() => navigate('/discover')}
-                    className="bg-gray-100 rounded-full px-4 py-2.5 flex items-center text-gray-400 text-sm cursor-pointer active:opacity-80 transition-all border border-transparent active:border-gray-200"
+                    className="relative group cursor-pointer"
                 >
-                    <Search size={16} className="mr-2" />
-                    <span>搜索壁纸、头像、背景图...</span>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[24px] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
+                    <div className="relative bg-gray-50/50 backdrop-blur-sm border border-gray-100 rounded-[22px] px-5 py-4 flex items-center gap-3 text-gray-400">
+                        <Search size={18} className="text-gray-400" />
+                        <span className="text-sm font-medium tracking-tight">探索数万张超清动态壁纸...</span>
+                    </div>
                 </div>
             </div>
 
-            {/* 分类快捷导航 - 更加精致的图标列表 */}
-            <div className="flex justify-between px-6 py-8 gap-4 overflow-x-auto hide-scrollbar">
-                {(categories.length > 0 ? categories.slice(0, 4) : [
-                    { name: '手机壁纸', icon: <Smartphone size={22} />, color: 'bg-indigo-50 text-indigo-600' },
-                    { name: '个性头像', icon: <User size={22} />, color: 'bg-rose-50 text-rose-500' },
-                    { name: '背景图', icon: <ImageIcon size={22} />, color: 'bg-emerald-50 text-emerald-500' },
-                    { name: '动图', icon: <Monitor size={22} />, color: 'bg-amber-50 text-amber-500' }
-                ]).map((cat, idx) => (
-                    <div
-                        key={cat.id || idx}
-                        onClick={() => navigate(`/discover?category=${cat.name}`)}
-                        className="flex-none flex flex-col items-center gap-2.5 cursor-pointer group"
-                    >
-                        <div className={`w-14 h-14 ${cat.color || 'bg-gray-100 text-gray-600'} rounded-[20px] flex items-center justify-center shadow-sm group-active:scale-90 transition-all`}>
-                            {cat.icon || <ImageIcon size={22} />}
+            {/* 快速分类导航 - 现代化圆角大图标 */}
+            <div className="px-1 mb-10">
+                <div className="flex gap-5 overflow-x-auto hide-scrollbar px-3 py-2">
+                    {(categories.length > 0 ? categories : [
+                        { name: '手机壁纸', icon: <Smartphone size={24} />, color: 'bg-blue-50 text-blue-600' },
+                        { name: '个性头像', icon: <User size={24} />, color: 'bg-rose-50 text-rose-500' },
+                        { name: '动态视频', icon: <Monitor size={24} />, color: 'bg-amber-50 text-amber-500' },
+                        { name: '背景图片', icon: <ImageIcon size={24} />, color: 'bg-emerald-50 text-emerald-500' }
+                    ]).map((cat, idx) => (
+                        <div
+                            key={cat.id || idx}
+                            onClick={() => navigate(`/discover?category=${cat.name}`)}
+                            className="flex-none flex flex-col items-center gap-3 cursor-pointer group"
+                        >
+                            <div className={`w-16 h-16 ${cat.color || 'bg-gray-50 text-gray-400'} rounded-[24px] flex items-center justify-center shadow-sm group-active:scale-95 transition-all duration-300 border border-white`}>
+                                {cat.icon || <ImageIcon size={24} />}
+                            </div>
+                            <span className="text-[11px] font-black text-gray-600 tracking-tighter uppercase whitespace-nowrap">{cat.name}</span>
                         </div>
-                        <span className="text-[11px] font-bold text-gray-700 tracking-tight">{cat.name}</span>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
 
-            {/* 热门内容列表 */}
+            {/* 瀑布流内容 - 真正的全屏宽度感 */}
             <div className="px-4">
-                <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-black text-gray-900 flex items-center text-base tracking-tight">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-2 animate-pulse"></span>
-                        热门推荐
-                    </h3>
-                    <button onClick={() => navigate('/discover')} className="text-[11px] font-bold text-gray-400 flex items-center gap-0.5">
-                        查看更多 <ArrowRight size={12} />
+                <div className="flex items-center justify-between mb-6 px-1">
+                    <div>
+                        <h3 className="font-black text-xl text-gray-900 tracking-tighter flex items-center gap-2">
+                            热门精选
+                            <span className="flex h-2 w-2 relative">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                        </h3>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Curated Hot Picking</p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/discover')}
+                        className="px-3 py-1.5 bg-gray-50 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center gap-1"
+                    >
+                        更多 <ArrowRight size={10} />
                     </button>
                 </div>
 
-                <div className="columns-2 gap-2 space-y-2 pb-8">
+                <div className="columns-2 gap-3 space-y-3 pb-10">
                     {wallpapers.map(item => (
                         <ImageCard
                             key={item.id}
@@ -86,13 +114,15 @@ export default function Home() {
                             title={item.title}
                             categories={item.categories}
                             tags={item.tags}
-                            liked={item.likes > 0}
                         />
                     ))}
                     {wallpapers.length === 0 && (
-                        <div className="text-gray-400 text-xs text-center col-span-2 py-32 flex flex-col items-center gap-3 w-full">
-                            <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-black"></div>
-                            <span className="font-medium tracking-widest uppercase text-[10px]">Loading Essence</span>
+                        <div className="col-span-2 py-40 flex flex-col items-center justify-center gap-4 w-full">
+                            <div className="relative w-12 h-12">
+                                <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+                                <div className="absolute inset-0 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                            <span className="font-black tracking-[0.3em] uppercase text-[10px] text-gray-300">Loading Pixels</span>
                         </div>
                     )}
                 </div>
@@ -101,30 +131,3 @@ export default function Home() {
     )
 }
 
-function ImageCard({ id, src, title, categories, tags, liked }) {
-    return (
-        <Link to={`/detail/${id}`} className="block break-inside-avoid rounded-xl overflow-hidden shadow-sm bg-white mb-2 active:scale-[0.98] transition group">
-            <div className="relative">
-                <img src={src} className="w-full" alt="img" loading="lazy" />
-                <div className="absolute top-2 right-2 p-1.5 bg-black/10 backdrop-blur-md rounded-full text-white opacity-0 group-hover:opacity-100 transition">
-                    <Heart size={12} className={liked ? "fill-red-500 text-red-500" : "text-white"} />
-                </div>
-            </div>
-            <div className="p-2 bg-white">
-                <div className="text-[10px] font-black text-gray-900 truncate mb-1 px-0.5">{title || 'Untitled'}</div>
-                <div className="flex flex-wrap gap-1">
-                    {categories && categories.slice(0, 1).map(cat => (
-                        <span key={cat.id} className="text-[8px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded tracking-tighter">
-                            {cat.name}
-                        </span>
-                    ))}
-                    {tags && tags.slice(0, 2).map(tag => (
-                        <span key={tag.id} className="text-[8px] font-bold text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded tracking-tighter">
-                            #{tag.name}
-                        </span>
-                    ))}
-                </div>
-            </div>
-        </Link>
-    )
-}

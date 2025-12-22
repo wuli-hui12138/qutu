@@ -1,5 +1,5 @@
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Heart, Share2, Download, Check, Image as ImageIcon } from 'lucide-react';
+import { ChevronLeft, Heart, Share2, Download, Check, Image as ImageIcon, Info } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,6 +10,7 @@ export default function Detail() {
     const [related, setRelated] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isLiked, setIsLiked] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -17,6 +18,14 @@ export default function Detail() {
             .then(res => res.json())
             .then(data => {
                 setImage(data);
+
+                // Record History
+                recordHistory(data);
+
+                // Check if liked
+                const likes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
+                setIsLiked(likes.includes(data.id));
+
                 // Fetch related if tags exist
                 if (data && data.tags && data.tags.length > 0) {
                     const firstTag = data.tags[0].name;
@@ -33,12 +42,46 @@ export default function Detail() {
             });
     }, [id]);
 
+    const recordHistory = (img) => {
+        if (!img) return;
+        const history = JSON.parse(localStorage.getItem('qutu_history') || '[]');
+        const filtered = history.filter(item => item.id !== img.id);
+        const newHistory = [{
+            id: img.id,
+            thumb: img.thumb,
+            title: img.title,
+            time: new Date().getTime()
+        }, ...filtered].slice(0, 50); // Keep last 50
+        localStorage.setItem('qutu_history', JSON.stringify(newHistory));
+    };
+
+    const toggleLike = () => {
+        if (!image) return;
+        const likes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
+        let newLikes;
+        if (likes.includes(image.id)) {
+            newLikes = likes.filter(itemId => itemId !== image.id);
+        } else {
+            newLikes = [...likes, image.id];
+        }
+        localStorage.setItem('qutu_likes', JSON.stringify(newLikes));
+        setIsLiked(!isLiked);
+
+        // Optional: Sync with backend
+        fetch(`/api/wallpapers/${image.id}/like`, { method: 'POST' }).catch(() => { });
+    };
+
     const handleDownload = () => {
+        // In a real local dev, image.url might be /uploads/xxx.
+        // We'll just open it in a new tab.
+        window.open(image.url, '_blank');
         setShowModal(true);
     };
 
-    if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">加载中...</div>;
-    if (!image) return <div className="h-screen bg-black flex items-center justify-center text-white">未找到图片</div>;
+    if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+    </div>;
+    if (!image) return <div className="h-screen bg-black flex items-center justify-center text-white font-bold tracking-widest uppercase">Pixel Lost</div>;
 
     return (
         <div className="min-h-screen w-full bg-black relative flex flex-col pb-10">
@@ -46,67 +89,65 @@ export default function Detail() {
             <div className="absolute top-0 w-full pt-14 px-4 z-40 flex justify-between items-center pointer-events-none">
                 <div
                     onClick={() => navigate(-1)}
-                    className="w-8 h-8 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white cursor-pointer pointer-events-auto active:scale-95 transition"
+                    className="w-10 h-10 bg-black/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white cursor-pointer pointer-events-auto active:scale-90 transition"
                 >
-                    <ChevronLeft size={20} />
-                </div>
-                {/* Capsule Dark */}
-                <div className="flex items-center justify-around w-20 h-8 bg-black/20 border border-white/20 rounded-full backdrop-blur-sm pointer-events-auto">
-                    <div className="w-1 h-1 bg-white rounded-full"></div>
-                    <div className="w-1 h-1 bg-white rounded-full"></div>
-                    <div className="w-1 h-1 bg-white rounded-full"></div>
+                    <ChevronLeft size={24} />
                 </div>
             </div>
 
             {/* Main Image Container */}
-            <div className="w-full h-[85vh] relative shrink-0">
+            <div className="w-full h-[88vh] relative shrink-0">
                 <img
-                    src={image.thumb || image.url}
+                    src={image.url} // Use original in detail for premium look
                     className="w-full h-full object-cover"
                     alt={image.title}
                 />
 
                 {/* 底部渐变遮罩 */}
-                <div className="absolute bottom-0 w-full bg-gradient-to-t from-black via-black/50 to-transparent flex flex-col justify-end pb-8 px-5 pt-32">
-                    {/* 作者信息 (Mock) */}
-                    <div className="flex items-center mb-6">
-                        <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-700 flex items-center justify-center text-white text-xs">
-                            Q
+                <div className="absolute bottom-0 w-full bg-gradient-to-t from-black via-black/60 to-transparent flex flex-col justify-end pb-10 px-6 pt-40">
+                    {/* 信息面板 */}
+                    <div className="mb-8 space-y-4">
+                        <div className="space-y-1">
+                            <h2 className="text-white text-2xl font-black tracking-tight">{image.title}</h2>
+                            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Captured at {new Date(image.createdAt).toLocaleDateString()}</p>
                         </div>
-                        <div className="ml-3 text-shadow">
-                            <p className="text-white text-sm font-bold">{image.title}</p>
-                            <p className="text-gray-300 text-[10px] mt-0.5">发布于 {new Date(image.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        <button className="ml-auto bg-purple-600/80 backdrop-blur text-white text-xs px-4 py-1.5 rounded-full font-medium active:scale-95 transition">关注</button>
+
+                        {image.description && (
+                            <div className="flex items-start gap-2 bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                                <Info size={14} className="text-purple-400 mt-0.5 shrink-0" />
+                                <p className="text-gray-200 text-xs leading-relaxed font-medium">
+                                    {image.description}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* 分类与标签 */}
-                    <div className="flex gap-2 mb-6 flex-wrap">
+                    <div className="flex gap-2 mb-8 flex-wrap">
                         {image.categories && image.categories.length > 0 &&
                             image.categories.map(cat => <CategoryTag key={cat.id} text={cat.name} />)
                         }
-                        {image.tags && image.tags.length > 0
-                            ? image.tags.map(tag => <Tag key={tag.id} text={`#${tag.name}`} />)
-                            : <Tag text="#壁纸" />
+                        {image.tags && image.tags.length > 0 &&
+                            image.tags.map(tag => <Tag key={tag.id} text={`#${tag.name}`} />)
                         }
                     </div>
 
                     {/* 操作按钮 */}
                     <div className="flex justify-between items-center gap-4">
                         <button
-                            onClick={() => {
-                                // Open original image in a new tab for user to save
-                                window.open(image.url, '_blank');
-                                setShowModal(true);
-                            }}
-                            className="flex-1 bg-white text-gray-900 h-12 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition"
+                            onClick={handleDownload}
+                            className="flex-1 bg-white text-gray-900 h-14 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition shadow-xl shadow-white/10"
                         >
                             <Download size={18} />
-                            下载原图
+                            下载超清原图
                         </button>
                         <div className="flex gap-4">
-                            <CircleBtn icon={<Heart size={20} />} activeColor={image.likes > 0 ? "bg-red-500 border-none" : ""} />
-                            <CircleBtn icon={<Share2 size={20} />} />
+                            <CircleBtn
+                                onClick={toggleLike}
+                                icon={<Heart size={22} className={isLiked ? "fill-white" : ""} />}
+                                activeColor={isLiked ? "bg-red-500 border-none shadow-lg shadow-red-500/30" : ""}
+                            />
+                            <CircleBtn icon={<Share2 size={22} />} />
                         </div>
                     </div>
                 </div>
@@ -114,15 +155,19 @@ export default function Detail() {
 
             {/* Related Images Section */}
             {related.length > 0 && (
-                <div className="px-4 py-6">
-                    <h3 className="text-white font-bold mb-4 flex items-center text-sm">
-                        <ImageIcon size={16} className="mr-2 text-purple-400" />
-                        更多相关推荐
-                    </h3>
+                <div className="px-6 py-10 bg-black">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-white font-black flex items-center text-sm uppercase tracking-widest">
+                            <ImageIcon size={16} className="mr-2 text-indigo-400" />
+                            相关像素灵感
+                        </h3>
+                        <div className="h-px flex-1 mx-4 bg-white/10"></div>
+                    </div>
                     <div className="grid grid-cols-3 gap-3">
                         {related.map(item => (
-                            <Link to={`/detail/${item.id}`} key={item.id} className="aspect-[3/4] rounded-lg overflow-hidden relative active:opacity-80 transition">
-                                <img src={item.thumb} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                            <Link to={`/detail/${item.id}`} key={item.id} className="aspect-[3/4] rounded-xl overflow-hidden relative active:scale-95 transition group">
+                                <img src={item.thumb} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" />
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             </Link>
                         ))}
                     </div>
@@ -132,41 +177,39 @@ export default function Detail() {
             {/* Download Success Modal */}
             <AnimatePresence>
                 {showModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        {/* Backdrop */}
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowModal(false)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
                         />
 
-                        {/* Modal Content */}
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="bg-white rounded-2xl p-6 flex flex-col items-center w-72 relative z-10"
+                            className="bg-white rounded-[32px] p-8 flex flex-col items-center w-full max-w-sm relative z-10"
                         >
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-4">
-                                <Check size={32} />
+                            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-500 mb-6">
+                                <Check size={40} />
                             </div>
-                            <h3 className="font-bold text-gray-800 text-lg mb-2">保存成功</h3>
-                            <p className="text-center text-gray-500 text-sm mb-6">图片已保存至系统相册</p>
+                            <h3 className="font-black text-gray-900 text-xl mb-2 tracking-tight">保存成功</h3>
+                            <p className="text-center text-gray-400 text-sm font-medium mb-8">高清像素已在您的下载任务中，快去设为壁纸吧！</p>
 
-                            <div className="flex w-full gap-3">
-                                <button
-                                    onClick={() => setShowModal(false)}
-                                    className="flex-1 py-2 rounded-full border border-gray-200 text-gray-600 text-sm active:bg-gray-50"
-                                >
-                                    留在本页
-                                </button>
+                            <div className="flex flex-col w-full gap-3">
                                 <button
                                     onClick={() => navigate(-1)}
-                                    className="flex-1 py-2 rounded-full bg-purple-600 text-white text-sm active:bg-purple-700"
+                                    className="w-full py-4 rounded-2xl bg-black text-white text-sm font-black uppercase tracking-widest active:scale-95 transition"
                                 >
-                                    返回列表
+                                    返回发现列表
+                                </button>
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="w-full py-4 rounded-2xl border border-gray-100 text-gray-400 text-sm font-black uppercase tracking-widest active:bg-gray-50 transition"
+                                >
+                                    留在本页
                                 </button>
                             </div>
                         </motion.div>
@@ -178,18 +221,22 @@ export default function Detail() {
 }
 
 function Tag({ text }) {
-    return <span className="bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs">{text}</span>
+    return <span className="bg-white/10 backdrop-blur-md text-white/80 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/5">{text}</span>
 }
 
 function CategoryTag({ text }) {
-    return <span className="bg-blue-600/40 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs border border-blue-400/30">{text}</span>
+    return <span className="bg-indigo-600/40 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-400/20">{text}</span>
 }
 
-function CircleBtn({ icon, activeColor }) {
+function CircleBtn({ icon, activeColor, onClick }) {
     return (
-        <button className={`w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 active:scale-95 transition ${activeColor}`}>
+        <button
+            onClick={onClick}
+            className={`w-14 h-14 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center text-white border border-white/10 active:scale-90 transition transform ${activeColor}`}
+        >
             {icon}
         </button>
     )
 }
+
 
