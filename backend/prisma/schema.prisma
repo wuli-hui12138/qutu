@@ -17,8 +17,7 @@ model Image {
   title       String
   description String?
   status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  category    Category? @relation(fields: [categoryId], references: [id])
-  categoryId  Int?
+  categories  Category[]
   tags        Tag[]
   views       Int       @default(0)
   likes       Int       @default(0)

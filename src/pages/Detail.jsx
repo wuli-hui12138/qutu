@@ -80,8 +80,11 @@ export default function Detail() {
                         <button className="ml-auto bg-purple-600/80 backdrop-blur text-white text-xs px-4 py-1.5 rounded-full font-medium active:scale-95 transition">关注</button>
                     </div>
 
-                    {/* 标签 */}
+                    {/* 分类与标签 */}
                     <div className="flex gap-2 mb-6 flex-wrap">
+                        {image.categories && image.categories.length > 0 &&
+                            image.categories.map(cat => <CategoryTag key={cat.id} text={cat.name} />)
+                        }
                         {image.tags && image.tags.length > 0
                             ? image.tags.map(tag => <Tag key={tag.id} text={`#${tag.name}`} />)
                             : <Tag text="#壁纸" />
@@ -176,6 +179,10 @@ export default function Detail() {
 
 function Tag({ text }) {
     return <span className="bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs">{text}</span>
+}
+
+function CategoryTag({ text }) {
+    return <span className="bg-blue-600/40 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs border border-blue-400/30">{text}</span>
 }
 
 function CircleBtn({ icon, activeColor }) {

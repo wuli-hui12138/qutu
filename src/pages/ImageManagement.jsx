@@ -8,6 +8,10 @@ export default function ImageManagement() {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
 
+    const [editingImage, setEditingImage] = useState(null);
+    const [availableCategories, setAvailableCategories] = useState([]);
+    const [availableTags, setAvailableTags] = useState([]);
+
     const fetchImages = async () => {
         setLoading(true);
         try {
@@ -21,6 +25,22 @@ export default function ImageManagement() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const fetchMetadata = async () => {
+            try {
+                const [catsRes, tagsRes] = await Promise.all([
+                    fetch('/api/categories'),
+                    fetch('/api/tags')
+                ]);
+                setAvailableCategories(await catsRes.json());
+                setAvailableTags(await tagsRes.json());
+            } catch (err) {
+                console.error('Fetch metadata fail', err);
+            }
+        };
+        fetchMetadata();
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -41,6 +61,23 @@ export default function ImageManagement() {
             }
         } catch (err) {
             alert('操作失败');
+        }
+    };
+
+    const handleUpdateMetadata = async (id, data) => {
+        try {
+            const res = await fetch(`/api/wallpapers/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setImages(prev => prev.map(img => img.id === id ? updated : img));
+                setEditingImage(null);
+            }
+        } catch (err) {
+            alert('更新失败');
         }
     };
 
@@ -102,7 +139,7 @@ export default function ImageManagement() {
                         <div className="relative w-24 h-24 shrink-0 rounded-2xl overflow-hidden bg-gray-100">
                             <img src={img.thumb} className="w-full h-full object-cover" alt="" />
                             <div className={`absolute top-1 right-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter text-white shadow-sm ${img.status === 'APPROVED' ? 'bg-emerald-500' :
-                                    img.status === 'PENDING' ? 'bg-amber-500' : 'bg-red-500'
+                                img.status === 'PENDING' ? 'bg-amber-500' : 'bg-red-500'
                                 }`}>
                                 {img.status}
                             </div>
@@ -111,12 +148,21 @@ export default function ImageManagement() {
                         <div className="flex-1 flex flex-col justify-between py-1 min-w-0">
                             <div className="space-y-1">
                                 <h3 className="text-sm font-black text-gray-900 truncate tracking-tight">{img.title || 'Untitled'}</h3>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                                    <Filter size={10} /> {img.category?.name || 'Uncategorized'}
-                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                    {img.categories?.map(cat => (
+                                        <span key={cat.id} className="text-[8px] font-bold text-blue-600 bg-blue-50 px-1 py-0.5 rounded tracking-tighter capitalize">
+                                            {cat.name}
+                                        </span>
+                                    ))}
+                                    {img.tags?.slice(0, 2).map(tag => (
+                                        <span key={tag.id} className="text-[8px] font-bold text-gray-400 bg-gray-50 px-1 py-0.5 rounded tracking-tighter capitalize">
+                                            #{tag.name}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 mt-2">
                                 {img.status === 'PENDING' && (
                                     <button
                                         onClick={() => handleUpdateStatus(img.id, 'APPROVED')}
@@ -125,6 +171,13 @@ export default function ImageManagement() {
                                         <CheckCircle size={12} /> 通过
                                     </button>
                                 )}
+                                <button
+                                    onClick={() => setEditingImage(img)}
+                                    className="p-2 bg-indigo-50 text-indigo-600 rounded-xl active:scale-95 transition"
+                                    title="编辑"
+                                >
+                                    <Filter size={14} />
+                                </button>
                                 <button
                                     onClick={() => navigate(`/detail/${img.id}`)}
                                     className="p-2 bg-gray-50 text-gray-500 rounded-xl active:scale-95 transition"
@@ -141,6 +194,124 @@ export default function ImageManagement() {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Edit Modal */}
+            {editingImage && (
+                <EditModal
+                    image={editingImage}
+                    availableCategories={availableCategories}
+                    availableTags={availableTags}
+                    onClose={() => setEditingImage(null)}
+                    onSave={(data) => handleUpdateMetadata(editingImage.id, data)}
+                />
+            )}
+        </div>
+    );
+}
+
+function EditModal({ image, availableCategories, availableTags, onClose, onSave }) {
+    const [formData, setFormData] = useState({
+        title: image.title || '',
+        description: image.description || '',
+        categories: image.categories?.map(c => c.name).join(',') || '',
+        tags: image.tags?.map(t => t.name).join(',') || ''
+    });
+
+    const toggleMetadata = (type, name) => {
+        const current = formData[type] ? formData[type].split(',').map(t => t.trim()).filter(Boolean) : [];
+        let next;
+        if (current.includes(name)) {
+            next = current.filter(t => t !== name);
+        } else {
+            next = [...current, name];
+        }
+        setFormData({ ...formData, [type]: next.join(',') });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="bg-white w-full max-w-lg rounded-t-[32px] sm:rounded-[32px] p-6 relative z-10 max-h-[90vh] overflow-y-auto hide-scrollbar shadow-2xl animate-in slide-in-from-bottom duration-300">
+                <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+                <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-xl font-black text-gray-900 tracking-tighter">编辑图片详情</h2>
+                    <button onClick={onClose} className="p-2 bg-gray-100 rounded-full active:scale-90 transition"><X size={18} /></button>
+                </div>
+
+                <div className="space-y-6">
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 px-1">作品标题</label>
+                        <input
+                            type="text"
+                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-black transition-all text-sm font-bold"
+                            value={formData.title}
+                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 px-1">描述信息</label>
+                        <textarea
+                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-black transition-all text-sm h-24 resize-none"
+                            value={formData.description}
+                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 px-1">所属分类 (可多选)</label>
+                        <div className="flex flex-wrap gap-2">
+                            {availableCategories.map(cat => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => toggleMetadata('categories', cat.name)}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${formData.categories.split(',').includes(cat.name)
+                                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/20 scale-105'
+                                        : 'bg-white text-gray-400 border-gray-100'
+                                        }`}
+                                >
+                                    {cat.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 px-1">标签云 (可多选)</label>
+                        <div className="flex flex-wrap gap-2">
+                            {availableTags.map(tag => (
+                                <button
+                                    key={tag.id}
+                                    onClick={() => toggleMetadata('tags', tag.name)}
+                                    className={`px-2 py-1 rounded-lg text-[10px] font-black transition-all border ${formData.tags.split(',').includes(tag.name)
+                                        ? 'bg-purple-600 text-white border-purple-600'
+                                        : 'bg-gray-100 text-gray-400 border-transparent'
+                                        }`}
+                                >
+                                    #{tag.name}
+                                </button>
+                            ))}
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="逗号分隔手动输入..."
+                            className="w-full mt-3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs"
+                            value={formData.tags}
+                            onChange={e => setFormData({ ...formData, tags: e.target.value })}
+                        />
+                    </div>
+                </div>
+
+                <div className="mt-10 flex gap-3">
+                    <button onClick={onClose} className="flex-1 py-4 rounded-2xl bg-gray-100 text-gray-500 font-black text-xs uppercase tracking-widest active:scale-95 transition">取消</button>
+                    <button
+                        onClick={() => onSave(formData)}
+                        className="flex-[2] py-4 rounded-2xl bg-black text-white font-black text-xs uppercase tracking-widest active:scale-95 transition shadow-xl shadow-gray-200"
+                    >
+                        保存更改
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -77,13 +77,15 @@ export default function Home() {
                     </button>
                 </div>
 
-                <div className="columns-2 gap-3 space-y-3 pb-8">
+                <div className="columns-2 gap-2 space-y-2 pb-8">
                     {wallpapers.map(item => (
                         <ImageCard
                             key={item.id}
                             id={item.id}
                             src={item.thumb}
-                            tag={item.tags && item.tags.length > 0 ? item.tags[0].name : '壁纸'}
+                            title={item.title}
+                            categories={item.categories}
+                            tags={item.tags}
                             liked={item.likes > 0}
                         />
                     ))}
@@ -99,15 +101,29 @@ export default function Home() {
     )
 }
 
-function ImageCard({ id, src, tag, liked }) {
+function ImageCard({ id, src, title, categories, tags, liked }) {
     return (
-        <Link to={`/detail/${id}`} className="block break-inside-avoid rounded-2xl overflow-hidden shadow-sm bg-white mb-3 active:scale-[0.98] transition">
-            <img src={src} className="w-full" alt="img" loading="lazy" />
-            <div className="p-2 flex justify-between items-center bg-white">
-                <div className="flex items-center gap-1.5 overflow-hidden">
-                    <span className="text-[9px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded uppercase tracking-wider">#{tag}</span>
+        <Link to={`/detail/${id}`} className="block break-inside-avoid rounded-xl overflow-hidden shadow-sm bg-white mb-2 active:scale-[0.98] transition group">
+            <div className="relative">
+                <img src={src} className="w-full" alt="img" loading="lazy" />
+                <div className="absolute top-2 right-2 p-1.5 bg-black/10 backdrop-blur-md rounded-full text-white opacity-0 group-hover:opacity-100 transition">
+                    <Heart size={12} className={liked ? "fill-red-500 text-red-500" : "text-white"} />
                 </div>
-                <Heart size={14} className={liked ? "fill-red-500 text-red-500" : "text-gray-300"} />
+            </div>
+            <div className="p-2 bg-white">
+                <div className="text-[10px] font-black text-gray-900 truncate mb-1 px-0.5">{title || 'Untitled'}</div>
+                <div className="flex flex-wrap gap-1">
+                    {categories && categories.slice(0, 1).map(cat => (
+                        <span key={cat.id} className="text-[8px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded tracking-tighter">
+                            {cat.name}
+                        </span>
+                    ))}
+                    {tags && tags.slice(0, 2).map(tag => (
+                        <span key={tag.id} className="text-[8px] font-bold text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded tracking-tighter">
+                            #{tag.name}
+                        </span>
+                    ))}
+                </div>
             </div>
         </Link>
     )

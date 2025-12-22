@@ -8,7 +8,7 @@ export default function Upload() {
     const [preview, setPreview] = useState('');
     const [formData, setFormData] = useState({
         title: '',
-        category: '',
+        categories: '',
         tags: '',
         description: ''
     });
@@ -24,11 +24,7 @@ export default function Upload() {
                     fetch('/api/tags')
                 ]);
                 if (catsRes.ok) {
-                    const cats = await catsRes.json();
-                    setAvailableCategories(cats);
-                    if (cats.length > 0) {
-                        setFormData(prev => ({ ...prev, category: cats[0].name }));
-                    }
+                    setAvailableCategories(await catsRes.json());
                 }
                 if (tagsRes.ok) {
                     setAvailableTags(await tagsRes.json());
@@ -50,25 +46,25 @@ export default function Upload() {
         }
     };
 
-    const toggleTag = (name) => {
-        const currentTags = formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-        if (currentTags.includes(name)) {
-            setFormData({ ...formData, tags: currentTags.filter(t => t !== name).join(',') });
+    const toggleMetadata = (type, name) => {
+        const current = formData[type] ? formData[type].split(',').map(t => t.trim()).filter(Boolean) : [];
+        if (current.includes(name)) {
+            setFormData({ ...formData, [type]: current.filter(t => t !== name).join(',') });
         } else {
-            setFormData({ ...formData, tags: [...currentTags, name].join(',') });
+            setFormData({ ...formData, [type]: [...current, name].join(',') });
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!file) return alert('请先选择图片');
-        if (!formData.category) return alert('请选择分类');
+        if (!formData.categories) return alert('请至少选择一个分类');
 
         setStatus('loading');
         const data = new FormData();
         data.append('file', file);
         data.append('title', formData.title);
-        data.append('category', formData.category);
+        data.append('categories', formData.categories);
         data.append('tags', formData.tags);
         data.append('description', formData.description);
 
@@ -122,15 +118,15 @@ export default function Upload() {
 
                 <div className="grid grid-cols-1 gap-4">
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">全部分类</label>
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">选择分类 (可多选)</label>
                         <div className="flex flex-wrap gap-2">
                             {availableCategories.map(cat => (
                                 <button
                                     key={cat.id}
                                     type="button"
-                                    onClick={() => setFormData({ ...formData, category: cat.name })}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${formData.category === cat.name
-                                        ? 'bg-purple-600 text-white shadow-md scale-105'
+                                    onClick={() => toggleMetadata('categories', cat.name)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${formData.categories.split(',').includes(cat.name)
+                                        ? 'bg-blue-600 text-white shadow-md'
                                         : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                         }`}
                                 >
@@ -147,13 +143,13 @@ export default function Upload() {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">常用标签</label>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">常用标签 (可多选)</label>
                     <div className="flex flex-wrap gap-2 mb-3">
                         {availableTags.map(tag => (
                             <button
                                 key={tag.id}
                                 type="button"
-                                onClick={() => toggleTag(tag.name)}
+                                onClick={() => toggleMetadata('tags', tag.name)}
                                 className={`px-3 py-1.5 rounded-full text-xs transition-all border ${formData.tags.split(',').includes(tag.name)
                                     ? 'bg-purple-50 border-purple-200 text-purple-600'
                                     : 'bg-white border-gray-100 text-gray-400 hover:border-purple-100'

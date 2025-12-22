@@ -8,33 +8,34 @@ export class WallpapersService {
   constructor(private prisma: PrismaService) { }
 
   async create(data: any) {
-    const { category, tags, ...rest } = data;
+    const { categories, tags, ...rest } = data;
 
     // Process tags (comma separated string -> connectOrCreate)
-    const tagArray = tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+    const tagArray = tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim()).filter(Boolean)) : [];
     const tagConnections = tagArray.map(name => ({
       where: { name },
       create: { name }
     }));
 
-    // Process category (string name -> connect by name)
-    const categoryConnect = category ? {
-      connectOrCreate: {
-        where: { name: category },
-        create: { name: category }
-      }
-    } : undefined;
+    // Process categories (comma separated string -> connectOrCreate)
+    const catArray = categories ? (Array.isArray(categories) ? categories : categories.split(',').map(c => c.trim()).filter(Boolean)) : [];
+    const catConnections = catArray.map(name => ({
+      where: { name },
+      create: { name }
+    }));
 
     return this.prisma.image.create({
       data: {
         ...rest,
-        category: categoryConnect,
+        categories: {
+          connectOrCreate: catConnections
+        },
         tags: {
           connectOrCreate: tagConnections
         }
       },
       include: {
-        category: true,
+        categories: true,
         tags: true
       }
     });
@@ -44,12 +45,26 @@ export class WallpapersService {
   findAll(query?: any) {
     const where: any = { status: 'APPROVED' };
 
-    if (query?.category) {
-      where.category = { name: query.category };
+    // AND logic for multiple categories
+    if (query?.categories) {
+      const catArray = Array.isArray(query.categories) ? query.categories : [query.categories];
+      if (catArray.length > 0) {
+        where.AND = where.AND || [];
+        catArray.forEach(cat => {
+          where.AND.push({ categories: { some: { name: cat } } });
+        });
+      }
     }
 
-    if (query?.tag) {
-      where.tags = { some: { name: query.tag } };
+    // AND logic for multiple tags
+    if (query?.tags) {
+      const tagArray = Array.isArray(query.tags) ? query.tags : [query.tags];
+      if (tagArray.length > 0) {
+        where.AND = where.AND || [];
+        tagArray.forEach(tag => {
+          where.AND.push({ tags: { some: { name: tag } } });
+        });
+      }
     }
 
     if (query?.search) {
@@ -59,7 +74,7 @@ export class WallpapersService {
     return this.prisma.image.findMany({
       where,
       include: {
-        category: true,
+        categories: true,
         tags: true
       },
       orderBy: { createdAt: 'desc' }
@@ -78,7 +93,7 @@ export class WallpapersService {
     return this.prisma.image.findMany({
       where,
       include: {
-        category: true,
+        categories: true,
         tags: true
       },
       orderBy: { createdAt: 'desc' }
@@ -89,7 +104,7 @@ export class WallpapersService {
     return this.prisma.image.findUnique({
       where: { id },
       include: {
-        category: true,
+        categories: true,
         tags: true
       }
     });
@@ -106,7 +121,7 @@ export class WallpapersService {
         }
       },
       include: {
-        category: true,
+        categories: true,
         tags: true
       },
       take: 6,
@@ -116,10 +131,37 @@ export class WallpapersService {
     });
   }
 
-  update(id: number, updateWallpaperDto: UpdateWallpaperDto) {
+  async update(id: number, data: any) {
+    const { categories, tags, ...rest } = data;
+
+    const tagArray = tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim()).filter(Boolean)) : undefined;
+    const catArray = categories ? (Array.isArray(categories) ? categories : categories.split(',').map(c => c.trim()).filter(Boolean)) : undefined;
+
     return this.prisma.image.update({
       where: { id },
-      data: updateWallpaperDto as any,
+      data: {
+        ...rest,
+        // Categories update: set (disconnect all old, connect new)
+        categories: catArray ? {
+          set: [],
+          connectOrCreate: catArray.map(name => ({
+            where: { name },
+            create: { name }
+          }))
+        } : undefined,
+        // Tags update: set (disconnect all old, connect new)
+        tags: tagArray ? {
+          set: [],
+          connectOrCreate: tagArray.map(name => ({
+            where: { name },
+            create: { name }
+          }))
+        } : undefined,
+      },
+      include: {
+        categories: true,
+        tags: true
+      }
     });
   }
 
@@ -154,9 +196,9 @@ export class WallpapersService {
   }
 
   async seed() {
-    // Categories and Tags seeding...
-    const categories = ['手机壁纸', '电脑壁纸', '个性头像', '动态图', '极致简约', '暗黑系'];
-    for (const name of categories) {
+    // Seed categories...
+    const initialCategories = ['手机壁纸', '电脑壁纸', '个性头像', '动态图', '极致简约', '暗黑系'];
+    for (const name of initialCategories) {
       await this.prisma.category.upsert({
         where: { name },
         update: {},
@@ -164,8 +206,8 @@ export class WallpapersService {
       });
     }
 
-    const tags = ['4K', '赛博朋克', '森系', '极简', '二次元', '治愈系', '美学', 'City', 'Girl', 'Portrait', 'Abstract', 'Neon'];
-    for (const name of tags) {
+    const initialTags = ['4K', '赛博朋克', '森系', '极简', '二次元', '治愈系', '美学', 'City', 'Girl', 'Portrait', 'Abstract', 'Neon'];
+    for (const name of initialTags) {
       await this.prisma.tag.upsert({
         where: { name },
         update: {},

@@ -76,8 +76,8 @@ export class WallpapersController {
   }
 
   @Get()
-  findAll(@Query('category') category: string, @Query('tag') tag: string, @Query('search') search: string) {
-    return this.wallpapersService.findAll({ category, tag, search });
+  findAll(@Query('categories') categories: string, @Query('tags') tags: string, @Query('search') search: string) {
+    return this.wallpapersService.findAll({ categories, tags, search });
   }
 
   @Get(':id')
