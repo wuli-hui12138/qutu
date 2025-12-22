@@ -9,6 +9,7 @@ import Settings from './pages/Settings';
 import TagManagement from './pages/TagManagement';
 import CategoryManagement from './pages/CategoryManagement';
 import ImageManagement from './pages/ImageManagement';
+import Collection from './pages/Collection';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/" element={<MobileLayout />}>
           <Route index element={<Home />} />
           <Route path="discover" element={<Discover />} />
+          <Route path="collection" element={<Collection />} />
           <Route path="profile" element={<Profile />} />
           <Route path="detail/:id" element={<Detail />} />
           <Route path="upload" element={<Upload />} />

@@ -1,4 +1,4 @@
-import { ChevronRight, Heart, History, HelpCircle, Settings, Clock, Flame } from 'lucide-react';
+import { ChevronRight, Heart, History, HelpCircle, Settings, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
@@ -68,10 +68,10 @@ export default function Profile() {
                             <Heart size={16} className="text-red-500" />
                             <h3 className="font-black text-sm uppercase tracking-widest text-gray-900">我喜欢的</h3>
                         </div>
-                        <Link to="/discover" className="text-[10px] font-black text-gray-300 uppercase tracking-widest">查看全部</Link>
+                        <Link to="/collection?type=likes" className="text-[10px] font-black text-gray-300 uppercase tracking-widest hover:text-indigo-600 transition-colors">查看全部</Link>
                     </div>
                     <div className="flex gap-3 overflow-x-auto hide-scrollbar px-6 pb-2">
-                        {likedImages.length > 0 ? likedImages.map(img => (
+                        {likedImages.length > 0 ? likedImages.slice(0, 5).map(img => (
                             <Link
                                 to={`/detail/${img.id}`}
                                 key={img.id}
@@ -95,9 +95,10 @@ export default function Profile() {
                             <Clock size={16} className="text-indigo-500" />
                             <h3 className="font-black text-sm uppercase tracking-widest text-gray-900">浏览历史</h3>
                         </div>
+                        <Link to="/collection?type=history" className="text-[10px] font-black text-gray-300 uppercase tracking-widest hover:text-indigo-600 transition-colors">查看全部</Link>
                     </div>
                     <div className="flex gap-3 overflow-x-auto hide-scrollbar px-6 pb-2">
-                        {history.length > 0 ? history.map(item => (
+                        {history.length > 0 ? history.slice(0, 5).map(item => (
                             <Link
                                 to={`/detail/${item.id}`}
                                 key={item.id + '-' + item.time}
@@ -117,7 +118,7 @@ export default function Profile() {
                 {/* 常规菜单 */}
                 <div className="px-4 mt-10 space-y-3">
                     <MenuItem icon={<HelpCircle size={18} />} color="text-green-500 bg-green-50" label="帮助与反馈" />
-                    <MenuItem icon={<PlusSquare size={18} />} color="text-purple-500 bg-purple-50" label="推荐趣图匣子" to="/settings" />
+                    <MenuItem icon={<Clock size={18} />} color="text-purple-500 bg-purple-50" label="系统设置" to="/settings" />
                 </div>
             </div>
         </div>
@@ -144,25 +145,3 @@ function MenuItem({ icon, color, label, to = "/" }) {
         </Link>
     )
 }
-
-function PlusSquare(props) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <rect width="18" height="18" x="3" y="3" rx="2" />
-            <path d="M8 12h8" />
-            <path d="M12 8v8" />
-        </svg>
-    )
-}
-

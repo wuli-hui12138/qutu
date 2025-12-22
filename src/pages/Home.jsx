@@ -1,4 +1,4 @@
-import { Search, Monitor, User, Image as ImageIcon, Smartphone, PlusSquare, ArrowRight, History, Heart } from 'lucide-react';
+import { Search, Monitor, User, Image as ImageIcon, Smartphone, PlusSquare, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import ImageCard from '../components/ImageCard';
@@ -29,13 +29,13 @@ export default function Home() {
 
     return (
         <div className="bg-white min-h-screen pb-24">
-            {/* 沉浸式顶部导航栏 */}
-            <div className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 px-4 pt-10 pb-4 ${scrolled ? 'bg-white/80 backdrop-blur-xl shadow-sm' : 'bg-transparent'
+            {/* 顶部导航栏 (改为 absolute，随页面滚动) */}
+            <div className={`absolute top-0 left-0 right-0 z-40 transition-all duration-300 px-4 pt-10 pb-4 ${scrolled ? 'bg-white shadow-sm' : 'bg-transparent'
                 }`}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center text-white text-[10px] font-black shadow-lg shadow-black/20">QT</div>
-                        <div className={`font-black text-xl tracking-tighter transition-colors ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>
+                        <div className="font-black text-xl tracking-tighter text-gray-900">
                             趣图匣子
                         </div>
                     </div>
@@ -47,7 +47,7 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* 沉浸式搜索条 - 浮动且透明度变化 */}
+            {/* 沉浸式搜索条 */}
             <div className="pt-32 px-4 mb-8">
                 <div
                     onClick={() => navigate('/discover')}
@@ -61,7 +61,7 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* 快速分类导航 - 现代化圆角大图标 */}
+            {/* 快速分类导航 */}
             <div className="px-1 mb-10">
                 <div className="flex gap-5 overflow-x-auto hide-scrollbar px-3 py-2">
                     {(categories.length > 0 ? categories : [
@@ -84,7 +84,7 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* 瀑布流内容 - 真正的全屏宽度感 */}
+            {/* 瀑布流内容 */}
             <div className="px-4">
                 <div className="flex items-center justify-between mb-6 px-1">
                     <div>
@@ -130,4 +130,3 @@ export default function Home() {
         </div>
     )
 }
-

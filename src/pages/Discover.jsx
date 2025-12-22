@@ -88,8 +88,8 @@ export default function Discover() {
 
     return (
         <div className="bg-white min-h-screen pb-20">
-            {/* Header with Search */}
-            <div className="pt-14 pb-4 px-4 bg-white sticky top-0 z-30 space-y-4 shadow-sm shadow-gray-100/50">
+            {/* Header with Search (取消 sticky) */}
+            <div className="pt-14 pb-4 px-4 bg-white space-y-4 shadow-sm shadow-gray-100/50">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="font-black text-2xl tracking-tighter text-gray-900">探索发现</h1>
@@ -179,7 +179,7 @@ export default function Discover() {
                 ) : loading ? (
                     <div className="py-20 flex flex-col items-center justify-center gap-4">
                         <div className="relative w-10 h-10">
-                            <div className="absolute inset-0 border-4 border-gray-50 rounded-full"></div>
+                            <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
                             <div className="absolute inset-0 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
                         </div>
                         <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Pixel Matching...</span>
@@ -187,7 +187,7 @@ export default function Discover() {
                 ) : wallpapers.length === 0 ? (
                     <div className="py-16 flex flex-col items-center text-center space-y-6">
                         <img
-                            src="file:///C:/Users/sems.wlcs2/.gemini/antigravity/brain/a4658014-6fe8-4126-ba75-1546cb553d03/no_results_illustration_1766371853821.png"
+                            src="/illustrations/no-results.png"
                             className="w-48 h-auto opacity-80"
                             alt="No results"
                         />
@@ -220,4 +220,3 @@ export default function Discover() {
         </div>
     );
 }
-
