@@ -29,7 +29,10 @@ export class TopicsService {
                     select: { images: true },
                 },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: [
+                { sortOrder: 'desc' },
+                { createdAt: 'desc' }
+            ],
         });
     }
 
@@ -40,7 +43,10 @@ export class TopicsService {
                     select: { images: true },
                 },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: [
+                { sortOrder: 'desc' },
+                { createdAt: 'desc' }
+            ],
         });
     }
 
