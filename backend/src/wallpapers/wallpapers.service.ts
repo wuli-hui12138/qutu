@@ -8,7 +8,7 @@ export class WallpapersService {
   constructor(private prisma: PrismaService) { }
 
   async create(data: any) {
-    const { categories, tags, ...rest } = data;
+    const { categories, tags, topicId, ...rest } = data;
 
     // Process tags (comma separated string -> connectOrCreate)
     const tagArray = tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim()).filter(Boolean)) : [];
@@ -24,9 +24,13 @@ export class WallpapersService {
       create: { name }
     }));
 
+    // Process topicId
+    const topicIdInt = topicId ? parseInt(topicId) : undefined;
+
     return this.prisma.image.create({
       data: {
         ...rest,
+        topicId: (topicIdInt && !isNaN(topicIdInt)) ? topicIdInt : undefined,
         categories: {
           connectOrCreate: catConnections
         },
@@ -36,7 +40,8 @@ export class WallpapersService {
       },
       include: {
         categories: true,
-        tags: true
+        tags: true,
+        topic: true
       }
     });
   }
@@ -89,7 +94,8 @@ export class WallpapersService {
       where,
       include: {
         categories: true,
-        tags: true
+        tags: true,
+        topic: true
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -119,7 +125,8 @@ export class WallpapersService {
       where: { id },
       include: {
         categories: true,
-        tags: true
+        tags: true,
+        topic: true
       }
     });
   }

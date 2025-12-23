@@ -1,5 +1,5 @@
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Heart, Share2, Download, Check, Image as ImageIcon, Info, Smartphone, Monitor, User } from 'lucide-react';
+import { ChevronLeft, Heart, Share2, Download, Check, Image as ImageIcon, Info, Smartphone, Monitor, User, Layers } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PreviewOverlay from '../components/PreviewOverlay';
@@ -111,7 +111,17 @@ export default function Detail() {
                     <div className="mb-8 space-y-4">
                         <div className="space-y-1">
                             <h2 className="text-white text-2xl font-black tracking-tight">{image.title}</h2>
-                            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Captured at {new Date(image.createdAt).toLocaleDateString()}</p>
+                            <div className="flex items-center gap-3">
+                                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Captured at {new Date(image.createdAt).toLocaleDateString()}</p>
+                                {image.topic && (
+                                    <div
+                                        onClick={() => navigate(`/topics/${image.topic.id}`)}
+                                        className="flex items-center gap-1 px-2 py-0.5 bg-indigo-500/20 backdrop-blur-md border border-indigo-500/30 rounded text-indigo-300 text-[9px] font-black uppercase cursor-pointer hover:bg-indigo-500/30 transition-colors"
+                                    >
+                                        <Layers size={10} /> 专题: {image.topic.title}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* 分类与标签 (移动到描述上方，支持展开/收起) */}

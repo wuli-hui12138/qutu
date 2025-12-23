@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Upload as UploadIcon, Check, Image as ImageIcon, X, Hash, LayoutGrid, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Upload() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const topicInfo = location.state || {}; // { topicId, topicTitle }
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState('');
     const [formData, setFormData] = useState({
@@ -67,6 +69,9 @@ export default function Upload() {
         data.append('categories', formData.categories);
         data.append('tags', formData.tags);
         data.append('description', formData.description);
+        if (topicInfo.topicId) {
+            data.append('topicId', topicInfo.topicId);
+        }
 
         try {
             const res = await fetch('/api/wallpapers', { method: 'POST', body: data });
@@ -83,9 +88,17 @@ export default function Upload() {
 
     return (
         <div className="bg-white min-h-screen pb-20 pt-14 px-4 overflow-y-auto hide-scrollbar">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2 flex items-center">
                 <UploadIcon className="mr-2" /> 上传发布
             </h1>
+            {topicInfo.topicTitle && (
+                <div className="mb-6 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-2">
+                    <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                    <span className="text-xs font-black text-indigo-600 uppercase tracking-widest">
+                        正在投稿至专题：{topicInfo.topicTitle}
+                    </span>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div
