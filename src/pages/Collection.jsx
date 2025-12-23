@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Search, Filter, X, Heart, Clock, ChevronLeft, Layers } from 'lucide-react';
 import ImageCard from '../components/ImageCard';
+import EmptyState from '../components/EmptyState';
 
 export default function Collection() {
     const [searchParams] = useSearchParams();
@@ -133,8 +134,8 @@ export default function Collection() {
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
                             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border whitespace-nowrap ${activeCategory === cat
-                                    ? 'bg-black text-white border-black shadow-lg shadow-black/10'
-                                    : 'bg-gray-50 text-gray-400 border-transparent'
+                                ? 'bg-black text-white border-black shadow-lg shadow-black/10'
+                                : 'bg-gray-50 text-gray-400 border-transparent'
                                 }`}
                         >
                             {cat}
@@ -161,13 +162,11 @@ export default function Collection() {
                         ))}
                     </div>
                 ) : (
-                    <div className="py-20 flex flex-col items-center text-center space-y-4">
-                        <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-200">
-                            {type === 'likes' ? <Heart size={32} /> : <Clock size={32} />}
-                        </div>
-                        <p className="text-sm font-black text-gray-900">暂无匹配内容</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">No matching pixels found</p>
-                    </div>
+                    <EmptyState
+                        message="暂无匹配内容"
+                        subMessage="No matching pixels found"
+                        icon={type === 'likes' ? Heart : Clock}
+                    />
                 )}
             </div>
         </div>

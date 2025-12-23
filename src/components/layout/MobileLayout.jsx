@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Home, Compass, User } from 'lucide-react';
+import { Home, Compass, User, Layers } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function MobileLayout() {
@@ -33,6 +33,14 @@ export default function MobileLayout() {
                                 <>
                                     <Compass size={24} strokeWidth={isActive ? 2.5 : 2} />
                                     <span className="text-[10px] mt-1">发现</span>
+                                </>
+                            )}
+                        </NavLink>
+                        <NavLink to="/topics" className={({ isActive }) => clsx("flex flex-col items-center transition-colors", isActive ? "text-purple-600" : "text-gray-400")}>
+                            {({ isActive }) => (
+                                <>
+                                    <Layers size={24} strokeWidth={isActive ? 2.5 : 2} />
+                                    <span className="text-[10px] mt-1">专题</span>
                                 </>
                             )}
                         </NavLink>

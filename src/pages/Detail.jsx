@@ -172,8 +172,15 @@ export default function Detail() {
                             <div className="flex gap-4">
                                 <CircleBtn
                                     onClick={toggleLike}
-                                    icon={<Heart size={22} className={isLiked ? "fill-white" : ""} />}
-                                    activeColor={isLiked ? "bg-red-500/90 border-none shadow-[0_0_25px_rgba(239,68,68,0.4)]" : "bg-white/10"}
+                                    icon={
+                                        <motion.div
+                                            whileTap={{ scale: 0.8 }}
+                                            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                        >
+                                            <Heart size={22} className={isLiked ? "fill-white" : ""} />
+                                        </motion.div>
+                                    }
+                                    activeColor={isLiked ? "bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] border-none" : "bg-white/10"}
                                 />
                                 <CircleBtn icon={<Share2 size={22} />} />
                             </div>

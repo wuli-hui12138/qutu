@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Filter, X, Hash, Layers, Monitor, Compass } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import ImageCard from '../components/ImageCard';
+import EmptyState from '../components/EmptyState';
 
 export default function Discover() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -167,15 +168,11 @@ export default function Discover() {
             {/* Results Grid */}
             <div className="px-4 mt-6">
                 {!hasFilters ? (
-                    <div className="py-20 flex flex-col items-center text-center space-y-6">
-                        <div className="w-20 h-20 bg-gray-50 rounded-[32px] flex items-center justify-center text-gray-200">
-                            <Compass size={40} className="animate-pulse" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-black text-gray-900 tracking-tight">开启你的像素探索之旅</p>
-                            <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-2">Select filters or type keywords to start</p>
-                        </div>
-                    </div>
+                    <EmptyState
+                        message="开启你的像素探索之旅"
+                        subMessage="Select filters or type keywords to start"
+                        icon={Compass}
+                    />
                 ) : loading ? (
                     <div className="py-20 flex flex-col items-center justify-center gap-4">
                         <div className="relative w-10 h-10">
@@ -185,17 +182,10 @@ export default function Discover() {
                         <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Pixel Matching...</span>
                     </div>
                 ) : wallpapers.length === 0 ? (
-                    <div className="py-16 flex flex-col items-center text-center space-y-6">
-                        <img
-                            src="/illustrations/no-results.png"
-                            className="w-48 h-auto opacity-80"
-                            alt="No results"
-                        />
-                        <div className="space-y-1">
-                            <h4 className="text-sm font-black text-gray-900 tracking-tight">未找到匹配的素材</h4>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Try adjusting filters or search keywords</p>
-                        </div>
-                    </div>
+                    <EmptyState
+                        message="未找到匹配的素材"
+                        subMessage="Try adjusting filters or search keywords"
+                    />
                 ) : (
                     <>
                         <div className="flex items-center gap-2 mb-6 px-1 text-gray-400">

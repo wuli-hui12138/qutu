@@ -56,50 +56,10 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* 沉浸式搜索条 */}
-            <div className="pt-6 px-4 mb-8">
-                <div
-                    onClick={() => navigate('/discover')}
-                    className="relative group cursor-pointer"
-                >
-                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-[24px] blur-lg opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                    <div className="relative bg-gray-50/50 backdrop-blur-md border border-gray-100 rounded-[22px] px-6 py-4.5 flex items-center gap-3 text-gray-400 group-hover:border-indigo-100 transition-colors">
-                        <Search size={18} className="text-gray-400 group-hover:text-indigo-400 transition-colors" />
-                        <span className="text-sm font-medium tracking-tight">探索数万张超清壁纸与头像...</span>
-                    </div>
-                </div>
-            </div>
 
-            {/* 专题入口 - 新增 */}
-            <div className="px-4 mb-10">
-                <div className="flex items-center justify-between mb-4 px-1">
-                    <div>
-                        <h3 className="font-black text-xl text-gray-900 tracking-tighter flex items-center gap-2">
-                            专题共建
-                            <span className="text-[10px] bg-indigo-500 text-white px-1.5 py-0.5 rounded font-black">NEW</span>
-                        </h3>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Community Co-creation</p>
-                    </div>
-                    <button
-                        onClick={() => navigate('/topics')}
-                        className="text-[10px] font-black text-indigo-500 uppercase tracking-widest hover:underline flex items-center gap-1"
-                    >
-                        全部专题 <ChevronRight size={12} />
-                    </button>
-                </div>
-                <div
-                    onClick={() => navigate('/topics')}
-                    className="relative w-full h-24 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-[24px] overflow-hidden flex items-center px-6 cursor-pointer transform active:scale-[0.98] transition-all"
-                >
-                    <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-white/10 -skew-x-12 translate-x-10"></div>
-                    <div className="relative z-10 flex flex-col">
-                        <span className="text-white/80 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">正在进行</span>
-                        <h4 className="text-white font-black text-lg">2025年第一场雪</h4>
-                    </div>
-                    <div className="ml-auto relative z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20">
-                        <ArrowRight size={18} />
-                    </div>
-                </div>
+            {/* 动态 Banner 区域 (恢复位置) */}
+            <div className="px-4 mb-10 overflow-hidden">
+                <BannerSection />
             </div>
 
             {/* 瀑布流内容 */}
