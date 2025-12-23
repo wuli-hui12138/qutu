@@ -46,91 +46,86 @@ export default function PreviewOverlay({ type, imageSrc, onClose }) {
     );
 
     const renderPCOverlay = () => (
-        <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#0a0a0c] pointer-events-none overflow-hidden">
-            {/* Ambient Background Glow (Dynamic feeling) */}
-            <div
-                className="absolute inset-0 opacity-20 blur-[120px] scale-150 transition-all duration-1000"
-                style={{ background: `radial-gradient(circle at center, white, transparent)` }}
-            ></div>
+        <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#050505] pointer-events-none overflow-hidden">
+            {/* 1. Dynamic Ambilight 2.0 - Environment Glow synced with wallpaper */}
+            <div className="absolute inset-0 z-0">
+                <img
+                    src={imageSrc}
+                    className="w-full h-full object-cover blur-[140px] opacity-40 scale-125 transition-all duration-1000"
+                    alt=""
+                />
+            </div>
 
-            {/* Main Perspective Container */}
-            <div className="relative w-full max-w-6xl px-10 flex flex-col items-center" style={{ perspective: '1200px' }}>
+            {/* 2. Main Stage - Floating Canvas */}
+            <div className="relative z-10 w-full max-w-[85vw] flex flex-col items-center">
 
-                {/* 3D Monitor Frame */}
+                {/* Visual Depth Wrapper */}
                 <motion.div
-                    initial={{ rotateX: 10, y: 40, opacity: 0 }}
-                    animate={{ rotateX: 0, y: 0, opacity: 1 }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="relative w-full aspect-[16/9] bg-zinc-900 rounded-[32px] p-1.5 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)] overflow-hidden"
+                    initial={{ scale: 1.1, opacity: 0, y: 30 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative w-full aspect-[16/9] flex flex-col items-center"
                 >
-                    {/* Screen Bezel */}
-                    <div className="w-full h-full rounded-[26px] bg-black border-[12px] border-[#111] overflow-hidden relative shadow-inner">
-                        <img src={imageSrc} className="w-full h-full object-cover select-none" alt="" />
+                    {/* Shadow & Glow Base */}
+                    <div className="absolute inset-0 bg-black/40 blur-[80px] -translate-y-4 scale-[0.98]"></div>
 
-                        {/* Realistic Screen Glare */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-white/10 opacity-30 pointer-events-none"></div>
+                    {/* 3. The Monitor - Precision Engineered Frame */}
+                    <div className="relative w-full h-full p-[1.5px] bg-gradient-to-tr from-white/10 via-transparent to-white/5 rounded-[32px] overflow-hidden shadow-[0_45px_100px_-20px_rgba(0,0,0,0.9)]">
+                        {/* Screen Gasket */}
+                        <div className="w-full h-full rounded-[31px] bg-[#0c0c0c] p-2">
+                            {/* Inner Screen Bezel */}
+                            <div className="w-full h-full rounded-[24px] bg-black overflow-hidden relative border border-white/5">
+                                <img src={imageSrc} className="w-full h-full object-cover select-none" alt="" />
 
-                        {/* Ultra-Modern Windows Taskbar */}
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[98%] h-10 bg-black/20 backdrop-blur-2xl rounded-xl border border-white/5 flex items-center px-4 justify-between shadow-2xl overflow-hidden">
-                            <div className="flex items-center gap-4">
-                                <Search size={12} className="text-white/30" />
-                            </div>
+                                {/* 4. Surface Refinement - Screen Glare & Reflection */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-white/[0.03] pointer-events-none"></div>
+                                <div className="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-white/[0.05] to-transparent pointer-events-none"></div>
 
-                            {/* Centered App Icons */}
-                            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1">
-                                <div className="w-7 h-7 rounded-lg bg-indigo-500/30 flex items-center justify-center">
-                                    <div className="grid grid-cols-2 gap-0.5 scale-75">
-                                        <div className="w-2 h-2 bg-blue-400 rounded-sm"></div>
-                                        <div className="w-2 h-2 bg-blue-300 rounded-sm"></div>
-                                        <div className="w-2 h-2 bg-blue-500 rounded-sm"></div>
-                                        <div className="w-2 h-2 bg-blue-200 rounded-sm"></div>
+                                {/* 5. Minimalist OS Layer - Integrated Dock */}
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-fit h-12 bg-white/[0.08] backdrop-blur-[30px] rounded-[20px] border border-white/10 flex items-center px-5 gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+                                    {/* Start Glyph */}
+                                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center mr-1">
+                                        <div className="grid grid-cols-2 gap-0.5 scale-90">
+                                            <div className="w-2.5 h-2.5 bg-blue-400 rounded-sm shadow-sm"></div>
+                                            <div className="w-2.5 h-2.5 bg-blue-300 rounded-sm"></div>
+                                            <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></div>
+                                            <div className="w-2.5 h-2.5 bg-blue-200 rounded-sm"></div>
+                                        </div>
+                                    </div>
+
+                                    {/* App Symbols - Minimalists */}
+                                    {[...Array(4)].map((_, i) => (
+                                        <div key={i} className="flex flex-col items-center gap-1 group">
+                                            <div className={`w-8 h-8 rounded-xl bg-gradient-to-br transition-all duration-300 hover:scale-110 ${['from-orange-400 to-red-500', 'from-blue-400 to-indigo-500', 'from-emerald-400 to-teal-500', 'from-purple-400 to-pink-500'][i]
+                                                } opacity-80 shadow-md`}></div>
+                                            {i === 1 && <div className="w-1 h-1 bg-white/60 rounded-full"></div>}
+                                        </div>
+                                    ))}
+
+                                    <div className="w-px h-6 bg-white/10 mx-1"></div>
+
+                                    {/* Tray Info */}
+                                    <div className="flex flex-col items-end pr-1">
+                                        <span className="text-[10px] font-bold text-white/60 tracking-tighter leading-none">19:24</span>
+                                        <span className="text-[7px] font-black text-white/30 tracking-tight mt-0.5 uppercase">Reference</span>
                                     </div>
                                 </div>
-                                {[...Array(5)].map((_, i) => (
-                                    <div key={i} className="w-7 h-7 rounded-lg hover:bg-white/10 transition-colors flex flex-col items-center justify-center relative">
-                                        <div className={`w-3.5 h-3.5 rounded-sm bg-gradient-to-br ${['from-orange-400 to-red-500', 'from-blue-400 to-indigo-500', 'from-green-400 to-teal-500', 'from-yellow-300 to-orange-400', 'from-purple-400 to-pink-500'][i]} opacity-70`}></div>
-                                        {i === 1 && <div className="absolute -bottom-0.5 w-1 h-0.5 bg-white/60 rounded-full"></div>}
-                                    </div>
-                                ))}
-                            </div>
 
-                            <div className="flex items-center gap-3 text-[9px] font-bold text-white/40 tracking-tight">
-                                <div className="flex items-center gap-2 border-r border-white/5 pr-2">
-                                    <Wifi size={10} />
-                                    <Battery size={10} />
-                                </div>
-                                <div className="flex flex-col items-end leading-tight">
-                                    <span>21:40</span>
-                                    <span className="text-[7px] opacity-40">2025/12/23</span>
+                                {/* Status HUD */}
+                                <div className="absolute top-6 left-6 flex items-center gap-3 opacity-20 group-hover:opacity-100 transition-opacity">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                                    <span className="text-[9px] font-black text-white uppercase tracking-[0.3em] drop-shadow-lg">4K HDR PURE VIEW</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </motion.div>
-
-                {/* Desk Setup Elements (Minimalist) */}
-                <div className="mt-8 w-full flex flex-col items-center">
-                    {/* Monitor Neck */}
-                    <div className="w-32 h-6 bg-gradient-to-b from-[#1a1a1c] to-[#0d0d0f] rounded-t-lg border-x border-white/5"></div>
-                    {/* Monitor Base */}
-                    <div className="w-64 h-2.5 bg-[#0d0d0f] rounded-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
-                    </div>
-                </div>
-
-                {/* Aesthetic Peripheral Silhouettes */}
-                <div className="mt-12 flex items-center justify-center gap-40 opacity-10">
-                    {/* Keyboard Silhouette Fragment */}
-                    <div className="w-64 h-3 bg-white/20 rounded-full blur-[1px]"></div>
-                    {/* Mouse Silhouette Fragment */}
-                    <div className="w-10 h-10 bg-white/20 rounded-full blur-[1px]"></div>
-                </div>
             </div>
 
-            {/* Context Info Label */}
-            <div className="absolute top-10 left-10 p-6 space-y-1">
-                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Desktop Preview</p>
-                <p className="text-[8px] font-bold text-white/10 uppercase tracking-widest">Pixel Perfection @ 4K Reference</p>
+            {/* 6. Contextual Signature */}
+            <div className="absolute bottom-8 right-10 flex flex-col items-end gap-1 opacity-20">
+                <div className="text-[12px] font-black text-white uppercase tracking-[0.5em]">Canvas Edition</div>
+                <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
             </div>
         </div>
     );
