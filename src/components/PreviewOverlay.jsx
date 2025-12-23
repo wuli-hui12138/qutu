@@ -46,28 +46,28 @@ export default function PreviewOverlay({ type, imageSrc, onClose }) {
     );
 
     const renderPCOverlay = () => (
-        <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#080808] pointer-events-none overflow-hidden">
-            {/* Ambient Background - Dynamic Glow */}
+        <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#0a0a0c] pointer-events-none overflow-hidden">
+            {/* Ambient Background - Enhanced Dynamic Glow */}
             <div className="absolute inset-0 z-0">
                 <img
                     src={imageSrc}
-                    className="w-full h-full object-cover blur-[120px] opacity-30 scale-110 transition-all duration-1000"
+                    className="w-full h-full object-cover blur-[160px] opacity-40 scale-125 transition-all duration-1000"
                     alt=""
                 />
             </div>
 
             {/* Main Stage - The Monitor */}
-            <div className="relative z-10 w-full max-w-[92vw] px-4 flex flex-col items-center">
+            <div className="relative z-10 w-full max-w-[98vw] flex flex-col items-center">
                 <motion.div
                     initial={{ scale: 0.98, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                    className="relative w-full aspect-[16/9] bg-zinc-900 rounded-[20px] p-[2px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)]"
+                    className="relative w-full aspect-[16/9] bg-gradient-to-tr from-zinc-700 via-zinc-800 to-zinc-600 rounded-[14px] p-[1.5px] shadow-[0_45px_140px_-20px_rgba(0,0,0,1)]"
                 >
-                    {/* Outer Bezel (Metal effect) */}
-                    <div className="w-full h-full rounded-[18px] bg-black p-2 shadow-inner">
+                    {/* Premium Metallic Edge (Silver/Aluminum feel) */}
+                    <div className="w-full h-full rounded-[13px] bg-black p-[6px] shadow-inner ring-1 ring-white/10">
                         {/* Inner Screen Area - 100% Pure Wallpaper */}
-                        <div className="w-full h-full rounded-[12px] overflow-hidden relative bg-zinc-950">
+                        <div className="w-full h-full rounded-[8px] overflow-hidden relative bg-zinc-950">
                             <img src={imageSrc} className="w-full h-full object-cover select-none" alt="Current Wallpaper" />
 
                             {/* Subtle Screen Texture/Reflection - Optional but adds quality without covering */}
