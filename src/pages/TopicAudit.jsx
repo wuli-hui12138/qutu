@@ -56,11 +56,12 @@ export default function TopicAudit() {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
+        const { title, description, cover, sortOrder, isActive } = editTopic;
         try {
             const res = await fetch(`/api/topics/${editTopic.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(editTopic)
+                body: JSON.stringify({ title, description, cover, sortOrder, isActive })
             });
             if (res.ok) {
                 setEditTopic(null);
