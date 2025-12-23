@@ -5,75 +5,85 @@ import { Smartphone, Monitor, User, Search, Battery, Wifi, Signal } from 'lucide
 export default function PreviewOverlay({ type, imageSrc, onClose }) {
     const renderMobileOverlay = () => (
         <div className="relative w-full h-full flex flex-col pointer-events-none">
+            {/* iOS Notch/Dynamic Island */}
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-[20px] z-[100] flex items-center justify-around px-2 border border-white/5">
+                <div className="w-2.5 h-2.5 bg-[#0f0f0f] rounded-full border border-white/5 shadow-inner"></div>
+                <div className="w-12 h-1 bg-white/5 rounded-full"></div>
+            </div>
+
             {/* Status Bar */}
-            <div className="flex justify-between items-center px-8 pt-4 text-white/90">
-                <span className="text-xs font-bold">10:24</span>
-                <div className="flex items-center gap-1.5">
-                    <Signal size={12} />
-                    <Wifi size={12} />
-                    <Battery size={12} className="rotate-90" />
+            <div className="flex justify-between items-center px-10 pt-5 text-white/95 z-50">
+                <span className="text-[13px] font-black tracking-tight">14:53</span>
+                <div className="flex items-center gap-1.5 opacity-90">
+                    <Signal size={14} strokeWidth={3} />
+                    <Wifi size={14} strokeWidth={3} />
+                    <div className="relative w-6 h-3 border-2 border-white/30 rounded-[4px] flex items-center px-0.5">
+                        <div className="bg-white h-1.5 w-3 rounded-[1px]"></div>
+                        <div className="absolute -right-1.5 w-1 h-1.5 bg-white/30 rounded-r-sm"></div>
+                    </div>
                 </div>
             </div>
 
-            {/* Date/Time */}
-            <div className="mt-20 flex flex-col items-center text-white">
-                <span className="text-6xl font-extralight tracking-tighter">10:24</span>
-                <span className="text-sm font-medium mt-1 opacity-80">12月23日 星期二</span>
+            {/* iOS Lock Screen Time/Date */}
+            <div className="mt-16 flex flex-col items-center text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+                <span className="text-[84px] font-bold tracking-tight leading-none mb-2" style={{ fontFamily: 'system-ui' }}>14:53</span>
+                <span className="text-[19px] font-bold opacity-90" style={{ fontFamily: 'system-ui' }}>12月23日 星期二</span>
             </div>
 
-            {/* Icons Grid */}
-            <div className="mt-auto mb-28 px-6 grid grid-cols-4 gap-y-8">
-                {[...Array(8)].map((_, i) => (
-                    <div key={i} className="flex flex-col items-center gap-1">
-                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center">
-                            <div className="w-6 h-6 bg-white/30 rounded-lg"></div>
-                        </div>
-                        <div className="w-10 h-1 bg-white/20 rounded-full"></div>
-                    </div>
-                ))}
+            {/* Bottom Controls (Flashlight/Camera) */}
+            <div className="mt-auto mb-14 px-12 flex justify-between items-center z-50 w-full">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-3xl rounded-full flex items-center justify-center border border-white/20">
+                    <div className="w-5 h-5 bg-white rounded-full opacity-80"></div>
+                </div>
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-3xl rounded-full flex items-center justify-center border border-white/20">
+                    <div className="w-6 h-5 bg-white rounded-md opacity-80"></div>
+                </div>
             </div>
 
-            {/* Dock */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] h-16 bg-white/20 backdrop-blur-xl rounded-[24px] border border-white/10 flex items-center justify-around px-4">
-                {[...Array(4)].map((_, i) => (
-                    <div key={i} className="w-10 h-10 bg-white/30 rounded-xl"></div>
-                ))}
-            </div>
+            {/* Home Indicator */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-white/90 rounded-full z-[100]"></div>
         </div>
     );
 
     const renderPCOverlay = () => (
-        <div className="relative w-full h-full pointer-events-none flex flex-col lg:scale-100 scale-[0.6] origin-top">
-            {/* Icons Column */}
-            <div className="flex flex-col gap-6 p-8">
-                {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex flex-col items-center gap-1 w-16">
-                        <div className="w-10 h-10 bg-white/20 border border-white/10 rounded flex items-center justify-center">
-                            <div className="w-5 h-5 bg-white/40 rounded-sm"></div>
-                        </div>
-                        <div className="w-12 h-1.5 bg-white/30 rounded-full"></div>
-                    </div>
-                ))}
-            </div>
+        <div className="relative w-full h-full p-12 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm pointer-events-none">
+            {/* Monitor Frame */}
+            <div className="relative w-full max-w-4xl aspect-[16/9] bg-black border-[12px] border-[#1a1a1a] rounded-[20px] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
+                {/* Screen Content */}
+                <div className="relative flex-1 overflow-hidden">
+                    <img src={imageSrc} className="absolute inset-0 w-full h-full object-cover" />
 
-            {/* Taskbar */}
-            <div className="mt-auto w-full h-12 bg-black/40 backdrop-blur-2xl border-t border-white/10 flex justify-between items-center px-4">
-                <div className="flex items-center gap-4">
-                    <div className="w-6 h-6 bg-white/40 rounded-sm rotate-45"></div>
-                    <Search size={16} className="text-white/60" />
-                    <div className="flex gap-1">
+                    {/* Desktop Icons */}
+                    <div className="absolute inset-0 p-6 flex flex-col gap-6">
                         {[...Array(4)].map((_, i) => (
-                            <div key={i} className="w-7 h-7 bg-white/10 rounded-sm border border-white/5"></div>
+                            <div key={i} className="flex flex-col items-center gap-1 w-12 group">
+                                <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded border border-white/10"></div>
+                                <div className="w-8 h-1 bg-white/20 rounded-full"></div>
+                            </div>
                         ))}
                     </div>
-                </div>
-                <div className="flex items-center gap-4 text-white/80 text-[10px] font-medium">
-                    <div className="flex flex-col items-end leading-tight">
-                        <span>10:24</span>
-                        <span>2025/12/23</span>
+
+                    {/* Taskbar */}
+                    <div className="absolute bottom-0 w-full h-10 bg-black/60 backdrop-blur-3xl border-t border-white/5 flex items-center px-4 justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-5 h-5 bg-white/20 rounded-[2px] rotate-45"></div>
+                            <div className="w-24 h-6 bg-white/10 rounded-full flex items-center px-3 gap-2">
+                                <Search size={10} className="text-white/40" />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+                            <div className="flex flex-col items-end">
+                                <span>14:53</span>
+                                <span>2025-12-23</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Monitor Stand */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-14 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] rounded-t-xl z-[-1]"></div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-2 bg-[#050505] rounded-full blur-[1px]"></div>
         </div>
     );
 
@@ -105,8 +115,8 @@ export default function PreviewOverlay({ type, imageSrc, onClose }) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black flex flex-col"
         >
-            {/* Background Image */}
-            <img src={imageSrc} className="absolute inset-0 w-full h-full object-cover opacity-100" />
+            {/* Background Image (Not for PC Monitor style which has its own) */}
+            {type !== 'pc' && <img src={imageSrc} className="absolute inset-0 w-full h-full object-cover opacity-100" />}
 
             {/* Overlay Content */}
             <div className="relative z-10 w-full h-full">

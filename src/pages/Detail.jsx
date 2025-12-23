@@ -97,16 +97,19 @@ export default function Detail() {
                 </div>
             </div>
 
-            {/* Main Image Container */}
-            <div className="w-full h-[88vh] relative shrink-0">
-                <img
-                    src={image.url} // Use original in detail for premium look
-                    className="w-full h-full object-cover"
+            {/* Main Image Container (Changed to responsive) */}
+            <div className="w-full min-h-[50vh] max-h-[75vh] flex items-center justify-center p-4 shrink-0 overflow-hidden">
+                <motion.img
+                    layoutId={`img-${image.id}`}
+                    src={image.url}
+                    className="w-full max-h-full object-contain rounded-3xl"
                     alt={image.title}
                 />
+            </div>
 
-                {/* 底部渐变遮罩 */}
-                <div className="absolute bottom-0 w-full bg-gradient-to-t from-black via-black/60 to-transparent flex flex-col justify-end pb-10 px-6 pt-40">
+            {/* 信息面板 (不再绝对定位，适应图片高度) */}
+            <div className="px-6 pb-20 pt-4 flex-1">
+                <div className="bg-white/5 backdrop-blur-2xl rounded-[32px] p-8 border border-white/10 shadow-2xl">
                     {/* 信息面板 */}
                     <div className="mb-8 space-y-4">
                         <div className="space-y-1">

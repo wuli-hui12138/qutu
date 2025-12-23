@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, PlusCircle, ArrowRight, MessageSquare } from 'lucide-react';
+import { ChevronLeft, PlusCircle, ArrowRight, MessageSquare, X, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Topics() {
     const navigate = useNavigate();
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [newTopic, setNewTopic] = useState({ title: '', description: '', cover: '', creator: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
+    const fetchTopics = () => {
+        setLoading(true);
         fetch('/api/topics')
             .then(res => res.json())
             .then(data => {
@@ -18,7 +23,32 @@ export default function Topics() {
                 console.error(err);
                 setLoading(false);
             });
+    };
+
+    useEffect(() => {
+        fetchTopics();
     }, []);
+
+    const handleCreateTopic = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/topics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newTopic)
+            });
+            if (res.ok) {
+                setShowCreateModal(false);
+                setNewTopic({ title: '', description: '', cover: '', creator: '' });
+                fetchTopics();
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="bg-white min-h-screen pb-24">
@@ -35,6 +65,12 @@ export default function Topics() {
                         </p>
                     </div>
                 </div>
+                <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="flex items-center gap-2 bg-black text-white px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-black/20"
+                >
+                    <PlusCircle size={14} /> 发起专题
+                </button>
             </div>
 
             <div className="px-4 mt-6 space-y-6">
@@ -79,6 +115,86 @@ export default function Topics() {
                     </div>
                 )}
             </div>
-        </div>
+
+            {/* Create Topic Modal */}
+            <AnimatePresence>
+                {showCreateModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowCreateModal(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="relative w-full max-w-md bg-white rounded-[32px] p-8 shadow-2xl"
+                        >
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="font-black text-xl text-gray-900 tracking-tight text-center flex-1">发起新专题</h3>
+                                <button onClick={() => setShowCreateModal(false)} className="absolute right-6 top-8 p-2 text-gray-400 hover:text-black">
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleCreateTopic} className="space-y-5">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">专题标题</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="例如：2025年冬日穿搭"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        value={newTopic.title}
+                                        onChange={e => setNewTopic({ ...newTopic, title: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">专题描述</label>
+                                    <textarea
+                                        required
+                                        placeholder="简要介绍这个专题的意义..."
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none h-24 resize-none"
+                                        value={newTopic.description}
+                                        onChange={e => setNewTopic({ ...newTopic, description: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">封面图片地址</label>
+                                    <input
+                                        type="url"
+                                        required
+                                        placeholder="https://images.unsplash.com/..."
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        value={newTopic.cover}
+                                        onChange={e => setNewTopic({ ...newTopic, cover: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">发起人名称</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="您的昵称"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        value={newTopic.creator}
+                                        onChange={e => setNewTopic({ ...newTopic, creator: e.target.value })}
+                                    />
+                                </div>
+                                <button
+                                    disabled={isSubmitting}
+                                    className="w-full bg-black text-white py-5 rounded-[22px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all mt-4 disabled:opacity-50"
+                                >
+                                    {isSubmitting ? '正在发布...' : '立即开启专题'}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div >
     );
 }
