@@ -36,6 +36,24 @@ export default function TopicAudit() {
     };
 
     const [editTopic, setEditTopic] = useState(null);
+    const [topicImages, setTopicImages] = useState([]);
+    const [loadingImages, setLoadingImages] = useState(false);
+
+    const openEditModal = async (topic) => {
+        setEditTopic(topic);
+        setTopicImages([]);
+        setLoadingImages(true);
+        try {
+            const res = await fetch(`/api/topics/admin/${topic.id}`);
+            const data = await res.json();
+            setTopicImages(data.images || []);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingImages(false);
+        }
+    };
+
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
@@ -98,7 +116,7 @@ export default function TopicAudit() {
                                         <p className="text-xs text-gray-400 line-clamp-2 mt-1 leading-relaxed">{topic.description}</p>
                                         <div className="flex items-center gap-2 mt-3">
                                             <button
-                                                onClick={() => setEditTopic(topic)}
+                                                onClick={() => openEditModal(topic)}
                                                 className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-gray-200"
                                             >
                                                 编辑
@@ -111,6 +129,9 @@ export default function TopicAudit() {
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-3 mt-3">
+                                            <div className="flex items-center gap-1 text-[10px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded uppercase">
+                                                权重: {topic.sortOrder || 0}
+                                            </div>
                                             <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase">
                                                 <User size={10} /> {topic.creator || 'ANONYMOUS'}
                                             </div>
@@ -164,35 +185,74 @@ export default function TopicAudit() {
                                 <X size={24} />
                             </button>
                             <h2 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-tight">编辑专题内容</h2>
-                            <form onSubmit={handleUpdate} className="space-y-4">
+                            <form onSubmit={handleUpdate} className="space-y-6">
                                 <div>
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">标题</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                         value={editTopic.title}
                                         onChange={e => setEditTopic({ ...editTopic, title: e.target.value })}
                                     />
                                 </div>
+
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">封面图片</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">排序权重 (越大越靠前)</label>
                                     <input
-                                        type="text"
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        value={editTopic.cover}
-                                        onChange={e => setEditTopic({ ...editTopic, cover: e.target.value })}
+                                        type="number"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                        placeholder="默认为 0"
+                                        value={editTopic.sortOrder}
+                                        onChange={e => setEditTopic({ ...editTopic, sortOrder: parseInt(e.target.value) || 0 })}
                                     />
                                 </div>
+
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">描述</label>
+                                    <div className="flex justify-between items-center mb-2 px-1">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">设置封面 (从专题内选取)</label>
+                                        <span className="text-[8px] font-bold text-gray-300">仅限当前专题投稿</span>
+                                    </div>
+
+                                    <div className="max-h-60 overflow-y-auto pr-2 grid grid-cols-4 gap-2 bg-gray-50 p-3 rounded-2xl border border-gray-100 scrollbar-thin">
+                                        {loadingImages ? (
+                                            <div className="col-span-4 py-8 text-center text-[10px] font-bold text-gray-300 uppercase tracking-widest animate-pulse">Loading Pool...</div>
+                                        ) : topicImages.length > 0 ? (
+                                            topicImages.map(img => (
+                                                <div
+                                                    key={img.id}
+                                                    onClick={() => setEditTopic({ ...editTopic, cover: img.url })}
+                                                    className={`aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${editTopic.cover === img.url ? 'border-indigo-500 ring-2 ring-indigo-500/20 scale-95' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                                >
+                                                    <img src={img.thumb || img.url} className="w-full h-full object-cover" alt="" />
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="col-span-4 py-8 text-center text-[10px] font-bold text-gray-300 uppercase underline decoration-dashed underline-offset-4">该专题暂无投稿图片</div>
+                                        )}
+                                    </div>
+
+                                    <div className="mt-3">
+                                        <label className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1 ml-1">当前图片地址 (只读)</label>
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-2 px-4 text-[10px] font-mono text-gray-400 focus:outline-none"
+                                            value={editTopic.cover}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">专题描述</label>
                                     <textarea
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none h-32 resize-none"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none h-24 resize-none transition-all"
                                         value={editTopic.description}
                                         onChange={e => setEditTopic({ ...editTopic, description: e.target.value })}
                                     />
                                 </div>
-                                <button className="w-full bg-black text-white py-5 rounded-[22px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all mt-4">
-                                    保存修改
+
+                                <button className="w-full bg-black text-white py-5 rounded-[22px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all mt-2">
+                                    应用修改
                                 </button>
                             </form>
                         </motion.div>
