@@ -46,6 +46,7 @@ model Topic {
   description String?
   cover       String?
   creator     String?  // 可以存放用户名或用户等级标识
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   images      Image[]

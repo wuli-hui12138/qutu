@@ -6,20 +6,48 @@ export class TopicsService {
     constructor(private prisma: PrismaService) { }
 
     async create(data: any) {
+        // Handle default cover if not provided
+        if (!data.cover) {
+            data.cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.title)}&background=random&size=512&color=fff&bold=true&font-size=0.33`;
+        }
         return this.prisma.topic.create({
-            data,
+            data: {
+                ...data,
+                status: 'PENDING', // All new topics start as PENDING
+            },
         });
     }
 
     async findAll() {
         return this.prisma.topic.findMany({
-            where: { isActive: true },
+            where: {
+                isActive: true,
+                status: 'APPROVED' // Only show approved topics to users
+            },
             include: {
                 _count: {
                     select: { images: true },
                 },
             },
             orderBy: { createdAt: 'desc' },
+        });
+    }
+
+    async findAllAdmin() {
+        return this.prisma.topic.findMany({
+            include: {
+                _count: {
+                    select: { images: true },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+
+    async updateStatus(id: number, status: string) {
+        return this.prisma.topic.update({
+            where: { id },
+            data: { status }
         });
     }
 

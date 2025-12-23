@@ -15,6 +15,16 @@ export class TopicsController {
         return this.topicsService.findAll();
     }
 
+    @Get('admin/all')
+    findAllAdmin() {
+        return this.topicsService.findAllAdmin();
+    }
+
+    @Put(':id/status')
+    updateStatus(@Param('id') id: string, @Body('status') status: string) {
+        return this.topicsService.updateStatus(+id, status);
+    }
+
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.topicsService.findOne(+id);

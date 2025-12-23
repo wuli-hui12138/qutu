@@ -34,6 +34,12 @@ export default function Settings() {
                             desc="素材管理、Banner 及可见性控制"
                             to="/settings/images"
                         />
+                        <LinkSection
+                            icon={<ShieldCheck size={20} className="text-orange-600" />}
+                            title="专题审核"
+                            desc="通过或拒绝用户发起的专题"
+                            to="/settings/topics-audit"
+                        />
                     </div>
                 </div>
 

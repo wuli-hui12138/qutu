@@ -163,17 +163,6 @@ export default function Topics() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">封面图片地址</label>
-                                    <input
-                                        type="url"
-                                        required
-                                        placeholder="https://images.unsplash.com/..."
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
-                                        value={newTopic.cover}
-                                        onChange={e => setNewTopic({ ...newTopic, cover: e.target.value })}
-                                    />
-                                </div>
-                                <div>
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">发起人名称</label>
                                     <input
                                         type="text"
@@ -184,11 +173,16 @@ export default function Topics() {
                                         onChange={e => setNewTopic({ ...newTopic, creator: e.target.value })}
                                     />
                                 </div>
+                                <div className="py-3 px-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                                    <p className="text-[10px] text-indigo-600 font-bold leading-relaxed">
+                                        💡 封面将根据标题自动生成。提交后需经过管理员审核，通过后即可在全站展示。
+                                    </p>
+                                </div>
                                 <button
                                     disabled={isSubmitting}
-                                    className="w-full bg-black text-white py-5 rounded-[22px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all mt-4 disabled:opacity-50"
+                                    className="w-full bg-black text-white py-5 rounded-[22px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all mt-2 disabled:opacity-50"
                                 >
-                                    {isSubmitting ? '正在发布...' : '立即开启专题'}
+                                    {isSubmitting ? '正在发布...' : '提交申请'}
                                 </button>
                             </form>
                         </motion.div>

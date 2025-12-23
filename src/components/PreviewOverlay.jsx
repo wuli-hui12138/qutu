@@ -46,44 +46,71 @@ export default function PreviewOverlay({ type, imageSrc, onClose }) {
     );
 
     const renderPCOverlay = () => (
-        <div className="relative w-full h-full p-12 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm pointer-events-none">
-            {/* Monitor Frame */}
-            <div className="relative w-full max-w-4xl aspect-[16/9] bg-black border-[12px] border-[#1a1a1a] rounded-[20px] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
+        <div className="relative w-full h-full p-10 flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm pointer-events-none">
+            {/* Ultra-Premium Monitor Frame */}
+            <div className="relative w-full max-w-5xl aspect-[16/9] bg-black border-[14px] border-[#121212] rounded-[24px] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.7)] flex flex-col ring-1 ring-white/5 overflow-hidden">
                 {/* Screen Content */}
-                <div className="relative flex-1 overflow-hidden">
+                <div className="relative flex-1 overflow-hidden bg-[#000]">
                     <img src={imageSrc} className="absolute inset-0 w-full h-full object-cover" />
 
-                    {/* Desktop Icons */}
-                    <div className="absolute inset-0 p-6 flex flex-col gap-6">
-                        {[...Array(4)].map((_, i) => (
-                            <div key={i} className="flex flex-col items-center gap-1 w-12 group">
-                                <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded border border-white/10"></div>
-                                <div className="w-8 h-1 bg-white/20 rounded-full"></div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Taskbar */}
-                    <div className="absolute bottom-0 w-full h-10 bg-black/60 backdrop-blur-3xl border-t border-white/5 flex items-center px-4 justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-5 h-5 bg-white/20 rounded-[2px] rotate-45"></div>
-                            <div className="w-24 h-6 bg-white/10 rounded-full flex items-center px-3 gap-2">
-                                <Search size={10} className="text-white/40" />
+                    {/* Glassmorphic Taskbar (Windows 11 Style) */}
+                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-[98%] h-11 bg-white/10 backdrop-blur-3xl rounded-xl border border-white/5 flex items-center px-4 justify-between shadow-2xl overflow-hidden group">
+                        {/* Start Menu & Tray Area (Decorative) */}
+                        <div className="flex items-center gap-4">
+                            <div className="w-4 h-4 text-white/40">
+                                <Search size={14} />
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
-                            <div className="flex flex-col items-end">
-                                <span>14:53</span>
-                                <span>2025-12-23</span>
+
+                        {/* Centered App Icons */}
+                        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 py-1">
+                            {/* Windows Start Button */}
+                            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center hover:bg-indigo-500/40 transition-colors">
+                                <div className="grid grid-cols-2 gap-0.5 transform rotate-45 scale-75">
+                                    <div className="w-2.5 h-2.5 bg-blue-400 rounded-sm"></div>
+                                    <div className="w-2.5 h-2.5 bg-blue-300 rounded-sm"></div>
+                                    <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></div>
+                                    <div className="w-2.5 h-2.5 bg-blue-200 rounded-sm"></div>
+                                </div>
                             </div>
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className="w-8 h-8 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors flex items-center justify-center">
+                                    <div className={`w-4 h-4 rounded-sm bg-gradient-to-br ${['from-orange-400 to-red-500', 'from-blue-400 to-indigo-500', 'from-green-400 to-teal-500', 'from-yellow-300 to-orange-400', 'from-purple-400 to-pink-500', 'from-gray-300 to-gray-500'][i]} opacity-80 shadow-sm`}></div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Right System Tray */}
+                        <div className="flex items-center gap-3 text-[10px] font-bold text-white/50 tracking-tighter cursor-default">
+                            <div className="flex items-center gap-2 pr-2 border-r border-white/5">
+                                <Signal size={12} strokeWidth={2.5} />
+                                <Wifi size={12} strokeWidth={2.5} />
+                            </div>
+                            <div className="flex flex-col items-end leading-[1.1]">
+                                <span>15:38</span>
+                                <span className="text-[8px] opacity-60">2025/12/23</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Desktop Widgets Area (Subtle) */}
+                    <div className="absolute top-8 left-8 flex flex-col gap-8 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                        <div className="w-24 h-24 bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-4 flex flex-col justify-between">
+                            <div className="w-6 h-6 bg-yellow-400/80 rounded-full"></div>
+                            <div className="text-white/80 font-black text-xs">24°C</div>
                         </div>
                     </div>
                 </div>
+
+                {/* Monitor Bottom Bezel with Logo Placeholder */}
+                <div className="h-4 bg-[#121212] flex items-center justify-center">
+                    <div className="w-3 h-3 bg-white/5 rounded-full ring-1 ring-white/10"></div>
+                </div>
             </div>
 
-            {/* Monitor Stand */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-14 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] rounded-t-xl z-[-1]"></div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-2 bg-[#050505] rounded-full blur-[1px]"></div>
+            {/* Monitor Premium Stand */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-12 bg-gradient-to-b from-[#181818] to-[#080808] rounded-t-[40px] z-[-1] border-x border-white/5"></div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-80 h-3 bg-black/60 rounded-full blur-xl"></div>
         </div>
     );
 

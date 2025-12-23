@@ -12,6 +12,7 @@ import ImageManagement from './pages/ImageManagement';
 import Collection from './pages/Collection';
 import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
+import TopicAudit from './pages/TopicAudit';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="settings/tags" element={<TagManagement />} />
           <Route path="settings/categories" element={<CategoryManagement />} />
           <Route path="settings/images" element={<ImageManagement />} />
+          <Route path="settings/topics-audit" element={<TopicAudit />} />
         </Route>
       </Routes>
     </BrowserRouter>
