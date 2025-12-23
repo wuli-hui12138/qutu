@@ -1,0 +1,27 @@
+import { Controller, Get, Post, Body, Param, Put } from '@nestjs/common';
+import { TopicsService } from './topics.service';
+
+@Controller('topics')
+export class TopicsController {
+    constructor(private readonly topicsService: TopicsService) { }
+
+    @Post()
+    create(@Body() createTopicDto: any) {
+        return this.topicsService.create(createTopicDto);
+    }
+
+    @Get()
+    findAll() {
+        return this.topicsService.findAll();
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.topicsService.findOne(+id);
+    }
+
+    @Post(':id/submit')
+    submitToTopic(@Param('id') topicId: string, @Body('imageId') imageId: number) {
+        return this.topicsService.submitToTopic(+topicId, imageId);
+    }
+}

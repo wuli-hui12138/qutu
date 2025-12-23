@@ -1,4 +1,4 @@
-import { Search, Monitor, User, Image as ImageIcon, Smartphone, PlusSquare, ArrowRight, ChevronRight } from 'lucide-react';
+import { Search, Monitor, User, Image as ImageIcon, Smartphone, PlusSquare, ArrowRight, ChevronRight, LayoutGrid, List } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import ImageCard from '../components/ImageCard';
@@ -8,6 +8,13 @@ export default function Home() {
     const [wallpapers, setWallpapers] = useState([]);
     const [categories, setCategories] = useState([]);
     const [scrolled, setScrolled] = useState(false);
+    const [layoutMode, setLayoutMode] = useState(() => {
+        return localStorage.getItem('qutu_layout_mode') || 'waterfall';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('qutu_layout_mode', layoutMode);
+    }, [layoutMode]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -81,24 +88,38 @@ export default function Home() {
                         </h3>
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Curated Hot Picking</p>
                     </div>
-                    <button
-                        onClick={() => navigate('/discover')}
-                        className="px-3 py-1.5 bg-gray-50 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center gap-1"
-                    >
-                        更多 <ArrowRight size={10} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setLayoutMode(layoutMode === 'waterfall' ? 'grid' : 'waterfall')}
+                            className="px-3 py-1.5 bg-gray-50 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center gap-1.5"
+                        >
+                            {layoutMode === 'waterfall' ? (
+                                <><LayoutGrid size={12} /> 瀑布流</>
+                            ) : (
+                                <><List size={12} /> 大图</>
+                            )}
+                        </button>
+                        <button
+                            onClick={() => navigate('/discover')}
+                            className="px-3 py-1.5 bg-gray-50 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center gap-1"
+                        >
+                            更多 <ArrowRight size={10} />
+                        </button>
+                    </div>
                 </div>
 
-                <div className="columns-2 gap-3 space-y-3 pb-10">
+                <div className={`${layoutMode === 'waterfall' ? 'columns-2 gap-3 space-y-3' : 'flex flex-col gap-6'} pb-10`}>
                     {wallpapers.map(item => (
-                        <ImageCard
-                            key={`wall-${item.id}`} // Ensure unique key
-                            id={item.id}
-                            src={item.thumb}
-                            title={item.title}
-                            categories={item.categories}
-                            tags={item.tags}
-                        />
+                        <div key={`wall-${item.id}`} className={layoutMode === 'grid' ? 'w-full px-1' : ''}>
+                            <ImageCard
+                                id={item.id}
+                                src={item.thumb}
+                                title={item.title}
+                                categories={item.categories}
+                                tags={item.tags}
+                                className={layoutMode === 'grid' ? 'aspect-[16/9]' : ''}
+                            />
+                        </div>
                     ))}
                     {wallpapers.length === 0 && (
                         <div className="col-span-2 py-40 flex flex-col items-center justify-center gap-4 w-full">

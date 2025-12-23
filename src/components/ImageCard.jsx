@@ -3,7 +3,7 @@ import { Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-export default function ImageCard({ id, src, title, categories, tags }) {
+export default function ImageCard({ id, src, title, categories, tags, className }) {
     const [isLiked, setIsLiked] = useState(false);
 
     useEffect(() => {
@@ -39,7 +39,7 @@ export default function ImageCard({ id, src, title, categories, tags }) {
                 to={`/detail/${id}`}
                 className="block break-inside-avoid rounded-[28px] overflow-hidden shadow-sm bg-white mb-4 active:scale-[0.98] transition-all group border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50"
             >
-                <div className="relative overflow-hidden aspect-[3/4]">
+                <div className={`relative overflow-hidden ${className || 'aspect-[3/4]'}`}>
                     <motion.img
                         src={src}
                         whileHover={{ scale: 1.1 }}

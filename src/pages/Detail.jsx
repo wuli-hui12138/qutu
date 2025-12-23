@@ -1,7 +1,8 @@
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Heart, Share2, Download, Check, Image as ImageIcon, Info } from 'lucide-react';
+import { ChevronLeft, Heart, Share2, Download, Check, Image as ImageIcon, Info, Smartphone, Monitor, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PreviewOverlay from '../components/PreviewOverlay';
 
 export default function Detail() {
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function Detail() {
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isLiked, setIsLiked] = useState(false);
+    const [previewType, setPreviewType] = useState(null); // 'mobile', 'pc', 'avatar', null
 
     useEffect(() => {
         setLoading(true);
@@ -127,21 +129,44 @@ export default function Detail() {
                     </div>
 
                     {/* 操作按钮 */}
-                    <div className="flex justify-between items-center gap-4">
-                        <button
-                            onClick={handleDownload}
-                            className="flex-1 bg-white text-gray-900 h-14 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition shadow-xl shadow-white/10"
-                        >
-                            <Download size={18} />
-                            下载超清原图
-                        </button>
+                    <div className="flex flex-col gap-4">
                         <div className="flex gap-4">
-                            <CircleBtn
-                                onClick={toggleLike}
-                                icon={<Heart size={22} className={isLiked ? "fill-white" : ""} />}
-                                activeColor={isLiked ? "bg-red-500/90 border-none shadow-[0_0_25px_rgba(239,68,68,0.4)]" : "bg-white/10"}
-                            />
-                            <CircleBtn icon={<Share2 size={22} />} />
+                            <button
+                                onClick={() => setPreviewType('mobile')}
+                                className="flex-1 bg-white/10 backdrop-blur-xl border border-white/10 text-white h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                            >
+                                <Smartphone size={14} /> 手机预览
+                            </button>
+                            <button
+                                onClick={() => setPreviewType('pc')}
+                                className="flex-1 bg-white/10 backdrop-blur-xl border border-white/10 text-white h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                            >
+                                <Monitor size={14} /> 电脑预览
+                            </button>
+                            <button
+                                onClick={() => setPreviewType('avatar')}
+                                className="flex-1 bg-white/10 backdrop-blur-xl border border-white/10 text-white h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                            >
+                                <User size={14} /> 头像预览
+                            </button>
+                        </div>
+
+                        <div className="flex justify-between items-center gap-4">
+                            <button
+                                onClick={handleDownload}
+                                className="flex-1 bg-white text-gray-900 h-14 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition shadow-xl shadow-white/10"
+                            >
+                                <Download size={18} />
+                                下载超清原图
+                            </button>
+                            <div className="flex gap-4">
+                                <CircleBtn
+                                    onClick={toggleLike}
+                                    icon={<Heart size={22} className={isLiked ? "fill-white" : ""} />}
+                                    activeColor={isLiked ? "bg-red-500/90 border-none shadow-[0_0_25px_rgba(239,68,68,0.4)]" : "bg-white/10"}
+                                />
+                                <CircleBtn icon={<Share2 size={22} />} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -167,6 +192,17 @@ export default function Detail() {
                     </div>
                 </div>
             )}
+
+            {/* Preview Overlay */}
+            <AnimatePresence>
+                {previewType && (
+                    <PreviewOverlay
+                        type={previewType}
+                        imageSrc={image.url}
+                        onClose={() => setPreviewType(null)}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Download Success Modal */}
             <AnimatePresence>
