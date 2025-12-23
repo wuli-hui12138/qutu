@@ -46,86 +46,47 @@ export default function PreviewOverlay({ type, imageSrc, onClose }) {
     );
 
     const renderPCOverlay = () => (
-        <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#050505] pointer-events-none overflow-hidden">
-            {/* 1. Dynamic Ambilight 2.0 - Environment Glow synced with wallpaper */}
+        <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#080808] pointer-events-none overflow-hidden">
+            {/* Ambient Background - Dynamic Glow */}
             <div className="absolute inset-0 z-0">
                 <img
                     src={imageSrc}
-                    className="w-full h-full object-cover blur-[140px] opacity-40 scale-125 transition-all duration-1000"
+                    className="w-full h-full object-cover blur-[120px] opacity-30 scale-110 transition-all duration-1000"
                     alt=""
                 />
             </div>
 
-            {/* 2. Main Stage - Floating Canvas */}
-            <div className="relative z-10 w-full max-w-[85vw] flex flex-col items-center">
-
-                {/* Visual Depth Wrapper */}
+            {/* Main Stage - The Monitor */}
+            <div className="relative z-10 w-full max-w-[92vw] px-4 flex flex-col items-center">
                 <motion.div
-                    initial={{ scale: 1.1, opacity: 0, y: 30 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                    className="relative w-full aspect-[16/9] flex flex-col items-center"
+                    initial={{ scale: 0.98, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative w-full aspect-[16/9] bg-zinc-900 rounded-[20px] p-[2px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)]"
                 >
-                    {/* Shadow & Glow Base */}
-                    <div className="absolute inset-0 bg-black/40 blur-[80px] -translate-y-4 scale-[0.98]"></div>
+                    {/* Outer Bezel (Metal effect) */}
+                    <div className="w-full h-full rounded-[18px] bg-black p-2 shadow-inner">
+                        {/* Inner Screen Area - 100% Pure Wallpaper */}
+                        <div className="w-full h-full rounded-[12px] overflow-hidden relative bg-zinc-950">
+                            <img src={imageSrc} className="w-full h-full object-cover select-none" alt="Current Wallpaper" />
 
-                    {/* 3. The Monitor - Precision Engineered Frame */}
-                    <div className="relative w-full h-full p-[1.5px] bg-gradient-to-tr from-white/10 via-transparent to-white/5 rounded-[32px] overflow-hidden shadow-[0_45px_100px_-20px_rgba(0,0,0,0.9)]">
-                        {/* Screen Gasket */}
-                        <div className="w-full h-full rounded-[31px] bg-[#0c0c0c] p-2">
-                            {/* Inner Screen Bezel */}
-                            <div className="w-full h-full rounded-[24px] bg-black overflow-hidden relative border border-white/5">
-                                <img src={imageSrc} className="w-full h-full object-cover select-none" alt="" />
-
-                                {/* 4. Surface Refinement - Screen Glare & Reflection */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-white/[0.03] pointer-events-none"></div>
-                                <div className="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-white/[0.05] to-transparent pointer-events-none"></div>
-
-                                {/* 5. Minimalist OS Layer - Integrated Dock */}
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-fit h-12 bg-white/[0.08] backdrop-blur-[30px] rounded-[20px] border border-white/10 flex items-center px-5 gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
-                                    {/* Start Glyph */}
-                                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center mr-1">
-                                        <div className="grid grid-cols-2 gap-0.5 scale-90">
-                                            <div className="w-2.5 h-2.5 bg-blue-400 rounded-sm shadow-sm"></div>
-                                            <div className="w-2.5 h-2.5 bg-blue-300 rounded-sm"></div>
-                                            <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></div>
-                                            <div className="w-2.5 h-2.5 bg-blue-200 rounded-sm"></div>
-                                        </div>
-                                    </div>
-
-                                    {/* App Symbols - Minimalists */}
-                                    {[...Array(4)].map((_, i) => (
-                                        <div key={i} className="flex flex-col items-center gap-1 group">
-                                            <div className={`w-8 h-8 rounded-xl bg-gradient-to-br transition-all duration-300 hover:scale-110 ${['from-orange-400 to-red-500', 'from-blue-400 to-indigo-500', 'from-emerald-400 to-teal-500', 'from-purple-400 to-pink-500'][i]
-                                                } opacity-80 shadow-md`}></div>
-                                            {i === 1 && <div className="w-1 h-1 bg-white/60 rounded-full"></div>}
-                                        </div>
-                                    ))}
-
-                                    <div className="w-px h-6 bg-white/10 mx-1"></div>
-
-                                    {/* Tray Info */}
-                                    <div className="flex flex-col items-end pr-1">
-                                        <span className="text-[10px] font-bold text-white/60 tracking-tighter leading-none">19:24</span>
-                                        <span className="text-[7px] font-black text-white/30 tracking-tight mt-0.5 uppercase">Reference</span>
-                                    </div>
-                                </div>
-
-                                {/* Status HUD */}
-                                <div className="absolute top-6 left-6 flex items-center gap-3 opacity-20 group-hover:opacity-100 transition-opacity">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                                    <span className="text-[9px] font-black text-white uppercase tracking-[0.3em] drop-shadow-lg">4K HDR PURE VIEW</span>
-                                </div>
-                            </div>
+                            {/* Subtle Screen Texture/Reflection - Optional but adds quality without covering */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.03] via-transparent to-white/[0.05] pointer-events-none"></div>
                         </div>
                     </div>
+
+                    {/* Monitor Bottom Brand/Sensor Detail (Minimal) */}
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/5 rounded-full blur-[0.5px]"></div>
                 </motion.div>
+
+                {/* Minimal Monitor Stand Silhouette */}
+                <div className="mt-2 w-32 h-4 bg-gradient-to-b from-[#111] to-black rounded-t-xl border-x border-white/5 opacity-40"></div>
+                <div className="w-64 h-1.5 bg-black/40 rounded-full blur-xl"></div>
             </div>
 
-            {/* 6. Contextual Signature */}
-            <div className="absolute bottom-8 right-10 flex flex-col items-end gap-1 opacity-20">
-                <div className="text-[12px] font-black text-white uppercase tracking-[0.5em]">Canvas Edition</div>
-                <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+            {/* Edition Tag */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 opacity-20">
+                <span className="text-[10px] font-black text-white uppercase tracking-[0.8em]">Pure Display Mode</span>
             </div>
         </div>
     );
