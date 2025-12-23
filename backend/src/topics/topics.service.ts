@@ -66,6 +66,17 @@ export class TopicsService {
         });
     }
 
+    async findOneAdmin(id: number) {
+        return this.prisma.topic.findUnique({
+            where: { id },
+            include: {
+                images: {
+                    orderBy: { createdAt: 'desc' },
+                },
+            },
+        });
+    }
+
     async update(id: number, data: any) {
         return this.prisma.topic.update({
             where: { id },
