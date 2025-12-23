@@ -9,7 +9,6 @@ import Settings from './pages/Settings';
 import TagManagement from './pages/TagManagement';
 import CategoryManagement from './pages/CategoryManagement';
 import ImageManagement from './pages/ImageManagement';
-import BannerManagement from './pages/BannerManagement';
 import Collection from './pages/Collection';
 
 function App() {
@@ -27,7 +26,6 @@ function App() {
           <Route path="settings/tags" element={<TagManagement />} />
           <Route path="settings/categories" element={<CategoryManagement />} />
           <Route path="settings/images" element={<ImageManagement />} />
-          <Route path="settings/banners" element={<BannerManagement />} />
         </Route>
       </Routes>
     </BrowserRouter>

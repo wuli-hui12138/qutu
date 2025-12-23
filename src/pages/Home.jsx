@@ -118,7 +118,7 @@ function BannerSection() {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
-        fetch('/api/banners?active=true')
+        fetch('/api/wallpapers?isBanner=true')
             .then(res => res.json())
             .then(data => setBanners(data || []))
             .catch(err => console.error(err));
@@ -143,9 +143,12 @@ function BannerSection() {
     const currentBanner = banners[currentIndex];
 
     return (
-        <div className="relative w-full aspect-[21/9] rounded-[32px] overflow-hidden shadow-2xl shadow-indigo-500/10 group cursor-pointer active:scale-[0.98] transition-all duration-500">
+        <div
+            onClick={() => navigate(`/detail/${currentBanner.id}`)}
+            className="relative w-full aspect-[21/9] rounded-[32px] overflow-hidden shadow-2xl shadow-indigo-500/10 group cursor-pointer active:scale-[0.98] transition-all duration-500"
+        >
             <img
-                src={currentBanner.imageUrl}
+                src={currentBanner.url} // Use original URL for banner
                 className="w-full h-full object-cover"
                 alt="Banner"
             />
@@ -163,9 +166,8 @@ function BannerSection() {
             {banners.length > 1 && (
                 <div className="absolute top-4 right-6 flex gap-1.5">
                     {banners.map((_, idx) => (
-                        <button
-                            key={`dot-${idx}`}
-                            onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+                        <div
+                            key={`banner-dot-${idx}`}
                             className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-4 bg-white' : 'w-1 bg-white/30'}`}
                         />
                     ))}

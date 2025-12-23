@@ -21,6 +21,8 @@ model Image {
   tags        Tag[]
   views       Int       @default(0)
   likes       Int       @default(0)
+  isBanner    Boolean   @default(false)
+  isVisible   Boolean   @default(true)
   createdAt   DateTime  @default(now())
 }
 
@@ -34,14 +36,4 @@ model Tag {
   id     Int     @id @default(autoincrement())
   name   String  @unique
   images Image[]
-}
-
-model Banner {
-  id        Int      @id @default(autoincrement())
-  title     String?
-  imageUrl  String
-  link      String?
-  isActive  Boolean  @default(true)
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
 }

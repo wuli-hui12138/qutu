@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Check, X, Trash2, Eye, Filter, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, Check, X, Trash2, Eye, Filter, Clock, CheckCircle, AlertCircle, Star, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ImageManagement() {
@@ -136,13 +136,26 @@ export default function ImageManagement() {
                     </div>
                 ) : images.map(img => (
                     <div key={img.id} className="bg-white border border-gray-100 rounded-3xl p-3 flex gap-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="relative w-24 h-24 shrink-0 rounded-2xl overflow-hidden bg-gray-100">
+                        <div
+                            onClick={() => navigate(`/detail/${img.id}`)}
+                            className="relative w-24 h-24 shrink-0 rounded-2xl overflow-hidden bg-gray-100 cursor-pointer active:scale-95 transition-transform"
+                        >
                             <img src={img.thumb} className="w-full h-full object-cover" alt="" />
                             <div className={`absolute top-1 right-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter text-white shadow-sm ${img.status === 'APPROVED' ? 'bg-emerald-500' :
                                 img.status === 'PENDING' ? 'bg-amber-500' : 'bg-red-500'
                                 }`}>
                                 {img.status}
                             </div>
+                            {img.isBanner && (
+                                <div className="absolute bottom-1 right-1 bg-indigo-600 text-white rounded-md p-0.5 shadow-lg">
+                                    <Star size={10} fill="currentColor" />
+                                </div>
+                            )}
+                            {!img.isVisible && (
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <EyeOff size={16} className="text-white/70" />
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex-1 flex flex-col justify-between py-1 min-w-0">
@@ -174,15 +187,9 @@ export default function ImageManagement() {
                                 <button
                                     onClick={() => setEditingImage(img)}
                                     className="p-2 bg-indigo-50 text-indigo-600 rounded-xl active:scale-95 transition"
-                                    title="编辑"
+                                    title="管理属性"
                                 >
                                     <Filter size={14} />
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/detail/${img.id}`)}
-                                    className="p-2 bg-gray-50 text-gray-500 rounded-xl active:scale-95 transition"
-                                >
-                                    <Eye size={14} />
                                 </button>
                                 <button
                                     onClick={() => handleDelete(img.id)}
@@ -215,7 +222,9 @@ function EditModal({ image, availableCategories, availableTags, onClose, onSave 
         title: image.title || '',
         description: image.description || '',
         categories: image.categories?.map(c => c.name).join(',') || '',
-        tags: image.tags?.map(t => t.name).join(',') || ''
+        tags: image.tags?.map(t => t.name).join(',') || '',
+        isBanner: image.isBanner || false,
+        isVisible: image.isVisible !== false // default true
     });
 
     const toggleMetadata = (type, name) => {
@@ -300,6 +309,33 @@ function EditModal({ image, availableCategories, availableTags, onClose, onSave 
                             value={formData.tags}
                             onChange={e => setFormData({ ...formData, tags: e.target.value })}
                         />
+                    </div>
+
+                    <div className="flex gap-4">
+                        <div className="flex-1 bg-gray-50 p-4 rounded-2xl flex items-center justify-between border border-gray-100">
+                            <div>
+                                <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest">首页横幅</p>
+                                <p className="text-[8px] text-gray-400 mt-0.5">限制前 8 名</p>
+                            </div>
+                            <button
+                                onClick={() => setFormData({ ...formData, isBanner: !formData.isBanner })}
+                                className={`w-10 h-6 rounded-full transition-colors relative ${formData.isBanner ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                            >
+                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.isBanner ? 'left-5' : 'left-1'}`} />
+                            </button>
+                        </div>
+                        <div className="flex-1 bg-gray-50 p-4 rounded-2xl flex items-center justify-between border border-gray-100">
+                            <div>
+                                <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest">展示状态</p>
+                                <p className="text-[8px] text-gray-400 mt-0.5">{formData.isVisible ? '前台可见' : '已隐藏'}</p>
+                            </div>
+                            <button
+                                onClick={() => setFormData({ ...formData, isVisible: !formData.isVisible })}
+                                className={`w-10 h-6 rounded-full transition-colors relative ${formData.isVisible ? 'bg-emerald-500' : 'bg-gray-200'}`}
+                            >
+                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.isVisible ? 'left-5' : 'left-1'}`} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 

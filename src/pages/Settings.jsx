@@ -30,15 +30,9 @@ export default function Settings() {
                         />
                         <LinkSection
                             icon={<ImageIcon size={20} className="text-emerald-600" />}
-                            title="内容审核"
-                            desc="素材管理与状态控制"
+                            title="图片管理"
+                            desc="素材管理、Banner 及可见性控制"
                             to="/settings/images"
-                        />
-                        <LinkSection
-                            icon={<ImageIcon size={20} className="text-orange-500" />}
-                            title="Banner 设置"
-                            desc="管理首页轮播展示内容"
-                            to="/settings/banners"
                         />
                     </div>
                 </div>

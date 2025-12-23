@@ -41,9 +41,12 @@ export class WallpapersService {
     });
   }
 
-  // User facing: only approved
+  // User facing: only approved and visible
   findAll(query?: any) {
-    const where: any = { status: 'APPROVED' };
+    const where: any = {
+      status: 'APPROVED',
+      isVisible: true
+    };
 
     // AND logic for multiple categories
     if (query?.categories) {
@@ -76,6 +79,10 @@ export class WallpapersService {
       if (idArray.length > 0) {
         where.id = { in: idArray };
       }
+    }
+
+    if (query?.isBanner === 'true') {
+      where.isBanner = true;
     }
 
     return this.prisma.image.findMany({
@@ -144,10 +151,22 @@ export class WallpapersService {
     const tagArray = tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim()).filter(Boolean)) : undefined;
     const catArray = categories ? (Array.isArray(categories) ? categories : categories.split(',').map(c => c.trim()).filter(Boolean)) : undefined;
 
+    // Check Banner Limit (Max 8)
+    if (data.isBanner === true) {
+      const bannerCount = await this.prisma.image.count({
+        where: { isBanner: true, id: { not: id } }
+      });
+      if (bannerCount >= 8) {
+        throw new Error('Banner 数量已达上限 (最多 8 个)');
+      }
+    }
+
     return this.prisma.image.update({
       where: { id },
       data: {
         ...rest,
+        isBanner: data.isBanner,
+        isVisible: data.isVisible,
         // Categories update: set (disconnect all old, connect new)
         categories: catArray ? {
           set: [],
