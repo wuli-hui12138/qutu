@@ -29,34 +29,36 @@ export default function Home() {
 
     return (
         <div className="bg-white min-h-screen pb-24">
-            {/* 顶部导航栏 (改为 absolute，随页面滚动) */}
-            <div className={`absolute top-0 left-0 right-0 z-40 transition-all duration-300 px-4 pt-10 pb-4 ${scrolled ? 'bg-white shadow-sm' : 'bg-transparent'
-                }`}>
+            {/* 顶部导航栏 (改为自然布局，随页面滚动) */}
+            <div className="px-4 pt-10 pb-4 bg-transparent transition-colors duration-500">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center text-white text-[10px] font-black shadow-lg shadow-black/20">QT</div>
-                        <div className="font-black text-xl tracking-tighter text-gray-900">
+                        <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center text-white text-[10px] font-black shadow-2xl shadow-black/30 transform hover:rotate-3 transition-transform">QT</div>
+                        <div className="font-black text-2xl tracking-tighter text-gray-900">
                             趣图匣子
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate('/upload')} className="w-10 h-10 bg-black/5 rounded-full flex items-center justify-center active:scale-90 transition">
-                            <PlusSquare size={20} className="text-gray-900" />
+                        <button
+                            onClick={() => navigate('/upload')}
+                            className="group w-11 h-11 bg-white border border-gray-100 rounded-2xl flex items-center justify-center shadow-sm active:scale-90 transition-all hover:bg-gray-50"
+                        >
+                            <PlusSquare size={20} className="text-gray-900 group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* 沉浸式搜索条 */}
-            <div className="pt-32 px-4 mb-8">
+            <div className="pt-6 px-4 mb-8">
                 <div
                     onClick={() => navigate('/discover')}
                     className="relative group cursor-pointer"
                 >
-                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[24px] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
-                    <div className="relative bg-gray-50/50 backdrop-blur-sm border border-gray-100 rounded-[22px] px-5 py-4 flex items-center gap-3 text-gray-400">
-                        <Search size={18} className="text-gray-400" />
-                        <span className="text-sm font-medium tracking-tight">探索数万张超清动态壁纸...</span>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-[24px] blur-lg opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div className="relative bg-gray-50/50 backdrop-blur-md border border-gray-100 rounded-[22px] px-6 py-4.5 flex items-center gap-3 text-gray-400 group-hover:border-indigo-100 transition-colors">
+                        <Search size={18} className="text-gray-400 group-hover:text-indigo-400 transition-colors" />
+                        <span className="text-sm font-medium tracking-tight">探索数万张超清壁纸与头像...</span>
                     </div>
                 </div>
             </div>
@@ -116,6 +118,10 @@ export default function Home() {
 function BannerSection() {
     const [banners, setBanners] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState(0);
+    const [touchEnd, setTouchEnd] = useState(0);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch('/api/wallpapers?isBanner=true')
@@ -132,10 +138,30 @@ function BannerSection() {
         return () => clearInterval(timer);
     }, [banners.length]);
 
+    const handleTouchStart = (e) => setTouchStart(e.targetTouches[0].clientX);
+    const handleTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+    const handleTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > 50;
+        const isRightSwipe = distance < -50;
+
+        if (isLeftSwipe) {
+            setCurrentIndex(prev => (prev + 1) % banners.length);
+        }
+        if (isRightSwipe) {
+            setCurrentIndex(prev => (prev - 1 + banners.length) % banners.length);
+        }
+        setTouchStart(0);
+        setTouchEnd(0);
+    };
+
     if (banners.length === 0) {
         return (
-            <div className="w-full aspect-[21/9] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-[32px] flex items-center justify-center border border-dashed border-gray-100 italic text-[10px] font-black text-gray-300 tracking-[0.2em] uppercase">
-                Awaiting Pixels
+            <div className="w-full aspect-[21/9] bg-gradient-to-br from-indigo-50 to-purple-50 rounded-[32px] flex flex-col items-center justify-center border border-gray-100 overflow-hidden relative group">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+                <ImageIcon size={32} className="text-indigo-200 mb-2 opacity-50" />
+                <span className="text-[10px] font-black text-indigo-300 tracking-[0.3em] uppercase">Curating Premium Pixels</span>
             </div>
         );
     }
@@ -145,30 +171,38 @@ function BannerSection() {
     return (
         <div
             onClick={() => navigate(`/detail/${currentBanner.id}`)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             className="relative w-full aspect-[21/9] rounded-[32px] overflow-hidden shadow-2xl shadow-indigo-500/10 group cursor-pointer active:scale-[0.98] transition-all duration-500"
         >
             <img
-                src={currentBanner.url} // Use original URL for banner
-                className="w-full h-full object-cover"
+                key={currentBanner.id}
+                src={currentBanner.url}
+                className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-[2s]"
                 alt="Banner"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex flex-col justify-end p-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex flex-col justify-end p-7">
                 <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                        <span className="text-white/60 text-[8px] font-black uppercase tracking-[0.3em] mb-1">Featured Spot</span>
-                        <h4 className="text-white font-black text-sm tracking-tight">{currentBanner.title || '探索无限灵感'}</h4>
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <span className="w-1 h-3 bg-indigo-500 rounded-full"></span>
+                            <span className="text-white/80 text-[9px] font-black uppercase tracking-[0.2em]">Featured Release</span>
+                        </div>
+                        <h4 className="text-white font-extrabold text-lg tracking-tight leading-tight max-w-[240px]">
+                            {currentBanner.title || '探索无限创意边界'}
+                        </h4>
                     </div>
-                    <ChevronRight size={16} className="text-white" />
                 </div>
             </div>
 
-            {/* Pagination Dots */}
+            {/* Pagination Dots (Fixed positions) */}
             {banners.length > 1 && (
-                <div className="absolute top-4 right-6 flex gap-1.5">
+                <div className="absolute top-6 right-8 flex gap-2">
                     {banners.map((_, idx) => (
                         <div
                             key={`banner-dot-${idx}`}
-                            className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-4 bg-white' : 'w-1 bg-white/30'}`}
+                            className={`h-1 rounded-full transition-all duration-500 bg-white ${idx === currentIndex ? 'w-6 opacity-100' : 'w-1.5 opacity-30 focus:opacity-50'}`}
                         />
                     ))}
                 </div>

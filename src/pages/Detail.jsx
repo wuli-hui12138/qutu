@@ -139,7 +139,7 @@ export default function Detail() {
                             <CircleBtn
                                 onClick={toggleLike}
                                 icon={<Heart size={22} className={isLiked ? "fill-white" : ""} />}
-                                activeColor={isLiked ? "bg-red-500 border-none shadow-lg shadow-red-500/30" : ""}
+                                activeColor={isLiked ? "bg-red-500/90 border-none shadow-[0_0_25px_rgba(239,68,68,0.4)]" : "bg-white/10"}
                             />
                             <CircleBtn icon={<Share2 size={22} />} />
                         </div>
