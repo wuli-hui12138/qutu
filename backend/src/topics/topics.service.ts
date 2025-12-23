@@ -66,6 +66,19 @@ export class TopicsService {
         });
     }
 
+    async update(id: number, data: any) {
+        return this.prisma.topic.update({
+            where: { id },
+            data,
+        });
+    }
+
+    async remove(id: number) {
+        return this.prisma.topic.delete({
+            where: { id },
+        });
+    }
+
     async submitToTopic(topicId: number, imageId: number) {
         return this.prisma.image.update({
             where: { id: imageId },

@@ -104,7 +104,7 @@ export default function Collection() {
                             {type === 'likes' ? <><Heart size={20} className="text-red-500 fill-red-500" /> 我的喜欢</> : <><Clock size={20} className="text-indigo-500" /> 浏览历史</>}
                         </h1>
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
-                            {type === 'likes' ? 'Your Hearted Pixels' : 'Your Recent Footprints'}
+                            {filteredImages.length}条已记录 · {type === 'likes' ? 'Your Hearted Pixels' : 'Your Recent Footprints'}
                         </p>
                     </div>
                 </div>

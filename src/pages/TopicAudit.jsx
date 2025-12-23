@@ -25,6 +25,34 @@ export default function TopicAudit() {
         fetchAllTopics();
     }, []);
 
+    const handleDelete = async (id) => {
+        if (!confirm('确定要永久删除该专题吗？此操作无法撤销。')) return;
+        try {
+            const res = await fetch(`/api/topics/${id}`, { method: 'DELETE' });
+            if (res.ok) fetchAllTopics();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const [editTopic, setEditTopic] = useState(null);
+    const handleUpdate = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`/api/topics/${editTopic.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editTopic)
+            });
+            if (res.ok) {
+                setEditTopic(null);
+                fetchAllTopics();
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const handleAudit = async (id, status) => {
         try {
             const res = await fetch(`/api/topics/${id}/status`, {
@@ -68,7 +96,21 @@ export default function TopicAudit() {
                                             <StatusBadge status={topic.status} />
                                         </div>
                                         <p className="text-xs text-gray-400 line-clamp-2 mt-1 leading-relaxed">{topic.description}</p>
-                                        <div className="flex items-center gap-3 mt-2">
+                                        <div className="flex items-center gap-2 mt-3">
+                                            <button
+                                                onClick={() => setEditTopic(topic)}
+                                                className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-gray-200"
+                                            >
+                                                编辑
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(topic.id)}
+                                                className="px-3 py-1 bg-red-50 text-red-400 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-red-100"
+                                            >
+                                                删除
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-3">
                                             <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase">
                                                 <User size={10} /> {topic.creator || 'ANONYMOUS'}
                                             </div>
@@ -108,6 +150,55 @@ export default function TopicAudit() {
                     </div>
                 )}
             </div>
+            {/* Edit Modal */}
+            <AnimatePresence>
+                {editTopic && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white w-full max-w-md rounded-[40px] p-8 shadow-2xl relative"
+                        >
+                            <button onClick={() => setEditTopic(null)} className="absolute top-6 right-6 text-gray-400 hover:text-black transition">
+                                <X size={24} />
+                            </button>
+                            <h2 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-tight">编辑专题内容</h2>
+                            <form onSubmit={handleUpdate} className="space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">标题</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={editTopic.title}
+                                        onChange={e => setEditTopic({ ...editTopic, title: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">封面图片</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={editTopic.cover}
+                                        onChange={e => setEditTopic({ ...editTopic, cover: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">描述</label>
+                                    <textarea
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none h-32 resize-none"
+                                        value={editTopic.description}
+                                        onChange={e => setEditTopic({ ...editTopic, description: e.target.value })}
+                                    />
+                                </div>
+                                <button className="w-full bg-black text-white py-5 rounded-[22px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all mt-4">
+                                    保存修改
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

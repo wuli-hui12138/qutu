@@ -15,6 +15,7 @@ export default function Upload() {
         description: ''
     });
     const [status, setStatus] = useState('idle');
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [availableCategories, setAvailableCategories] = useState([]);
     const [availableTags, setAvailableTags] = useState([]);
 
@@ -57,31 +58,71 @@ export default function Upload() {
         }
     };
 
+    const compressImage = (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_SIZE = 2560;
+                    if (width > MAX_SIZE || height > MAX_SIZE) {
+                        if (width > height) {
+                            height = (height / width) * MAX_SIZE;
+                            width = MAX_SIZE;
+                        } else {
+                            width = (width / height) * MAX_SIZE;
+                            height = MAX_SIZE;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                    }, 'image/jpeg', 0.82);
+                };
+            };
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!file) return alert('请先选择图片');
         if (!formData.categories) return alert('请至少选择一个分类');
 
         setStatus('loading');
-        const data = new FormData();
-        data.append('file', file);
-        data.append('title', formData.title);
-        data.append('categories', formData.categories);
-        data.append('tags', formData.tags);
-        data.append('description', formData.description);
-        if (topicInfo.topicId) {
-            data.append('topicId', topicInfo.topicId);
-        }
+        setUploadProgress(10);
 
         try {
+            const compressedFile = await compressImage(file);
+            setUploadProgress(30);
+
+            const data = new FormData();
+            data.append('file', compressedFile);
+            data.append('title', formData.title);
+            data.append('categories', formData.categories);
+            data.append('tags', formData.tags);
+            data.append('description', formData.description);
+            if (topicInfo.topicId) {
+                data.append('topicId', topicInfo.topicId);
+            }
+
             const res = await fetch('/api/wallpapers', { method: 'POST', body: data });
             if (res.ok) {
+                setUploadProgress(100);
                 setStatus('success');
                 setTimeout(() => navigate('/'), 1500);
             } else {
                 setStatus('error');
             }
         } catch (err) {
+            console.error(err);
             setStatus('error');
         }
     };
@@ -213,7 +254,7 @@ export default function Upload() {
                         ${status === 'loading' ? 'opacity-70 animate-pulse' : ''}
                     `}
                 >
-                    {status === 'loading' && '同步数据中...'}
+                    {status === 'loading' && `处理中... ${uploadProgress}%`}
                     {status === 'success' && <><Check className="mr-2" /> 发布成功(待审核)</>}
                     {status === 'idle' && '确认发布'}
                     {status === 'error' && '发布失败，请重试'}

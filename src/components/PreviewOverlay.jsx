@@ -46,9 +46,9 @@ export default function PreviewOverlay({ type, imageSrc, onClose }) {
     );
 
     const renderPCOverlay = () => (
-        <div className="relative w-full h-full p-10 flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm pointer-events-none">
-            {/* Ultra-Premium Monitor Frame */}
-            <div className="relative w-full max-w-5xl aspect-[16/9] bg-black border-[14px] border-[#121212] rounded-[24px] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.7)] flex flex-col ring-1 ring-white/5 overflow-hidden">
+        <div className="relative w-full h-full p-6 flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm pointer-events-none">
+            {/* Ultra-Premium Monitor Frame - Scaled up */}
+            <div className="relative w-full max-w-7xl aspect-[16/9] bg-black border-[14px] border-[#121212] rounded-[24px] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.7)] flex flex-col ring-1 ring-white/5 overflow-hidden">
                 {/* Screen Content */}
                 <div className="relative flex-1 overflow-hidden bg-[#000]">
                     <img src={imageSrc} className="absolute inset-0 w-full h-full object-cover" />
