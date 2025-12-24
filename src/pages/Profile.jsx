@@ -1,4 +1,4 @@
-import { ChevronRight, Heart, History, HelpCircle, Settings, Clock } from 'lucide-react';
+import { ChevronRight, Heart, History, HelpCircle, Settings, Clock, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
