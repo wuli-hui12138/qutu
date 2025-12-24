@@ -51,7 +51,7 @@
     curl -X POST http://localhost:3000/api/wallpapers/seed
     ```
 3.  **启动项目**：网站 -> Node项目 -> 添加Node项目。
-    - **启动脚本**: `dist/main.js`
+    - **启动脚本**: `dist/main.js` (如果编译后在 `dist/src/main.js`，请以实际为准)
     - **端口**: `3000`
 
 ## 5. 全局配置 (反向代理)
