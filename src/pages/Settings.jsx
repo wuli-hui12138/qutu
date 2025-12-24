@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, Hash, LayoutGrid, Info, ShieldCheck, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Hash, LayoutGrid, Info, ShieldCheck, Image as ImageIcon, Settings2 } from 'lucide-react';
 
 export default function Settings() {
     const navigate = useNavigate();
@@ -39,6 +39,12 @@ export default function Settings() {
                             title="专题审核"
                             desc="通过或拒绝用户发起的专题"
                             to="/settings/topics-audit"
+                        />
+                        <LinkSection
+                            icon={<Settings2 size={20} className="text-gray-600" />}
+                            title="配置管理"
+                            desc="管理 AI 密钥及系统参数"
+                            to="/settings/config"
                         />
                     </div>
                 </div>

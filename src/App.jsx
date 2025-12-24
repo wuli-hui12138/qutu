@@ -13,8 +13,9 @@ import Collection from './pages/Collection';
 import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
 import TopicAudit from './pages/TopicAudit';
-
 import AuthorProfile from './pages/AuthorProfile';
+import AIGenerator from './pages/AIGenerator';
+import ConfigManagement from './pages/ConfigManagement';
 
 function App() {
   return (
@@ -30,11 +31,13 @@ function App() {
           <Route path="topics" element={<Topics />} />
           <Route path="topics/:id" element={<TopicDetail />} />
           <Route path="upload" element={<Upload />} />
+          <Route path="ai" element={<AIGenerator />} />
           <Route path="settings" element={<Settings />} />
           <Route path="settings/tags" element={<TagManagement />} />
           <Route path="settings/categories" element={<CategoryManagement />} />
           <Route path="settings/images" element={<ImageManagement />} />
           <Route path="settings/topics-audit" element={<TopicAudit />} />
+          <Route path="settings/config" element={<ConfigManagement />} />
         </Route>
       </Routes>
     </BrowserRouter>

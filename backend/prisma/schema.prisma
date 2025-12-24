@@ -105,3 +105,12 @@ model Topic {
   createdAt   DateTime @default(now())
   images      Image[]
 }
+
+model SystemConfig {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}

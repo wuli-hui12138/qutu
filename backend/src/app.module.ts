@@ -8,6 +8,8 @@ import { WallpapersModule } from './wallpapers/wallpapers.module';
 import { TagsModule } from './tags/tags.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TopicsModule } from './topics/topics.module';
+import { AiModule } from './ai/ai.module';
+import { SystemConfigModule } from './system-config/system-config.module';
 import { UsersModule } from './users/users.module';
 import { InteractionsModule } from './interactions/interactions.module';
 
@@ -24,6 +26,8 @@ import { InteractionsModule } from './interactions/interactions.module';
     TopicsModule,
     UsersModule,
     InteractionsModule,
+    AiModule,
+    SystemConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],
