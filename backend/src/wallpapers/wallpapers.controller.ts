@@ -33,7 +33,6 @@ export class WallpapersController {
     @Body() createWallpaperDto: any
   ) {
     if (!file) {
-      console.error('Upload failed: File is missing in request');
       throw new Error('File is missing');
     }
 
@@ -41,15 +40,12 @@ export class WallpapersController {
     const thumbFilename = `thumb-${file.filename}`;
     const thumbPath = join(file.destination, thumbFilename);
 
-    console.log('--- Processing Thumbnail ---');
     try {
       await sharp(originalPath)
         .resize(400) // Fit to width 400px, keeping aspect ratio
         .webp({ quality: 80 }) // Convert to webp for better compression
         .toFile(thumbPath);
-      console.log('Thumbnail created:', thumbFilename);
     } catch (err) {
-      console.error('Thumbnail Generation Error:', err);
       // Fallback to original if thumbnail fails
     }
 
@@ -63,7 +59,6 @@ export class WallpapersController {
       const result = await this.wallpapersService.create(data);
       return result;
     } catch (err) {
-      console.error('Database Save Error:', err);
       throw err;
     }
   }
