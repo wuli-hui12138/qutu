@@ -15,11 +15,16 @@ else
 fi
 
 echo "[3/4] Testing Database Connection..."
+# Check for multiple DB files
+if [ -f "dev.db" ] && [ -f "prisma/dev.db" ]; then
+    echo "⚠️  WARNING: Multiple dev.db files found! Delete the one in the root folder."
+fi
+
 npx prisma db pull --print > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo "✅ Database connection OK"
 else
-    echo "❌ Database connection failed. Check .env DATABASE_URL"
+    echo "❌ Database connection failed. Ensure .env has DATABASE_URL=\"file:./prisma/dev.db\""
 fi
 
 echo "[4/4] Checking Reverse Proxy..."
