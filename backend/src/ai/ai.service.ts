@@ -36,7 +36,7 @@ export class AiService {
             this.logger.log(`Generating image for prompt: ${prompt} using model: ${model}`);
 
             // Universal OpenAI-compatible format
-            const response = await axios.post(
+            const response = await axios.post<any>(
                 apiUrl,
                 {
                     model: model,
@@ -80,7 +80,7 @@ export class AiService {
                 method: 'get',
                 url: data.url,
                 responseType: 'stream'
-            });
+            }) as any;
 
             const writer = fs.createWriteStream(filePath);
             response.data.pipe(writer);
