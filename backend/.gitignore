@@ -6,3 +6,4 @@ dist
 /generated/prisma
 prisma/*.db
 prisma/*.db-journal
+*.tsbuildinfo
