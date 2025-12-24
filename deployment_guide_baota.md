@@ -25,8 +25,10 @@
 3.  **初始化**：进入 `backend` 目录，通过终端执行：
     ```bash
     npm install --production
+    # 必须执行以下三步以同步社交功能数据结构
     npx prisma generate
-    npx prisma migrate deploy  # 同步数据库结构变更
+    npx prisma migrate deploy  
+    # 若无法连接数据库，请检查 .env 中的 DATABASE_URL
     npm run build
     ```
 4.  **启动项目**：网站 -> Node项目 -> 添加Node项目。
@@ -62,5 +64,6 @@ location /uploads/ {
     1. 确保云服务器安全组已放行 `3000` (后端) 和 `80/443` (前端) 端口。
     2. 确保宝塔面板“安全”菜单中也放行了相应端口。
 - **上传大文件失败**：在宝塔 Nginx 设置 -> 性能调整中，将 `client_max_body_size` 调大（如 `50m`）。
+- **我的页面显示空白**：检查控制台 Network。若请求 `/api/interactions/...` 报错 404，通常是 Nginx 转发配置遗漏了末尾斜杠 `/`；若报 500，请检查后端 PM2 日志是否有 Prisma 数据库报错。
 - **端口冲突 (EADDRINUSE)**：使用 `pm2 list` 确认是否已有进程运行。若需强制停止手动运行的进程，使用 `lsof -i :3000` 查出 PID 并 `kill -9 <PID>`。
 
