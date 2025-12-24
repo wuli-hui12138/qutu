@@ -73,11 +73,18 @@ location /uploads/ {
 
 ---
 
-## 6. 常见问题排查
-
 - **P3019 报错**：请务必执行 `rm -rf prisma/migrations`，因为旧的 SQLite 迁移记录无法在 MySQL 上运行。
 - **页面显示无数据**：
     1. 检查 `.env` 中的 `DATABASE_URL` 是否正确。
     2. 确保已执行 `npx prisma db push`。
     3. 确认 Nginx 的 `proxy_pass` 目标 URL 带有末尾的 `/`。
-- **接口 404**：多半是 Nginx 伪静态或反向代理路径配置错误。
+- **接口 404**：
+    - 多半是 Nginx 伪静态或反向代理路径配置错误。
+    - 检查前端源码中的 `fetch` 请求地址（应为 `/api/...`）。
+- **后端无法启动**：
+    - 执行项目根目录的 `./debug_check.sh` 查看报错。
+    - **查看日志 (核心)**：在宝塔面板 -> 网站 -> Node 项目 -> 对应项目 -> 日志 按钮中查看具体的运行报错。
+    - 检查 MySQL 用户权限：确保数据库用户具有 `CREATE`, `ALTER`, `DROP` 等权限。
+- **静态资源 (图片) 无法显示**：
+    - 检查 Nginx 是否配置了 `/uploads/` 的反向代理。
+    - 确认 `backend/uploads` 目录是否存在且具有读写权限。
