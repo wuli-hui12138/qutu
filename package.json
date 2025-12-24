@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "install:all": "npm install && cd backend && npm install",
-    "build:all": "npm run build && cd backend && npm run build"
+    "build:all": "npm run build && cd backend && npm run build",
+    "seed:db": "curl -X POST http://localhost:3000/api/wallpapers/seed"
   },
   "dependencies": {
     "clsx": "^2.1.1",

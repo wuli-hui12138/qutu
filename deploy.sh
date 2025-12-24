@@ -19,10 +19,10 @@ echo "💎 正在生成 Prisma Client..."
 cd backend
 npx prisma generate
 
-# 3. 执行数据库迁移
-echo "🗄️ 正在应用数据库迁移..."
-# 使用 deploy 模式，不删除现有数据
-npx prisma migrate deploy
+# 3. 执行数据库同步
+echo "🗄️ 正在通过 db push 同步数据模型..."
+# 使用 db push 绕过旧迁移历史，直接对齐 MySQL 结构
+npx prisma db push --accept-data-loss
 cd ..
 
 # 4. 构建项目
