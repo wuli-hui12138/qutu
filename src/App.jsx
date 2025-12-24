@@ -14,6 +14,8 @@ import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
 import TopicAudit from './pages/TopicAudit';
 
+import AuthorProfile from './pages/AuthorProfile';
+
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +25,7 @@ function App() {
           <Route path="discover" element={<Discover />} />
           <Route path="collection" element={<Collection />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="profile/:id" element={<AuthorProfile />} />
           <Route path="detail/:id" element={<Detail />} />
           <Route path="topics" element={<Topics />} />
           <Route path="topics/:id" element={<TopicDetail />} />

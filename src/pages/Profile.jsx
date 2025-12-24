@@ -4,10 +4,18 @@ import { useState, useEffect } from 'react';
 
 export default function Profile() {
     const navigate = useNavigate();
+    const [user, setUser] = useState(null);
     const [likedImages, setLikedImages] = useState([]);
     const [history, setHistory] = useState([]);
+    const [stats, setStats] = useState({ likes: 0, history: 0, creations: 0 });
 
     useEffect(() => {
+        const localUser = JSON.parse(localStorage.getItem('qutu_user'));
+        if (localUser) {
+            setUser(localUser);
+            fetchUserStats(localUser.id);
+        }
+
         // Load History
         const localHistory = JSON.parse(localStorage.getItem('qutu_history') || '[]');
         setHistory(localHistory);
@@ -22,6 +30,53 @@ export default function Profile() {
         }
     }, []);
 
+    const fetchUserStats = async (userId) => {
+        try {
+            const [favsRes, histRes, userRes] = await Promise.all([
+                fetch(`/api/interactions/favorites/${userId}`),
+                fetch(`/api/interactions/history/${userId}`),
+                fetch(`/api/users/${userId}`)
+            ]);
+
+            if (favsRes.ok && histRes.ok && userRes.ok) {
+                const favs = await favsRes.json();
+                const hist = await histRes.json();
+                const uData = await userRes.json();
+
+                setStats({
+                    likes: favs.length,
+                    history: hist.length,
+                    creations: uData._count?.images || 0
+                });
+            }
+        } catch (e) {
+            console.error('Failed to fetch stats', e);
+        }
+    };
+
+    const handleLogin = async () => {
+        // Mock Login
+        try {
+            const res = await fetch('/api/users/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    openid: 'mock_openid_' + Math.floor(Math.random() * 1000),
+                    nickname: '像素收藏家',
+                    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+                })
+            });
+            if (res.ok) {
+                const userData = await res.json();
+                localStorage.setItem('qutu_user', JSON.stringify(userData));
+                setUser(userData);
+                fetchUserStats(userData.id);
+            }
+        } catch (e) {
+            console.error('Login failed', e);
+        }
+    };
+
     return (
         <div className="bg-white min-h-screen overflow-hidden flex flex-col">
             <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
@@ -35,17 +90,34 @@ export default function Profile() {
                     <div className="bg-white rounded-[32px] px-6 pb-8 pt-0 shadow-2xl shadow-gray-200/50 relative overflow-visible border border-gray-50">
                         {/* 头像 */}
                         <div className="absolute -top-14 left-6">
-                            <div className="w-28 h-28 rounded-[38px] border-4 border-white overflow-hidden shadow-xl bg-gray-50">
-                                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" className="w-full h-full object-cover" alt="avatar" />
+                            <div className="w-28 h-28 rounded-[38px] border-4 border-white overflow-hidden shadow-xl bg-gray-50 flex items-center justify-center">
+                                {user ? (
+                                    <img src={user.avatar} className="w-full h-full object-cover" alt="avatar" />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300">
+                                        <User size={40} />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         <div className="pt-16 pb-2 flex justify-between items-start">
                             <div className="space-y-1">
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight">像素收藏家</h2>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Online
-                                </p>
+                                <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+                                    {user ? user.nickname : '未登录用户'}
+                                </h2>
+                                {user ? (
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> 已同步云端
+                                    </p>
+                                ) : (
+                                    <button
+                                        onClick={handleLogin}
+                                        className="text-[10px] text-indigo-500 font-black uppercase tracking-widest hover:underline"
+                                    >
+                                        点击快速模拟登录
+                                    </button>
+                                )}
                             </div>
                             <button className="bg-gray-50 text-gray-400 p-3 rounded-2xl active:scale-90 transition">
                                 <Settings size={20} />
@@ -55,17 +127,17 @@ export default function Profile() {
                         {/* 数据概览 */}
                         <div className="flex justify-between py-8">
                             <StatItem
-                                num={likedImages.length}
+                                num={user ? stats.likes : likedImages.length}
                                 label="我的喜欢"
                                 onClick={() => navigate('/collection?type=likes')}
                             />
                             <StatItem
-                                num={history.length}
+                                num={user ? stats.history : history.length}
                                 label="最近浏览"
                                 onClick={() => navigate('/collection?type=history')}
                             />
                             <StatItem
-                                num="0"
+                                num={user ? stats.creations : "0"}
                                 label="我的创作"
                             />
                         </div>

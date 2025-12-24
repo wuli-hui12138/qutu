@@ -44,8 +44,13 @@ export default function Detail() {
             });
     }, [id]);
 
-    const recordHistory = (img) => {
+    const recordHistory = async (img) => {
         if (!img) return;
+
+        const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
+        const userId = qutu_user.id;
+
+        // Local storage record
         const history = JSON.parse(localStorage.getItem('qutu_history') || '[]');
         const filtered = history.filter(item => item.id !== img.id);
         const newHistory = [{
@@ -53,24 +58,54 @@ export default function Detail() {
             thumb: img.thumb,
             title: img.title,
             time: new Date().getTime()
-        }, ...filtered].slice(0, 50); // Keep last 50
+        }, ...filtered].slice(0, 50);
         localStorage.setItem('qutu_history', JSON.stringify(newHistory));
+
+        // Cloud sync if logged in
+        if (userId) {
+            try {
+                await fetch('/api/interactions/history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, imageId: img.id })
+                });
+            } catch (err) {
+                console.error('Failed to sync history', err);
+            }
+        }
     };
 
-    const toggleLike = () => {
+    const toggleLike = async () => {
         if (!image) return;
+
+        const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
+        const userId = qutu_user.id;
+
         const likes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
         let newLikes;
-        if (likes.includes(image.id)) {
+        const isCurrentlyLiked = likes.includes(image.id);
+
+        if (isCurrentlyLiked) {
             newLikes = likes.filter(itemId => itemId !== image.id);
         } else {
             newLikes = [...likes, image.id];
         }
-        localStorage.setItem('qutu_likes', JSON.stringify(newLikes));
-        setIsLiked(!isLiked);
 
-        // Optional: Sync with backend
-        fetch(`/api/wallpapers/${image.id}/like`, { method: 'POST' }).catch(() => { });
+        localStorage.setItem('qutu_likes', JSON.stringify(newLikes));
+        setIsLiked(!isCurrentlyLiked);
+
+        // Sync with backend if logged in
+        if (userId) {
+            try {
+                await fetch('/api/interactions/favorite', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, imageId: image.id })
+                });
+            } catch (err) {
+                console.error('Failed to sync favorite', err);
+            }
+        }
     };
 
     const handleDownload = () => {
@@ -129,6 +164,26 @@ export default function Detail() {
 
                         {/* 分类与标签 (移动到描述上方，支持展开/收起) */}
                         <ExpandableTags categories={image.categories} tags={image.tags} />
+
+                        {/* 创作者信息 */}
+                        <div className="flex items-center justify-between p-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 group cursor-pointer active:scale-95 transition" onClick={() => image.author && navigate(`/profile/${image.author.id}`)}>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10">
+                                    <img
+                                        src={image.author?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"}
+                                        className="w-full h-full object-cover"
+                                        alt="author"
+                                    />
+                                </div>
+                                <div>
+                                    <div className="text-white text-xs font-black tracking-tight">{image.author?.nickname || "未名画师"}</div>
+                                    <div className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Author Premium</div>
+                                </div>
+                            </div>
+                            <button className="px-4 py-1.5 bg-indigo-500 rounded-lg text-[10px] font-black text-white hover:bg-indigo-600 transition">
+                                关注 +
+                            </button>
+                        </div>
 
                         {/* 图片描述 (移动到标签下方) */}
                         {image.description && (

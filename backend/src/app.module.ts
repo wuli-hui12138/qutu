@@ -8,6 +8,8 @@ import { WallpapersModule } from './wallpapers/wallpapers.module';
 import { TagsModule } from './tags/tags.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TopicsModule } from './topics/topics.module';
+import { UsersModule } from './users/users.module';
+import { InteractionsModule } from './interactions/interactions.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { TopicsModule } from './topics/topics.module';
     TagsModule,
     CategoriesModule,
     TopicsModule,
+    UsersModule,
+    InteractionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

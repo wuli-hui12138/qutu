@@ -14,6 +14,7 @@ model Image {
   id          Int       @id @default(autoincrement())
   url         String
   thumb       String
+  blurData    String?   // Base64 LCP placeholder
   title       String
   description String?
   status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
@@ -26,6 +27,58 @@ model Image {
   createdAt   DateTime  @default(now())
   topicId     Int?
   topic       Topic?    @relation(fields: [topicId], references: [id])
+  authorId    Int?
+  author      User?     @relation("UserImages", fields: [authorId], references: [id])
+  favorites   Favorite[]
+  history     History[]
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  openid      String    @unique
+  nickname    String?
+  avatar      String?
+  role        String    @default("USER") // USER, ADMIN
+  createdAt   DateTime  @default(now())
+  images      Image[]   @relation("UserImages")
+  favorites   Favorite[]
+  history     History[]
+  following   Follow[]  @relation("Following")
+  followers   Follow[]  @relation("Followers")
+}
+
+model Follow {
+  id          Int       @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  follower    User      @relation("Following", fields: [followerId], references: [id])
+  following   User      @relation("Followers", fields: [followingId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  imageId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  image     Image    @relation(fields: [imageId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, imageId])
+}
+
+model History {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  imageId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  image     Image    @relation(fields: [imageId], references: [id])
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([userId, imageId])
 }
 
 model Category {

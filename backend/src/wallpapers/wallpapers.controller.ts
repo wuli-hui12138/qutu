@@ -49,10 +49,22 @@ export class WallpapersController {
       // Fallback to original if thumbnail fails
     }
 
+    let blurData = '';
+    try {
+      const blurBuffer = await sharp(originalPath)
+        .resize(20, 20, { fit: 'inside' })
+        .webp({ quality: 20 })
+        .toBuffer();
+      blurData = `data:image/webp;base64,${blurBuffer.toString('base64')}`;
+    } catch (err) {
+      // Ignore blur failure
+    }
+
     const data = {
       ...createWallpaperDto,
       url: `/uploads/${file.filename}`,
       thumb: fs.existsSync(thumbPath) ? `/uploads/${thumbFilename}` : `/uploads/${file.filename}`,
+      blurData,
     };
 
     try {

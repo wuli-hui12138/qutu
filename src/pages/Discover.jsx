@@ -198,6 +198,7 @@ export default function Discover() {
                                     key={item.id}
                                     id={item.id}
                                     src={item.thumb}
+                                    blurData={item.blurData}
                                     title={item.title}
                                     categories={item.categories}
                                     tags={item.tags}

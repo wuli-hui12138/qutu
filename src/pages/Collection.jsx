@@ -20,28 +20,38 @@ export default function Collection() {
         const loadData = async () => {
             setLoading(true);
             try {
-                let ids = [];
                 let rawData = [];
+                const user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
+                const userId = user.id;
 
-                if (type === 'likes') {
-                    ids = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
-                } else {
-                    const history = JSON.parse(localStorage.getItem('qutu_history') || '[]');
-                    ids = history.map(item => item.id);
-                }
-
-                if (ids.length > 0) {
-                    // Fetch full data for both likes and history to ensure metadata (tags, categories) is present
-                    const res = await fetch(`/api/wallpapers?ids=${ids.join(',')}`);
+                if (userId) {
+                    // Try to fetch from Cloud
+                    const res = await fetch(`/api/interactions/${type === 'likes' ? 'favorites' : 'history'}/${userId}`);
                     if (res.ok) {
-                        rawData = await res.json();
+                        const data = await res.json();
+                        // For interactions API, the result is in { image: {...} } format or direct array
+                        rawData = data.map(item => item.image || item);
+                    }
+                } else {
+                    // Fallback to LocalStorage
+                    let ids = [];
+                    if (type === 'likes') {
+                        ids = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
+                    } else {
+                        const history = JSON.parse(localStorage.getItem('qutu_history') || '[]');
+                        ids = history.map(item => item.id);
+                    }
 
-                        // For history, we might want to maintain the chronological order from localStorage
-                        if (type === 'history') {
-                            const historyOrder = JSON.parse(localStorage.getItem('qutu_history') || '[]');
-                            const orderMap = new Map();
-                            historyOrder.forEach((item, index) => orderMap.set(item.id, index));
-                            rawData.sort((a, b) => orderMap.get(a.id) - orderMap.get(b.id));
+                    if (ids.length > 0) {
+                        const res = await fetch(`/api/wallpapers?ids=${ids.join(',')}`);
+                        if (res.ok) {
+                            rawData = await res.json();
+                            if (type === 'history') {
+                                const historyOrder = JSON.parse(localStorage.getItem('qutu_history') || '[]');
+                                const orderMap = new Map();
+                                historyOrder.forEach((item, index) => orderMap.set(item.id, index));
+                                rawData.sort((a, b) => orderMap.get(a.id) - orderMap.get(b.id));
+                            }
                         }
                     }
                 }
@@ -155,6 +165,7 @@ export default function Collection() {
                                 key={item.id}
                                 id={item.id}
                                 src={item.thumb}
+                                blurData={item.blurData}
                                 title={item.title}
                                 categories={item.categories}
                                 tags={item.tags}

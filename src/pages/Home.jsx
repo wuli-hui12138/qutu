@@ -101,6 +101,7 @@ export default function Home() {
                             <ImageCard
                                 id={item.id}
                                 src={item.thumb}
+                                blurData={item.blurData}
                                 title={item.title}
                                 categories={item.categories}
                                 tags={item.tags}
