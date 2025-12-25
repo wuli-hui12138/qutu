@@ -6,6 +6,9 @@ import axios from 'axios';
 import * as fs from 'fs';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import * as _sharp from 'sharp';
+const sharp = _sharp as any;
+
 @Injectable()
 export class AiService {
     private readonly logger = new Logger(AiService.name);
@@ -25,7 +28,46 @@ export class AiService {
         };
     }
 
-    async generateImage(prompt: string, model?: string): Promise<string> {
+    private async downloadAndProcessImage(externalUrl: string): Promise<{ url: string; thumb: string }> {
+        const filename = `ai-cache-${uuidv4()}.jpg`;
+        const uploadPath = join(process.cwd(), 'uploads', 'ai-cache');
+        const thumbPath = join(uploadPath, 'thumbs');
+
+        if (!fs.existsSync(thumbPath)) {
+            fs.mkdirSync(thumbPath, { recursive: true });
+        }
+
+        const originalFile = join(uploadPath, filename);
+        const thumbFile = join(thumbPath, filename);
+
+        try {
+            // 1. Download
+            const response = await axios({
+                method: 'get',
+                url: externalUrl,
+                responseType: 'arraybuffer'
+            });
+            const buffer = Buffer.from(response.data as any);
+            fs.writeFileSync(originalFile, buffer);
+
+            // 2. Shrink with Sharp
+            await sharp(buffer)
+                .resize(400) // Small enough for thumbnails
+                .jpeg({ quality: 80 })
+                .toFile(thumbFile);
+
+            return {
+                url: `/uploads/ai-cache/${filename}`,
+                thumb: `/uploads/ai-cache/thumbs/${filename}`,
+            };
+        } catch (err) {
+            this.logger.error('Failed to process image locally', err);
+            // Fallback to external if local fails (though not ideal)
+            return { url: externalUrl, thumb: externalUrl };
+        }
+    }
+
+    async generateImage(prompt: string, model?: string): Promise<{ url: string; thumb: string }> {
         const dbApiKey = await this.systemConfigService.get('AI_API_KEY');
         const dbBaseUrl = await this.systemConfigService.get('AI_BASE_URL');
         const dbImagePath = await this.systemConfigService.get('AI_IMAGE_PATH') || '/v1/images/generations';
@@ -38,7 +80,8 @@ export class AiService {
 
         if (!apiKey) {
             this.logger.warn('AI_API_KEY is not set. Returning a mock image.');
-            return `https://picsum.photos/seed/${encodeURIComponent(prompt)}/1024/1792`;
+            const mockUrl = `https://picsum.photos/seed/${encodeURIComponent(prompt)}/1024/1792`;
+            return { url: mockUrl, thumb: mockUrl };
         }
 
         try {
@@ -84,7 +127,9 @@ export class AiService {
                 this.logger.error('Unexpected AI Response format:', JSON.stringify(response.data));
                 throw new Error('No image URL found in response');
             }
-            return imageUrl;
+
+            // 3. Download and shrink locally for better performance
+            return this.downloadAndProcessImage(imageUrl);
         } catch (error) {
             this.logger.error('AI Image Generation Failed', error.response?.data || error.message);
             throw new Error(`AI生成失败: ${error.response?.data?.error?.message || error.message}`);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Send, Download, Save, RefreshCw, Wand2, History, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Sparkles, Send, Download, Save, RefreshCw, Wand2, History, ChevronRight, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +13,7 @@ export default function AIGenerator() {
     const [history, setHistory] = useState([]);
     const [models, setModels] = useState(['dall-e-3', 'flux']);
     const [selectedModel, setSelectedModel] = useState('dall-e-3');
+    const [tasks, setTasks] = useState([]);
 
     // Load local history and models on mount
     useEffect(() => {
@@ -34,8 +35,8 @@ export default function AIGenerator() {
         }
     };
 
-    const addToHistory = (imageUrl, promptText) => {
-        const newEntry = { url: imageUrl, prompt: promptText, date: new Date().toISOString() };
+    const addToHistory = (result, promptText) => {
+        const newEntry = { ...result, prompt: promptText, date: new Date().toISOString() };
         const updatedHistory = [newEntry, ...history].slice(0, 10);
         setHistory(updatedHistory);
         localStorage.setItem('ai_gen_history', JSON.stringify(updatedHistory));
@@ -44,30 +45,50 @@ export default function AIGenerator() {
     const handleGenerate = async () => {
         if (!prompt.trim()) return;
 
-        setIsGenerating(true);
+        // Limit active tasks to 4
+        const activeTasks = tasks.filter(t => t.status === 'executing');
+        if (activeTasks.length >= 4) {
+            alert('当前生成任务已达上限(4个)，请稍候。');
+            return;
+        }
+
+        const taskId = Date.now();
+        const newTask = {
+            id: taskId,
+            prompt: prompt,
+            status: 'executing',
+            model: selectedModel,
+            createdAt: new Date().toISOString()
+        };
+
+        setTasks(prev => [newTask, ...prev]);
+        setPrompt(''); // Clear input for next prompt
         setError(null);
-        setResultImage(null);
-        setSteps(['🚀 正在建立连接...', '🧠 AI 正在构思...', '🎨 绘制细节中...', '✨ 渲染最终效果...']);
 
         try {
             const response = await fetch('/api/ai/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt, model: selectedModel })
+                body: JSON.stringify({ prompt: newTask.prompt, model: selectedModel })
             });
 
             if (!response.ok) {
                 const errData = await response.json();
-                throw new Error(errData.message || '生成失败，请检查 API 配置');
+                throw new Error(errData.message || '生成失败');
             }
 
-            const data = await response.json();
-            setResultImage(data.url);
-            addToHistory(data.url, prompt);
+            const data = await response.json(); // { url, thumb }
+
+            setTasks(prev => prev.map(t =>
+                t.id === taskId ? { ...t, status: 'done', result: data } : t
+            ));
+            setResultImage(data.url); // Set as main preview if it's the latest
+            addToHistory(data, newTask.prompt);
+
         } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsGenerating(false);
+            setTasks(prev => prev.map(t =>
+                t.id === taskId ? { ...t, status: 'failed', error: err.message } : t
+            ));
         }
     };
 
@@ -159,81 +180,111 @@ export default function AIGenerator() {
                 </div>
             </div>
 
-            {/* Result Area */}
-            <div className="flex-1">
-                {isGenerating ? (
-                    <div className="w-full aspect-[9/16] bg-gray-50 rounded-3xl border border-gray-100 flex flex-col items-center justify-center p-8 text-center gap-6 overflow-hidden relative">
-                        <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent animate-pulse"></div>
-                        <div className="w-16 h-16 relative">
-                            <RefreshCw size={64} className="text-purple-200 animate-spin" />
-                            <Sparkles size={24} className="text-purple-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            {/* Task Area */}
+            <div className="flex-1 space-y-4">
+                {tasks.length > 0 ? (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between px-2">
+                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">当前任务 ({tasks.filter(t => t.status === 'executing').length}/4)</h3>
+                            <button onClick={() => setTasks([])} className="text-[10px] font-bold text-gray-300">全部清除</button>
                         </div>
-                        <div className="space-y-4 relative z-10 w-full max-w-[200px]">
-                            {steps.map((step, i) => (
-                                <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 0.5}s` }}>
-                                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                    <span className="text-xs font-medium text-gray-600">{step}</span>
+                        {tasks.map(task => (
+                            <div key={task.id} className="bg-white border border-gray-100 rounded-[24px] p-4 flex gap-4 items-center shadow-sm relative overflow-hidden group">
+                                {task.status === 'executing' && (
+                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 animate-pulse pointer-events-none"></div>
+                                )}
+
+                                <div className="w-16 h-20 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-50">
+                                    {task.status === 'executing' ? (
+                                        <RefreshCw size={20} className="text-purple-200 animate-spin" />
+                                    ) : task.status === 'done' ? (
+                                        <img src={task.result.thumb} className="w-full h-full object-cover" alt="thumb" />
+                                    ) : (
+                                        <div className="text-red-300">!</div>
+                                    )}
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                ) : resultImage ? (
-                    <div className="space-y-4 animate-in fade-in zoom-in duration-500">
-                        <div className="w-full aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl relative group">
-                            <img src={resultImage} className="w-full h-full object-cover" alt="AI Generated" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                onClick={() => window.open(resultImage, '_blank')}
-                                className="flex items-center justify-center gap-2 py-4 bg-gray-100 text-gray-900 rounded-2xl font-bold text-sm active:scale-95 transition-all"
-                            >
-                                <Download size={18} /> 高清预览
-                            </button>
-                            <button
-                                onClick={handleSaveToGallery}
-                                className="flex items-center justify-center gap-2 py-4 bg-black text-white rounded-2xl font-bold text-sm active:scale-95 transition-all shadow-lg"
-                            >
-                                <Save size={18} /> 保存到画廊
-                            </button>
-                        </div>
-                    </div>
-                ) : error ? (
-                    <div className="w-full aspect-[9/16] bg-red-50 rounded-3xl border border-red-100 flex flex-col items-center justify-center p-8 text-center gap-4">
-                        <div className="p-4 bg-white rounded-full text-red-500 shadow-sm"><RefreshCw size={32} /></div>
-                        <div>
-                            <p className="text-sm font-bold text-red-900">生成出错</p>
-                            <p className="text-xs text-red-600 mt-1 max-w-[200px] leading-relaxed">{error}</p>
-                        </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-gray-400 font-bold mb-1 truncate">{task.model}</p>
+                                    <p className="text-xs text-gray-800 font-medium line-clamp-2 leading-snug">{task.prompt}</p>
+                                    {task.status === 'failed' && (
+                                        <p className="text-[10px] text-red-500 mt-1 font-bold">错误: {task.error}</p>
+                                    )}
+                                </div>
+
+                                {task.status === 'done' && (
+                                    <div className="flex flex-col gap-2">
+                                        <button
+                                            onClick={() => setResultImage(task.result.url)}
+                                            className="p-2 bg-purple-50 text-purple-600 rounded-lg active:scale-95 transition-all"
+                                        >
+                                            <Sparkles size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => window.open(task.result.url, '_blank')}
+                                            className="p-2 bg-gray-50 text-gray-600 rounded-lg active:scale-95 transition-all"
+                                        >
+                                            <Download size={16} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 ) : (
-                    <div className="w-full aspect-[9/16] bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center p-8 text-center gap-4">
-                        <div className="p-4 bg-white rounded-2xl text-gray-200">
-                            <Wand2 size={48} />
+                    <div className="w-full h-80 bg-gray-50/50 rounded-[32px] border-2 border-dashed border-gray-100 flex flex-col items-center justify-center p-8 text-center gap-4">
+                        <div className="p-4 bg-white rounded-2xl text-gray-100">
+                            <ImageIcon size={48} />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-gray-400 italic">等待你的灵感爆发...</p>
-                            <p className="text-[10px] text-gray-300 mt-2 leading-relaxed">Generated images are high-resolution and optimized for wallpapers</p>
+                            <p className="text-xs font-bold text-gray-400 italic">暂无任务，开启你的创作吧</p>
+                            <p className="text-[10px] text-gray-300 mt-2 leading-relaxed">支持多任务并行生成，每秒钟都是灵感</p>
                         </div>
                     </div>
                 )}
             </div>
+
+            {/* Preview Modal if resultImage is set */}
+            {resultImage && (
+                <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-6 animate-in fade-in duration-300">
+                    <button
+                        onClick={() => setResultImage(null)}
+                        className="absolute top-10 right-6 text-white/50 hover:text-white"
+                    >
+                        关闭预览
+                    </button>
+                    <div className="w-full aspect-[9/16] max-w-[320px] bg-gray-900 rounded-3xl overflow-hidden shadow-2xl relative mb-6">
+                        <img src={resultImage} className="w-full h-full object-cover" alt="Preview" />
+                    </div>
+                    <div className="flex gap-4 w-full max-w-[320px]">
+                        <button
+                            onClick={handleSaveToGallery}
+                            className="flex-1 py-4 bg-white text-black rounded-2xl font-bold text-sm active:scale-95 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Save size={18} /> 保存到画廊
+                        </button>
+                        <button
+                            onClick={() => window.open(resultImage, '_blank')}
+                            className="w-14 h-14 bg-white/10 text-white rounded-2xl flex items-center justify-center active:scale-95 transition-all"
+                        >
+                            <Download size={20} />
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* History Brief */}
             {history.length > 0 && (
                 <div className="mt-4 pb-4">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                            <History size={16} className="text-gray-400" /> 最近记录
+                            <History size={16} className="text-gray-400" /> 历史杰作
                         </h3>
-                        <button className="text-[10px] font-bold text-purple-600 flex items-center">
-                            查看全部 <ChevronRight size={12} />
-                        </button>
                     </div>
                     <div className="flex gap-3 overflow-x-auto hide-scrollbar">
                         {history.map((item, i) => (
                             <div key={i} onClick={() => setResultImage(item.url)} className="w-16 h-28 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden cursor-pointer active:scale-95 transition-all shadow-sm">
-                                <img src={item.url} className="w-full h-full object-cover" alt="history" />
+                                <img src={item.thumb || item.url} className="w-full h-full object-cover" alt="history" />
                             </div>
                         ))}
                     </div>

@@ -30,6 +30,12 @@ export default function AIPortal() {
 
     return (
         <div className="bg-white min-h-screen pb-24 pt-16 px-6 overflow-y-auto hide-scrollbar">
+            {/* Header / Nav */}
+            <div className="flex items-center gap-4 mb-4">
+                <ArrowLeft className="cursor-pointer text-gray-800" onClick={() => navigate('/')} />
+                <span className="text-xs font-bold text-gray-400">返回首页</span>
+            </div>
+
             {/* Hero Section */}
             <div className="mb-10 text-center">
                 <motion.div
