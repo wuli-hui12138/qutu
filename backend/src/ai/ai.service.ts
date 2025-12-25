@@ -35,16 +35,29 @@ export class AiService {
         try {
             this.logger.log(`Generating image for prompt: ${prompt} using model: ${model}`);
 
-            // Universal OpenAI-compatible format
-            const response = await axios.post<any>(
-                apiUrl,
-                {
+            const isChatEndpoint = apiUrl.includes('chat/completions');
+            let body: any;
+
+            if (isChatEndpoint) {
+                // Format for Chat Completion based image generation
+                body = {
+                    model: model,
+                    messages: [{ role: 'user', content: prompt }]
+                };
+            } else {
+                // Standard DALL-E format
+                body = {
                     model: model,
                     prompt: prompt,
                     n: 1,
                     size: '1024x1792', // Portrait for wallpapers
                     response_format: 'url',
-                },
+                };
+            }
+
+            const response = await axios.post<any>(
+                apiUrl,
+                body,
                 {
                     headers: {
                         Authorization: `Bearer ${apiKey}`,
@@ -54,10 +67,25 @@ export class AiService {
                 },
             );
 
-            const imageUrl = response.data?.data?.[0]?.url || response.data?.images?.[0]?.url;
+            let imageUrl: string | undefined;
+
+            if (isChatEndpoint) {
+                // Parse from Chat Completion content
+                const content = response.data?.choices?.[0]?.message?.content;
+                if (content) {
+                    // Try to extract URL from content (might be markdown or naked URL)
+                    const urlRegex = /(https?:\/\/[^\s"'<>]+)/g;
+                    const matches = content.match(urlRegex);
+                    imageUrl = matches?.[0];
+                }
+            } else {
+                // Parse from standard Image Generation response
+                imageUrl = response.data?.data?.[0]?.url || response.data?.images?.[0]?.url;
+            }
+
             if (!imageUrl) {
-                this.logger.error('Unexpected AI Response format:', response.data);
-                throw new Error(`No image URL in response. Check logs for response body.`);
+                this.logger.error('Unexpected AI Response format:', JSON.stringify(response.data));
+                throw new Error(`No image URL found in response. Endpoint: ${isChatEndpoint ? 'Chat' : 'Images'}`);
             }
 
             return imageUrl;
