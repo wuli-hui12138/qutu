@@ -1,3 +1,4 @@
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Home, Compass, User, Layers, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 
