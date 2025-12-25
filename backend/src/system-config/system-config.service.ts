@@ -14,7 +14,7 @@ export class SystemConfigService implements OnModuleInit {
         ];
 
         for (const config of defaultConfigs) {
-            await this.prisma.systemConfig.upsert({
+            await (this.prisma as any).systemConfig.upsert({
                 where: { key: config.key },
                 update: {},
                 create: config,
@@ -25,20 +25,20 @@ export class SystemConfigService implements OnModuleInit {
     }
 
     findAll() {
-        return this.prisma.systemConfig.findMany({
+        return (this.prisma as any).systemConfig.findMany({
             orderBy: { key: 'asc' },
         });
     }
 
     async get(key: string): Promise<string | null> {
-        const config = await this.prisma.systemConfig.findUnique({
+        const config = await (this.prisma as any).systemConfig.findUnique({
             where: { key },
         });
         return config?.value || null;
     }
 
     async set(key: string, value: string, description?: string) {
-        return this.prisma.systemConfig.upsert({
+        return (this.prisma as any).systemConfig.upsert({
             where: { key },
             update: { value, description },
             create: { key, value, description },
@@ -46,7 +46,7 @@ export class SystemConfigService implements OnModuleInit {
     }
 
     async remove(key: string) {
-        return this.prisma.systemConfig.delete({
+        return (this.prisma as any).systemConfig.delete({
             where: { key },
         });
     }
