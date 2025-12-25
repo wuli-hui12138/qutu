@@ -11,12 +11,28 @@ export default function AIGenerator() {
     const [error, setError] = useState(null);
     const [steps, setSteps] = useState([]);
     const [history, setHistory] = useState([]);
+    const [models, setModels] = useState(['dall-e-3', 'flux']);
+    const [selectedModel, setSelectedModel] = useState('dall-e-3');
 
-    // Load local history on mount
+    // Load local history and models on mount
     useEffect(() => {
         const savedHistory = localStorage.getItem('ai_gen_history');
         if (savedHistory) setHistory(JSON.parse(savedHistory));
+        fetchModels();
     }, []);
+
+    const fetchModels = async () => {
+        try {
+            const res = await fetch('/api/ai/models', { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                setModels(data.imageModels);
+                if (data.imageModels.length > 0) setSelectedModel(data.imageModels[0]);
+            }
+        } catch (err) {
+            console.error('Failed to fetch models');
+        }
+    };
 
     const addToHistory = (imageUrl, promptText) => {
         const newEntry = { url: imageUrl, prompt: promptText, date: new Date().toISOString() };
@@ -37,7 +53,7 @@ export default function AIGenerator() {
             const response = await fetch('/api/ai/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
+                body: JSON.stringify({ prompt, model: selectedModel })
             });
 
             if (!response.ok) {
@@ -88,8 +104,17 @@ export default function AIGenerator() {
                     </h1>
                     <p className="text-xs text-gray-400 mt-1 font-medium italic">Transform your imagination into visuals</p>
                 </div>
-                <div className="bg-purple-50 p-2 rounded-xl text-purple-600">
-                    <Wand2 size={24} />
+                <div className="flex flex-col items-end gap-2">
+                    <div className="bg-purple-50 p-2 rounded-xl text-purple-600">
+                        <Wand2 size={24} />
+                    </div>
+                    <select
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        className="text-[10px] font-bold text-gray-400 bg-gray-50 border-none rounded-lg px-2 py-1 outline-none appearance-none cursor-pointer"
+                    >
+                        {models.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
                 </div>
             </div>
 

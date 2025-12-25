@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Home, Compass, User, Layers, Sparkles } from 'lucide-react';
+import { Home, Compass, User, Layers, Sparkles, MessageSquare } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function MobileLayout() {
@@ -40,7 +40,15 @@ export default function MobileLayout() {
                             {({ isActive }) => (
                                 <>
                                     <Sparkles size={24} strokeWidth={isActive ? 2.5 : 2} />
-                                    <span className="text-[10px] mt-1">AI生图</span>
+                                    <span className="text-[10px] mt-1">AI绘图</span>
+                                </>
+                            )}
+                        </NavLink>
+                        <NavLink to="/ai-chat" className={({ isActive }) => clsx("flex flex-col items-center transition-colors", isActive ? "text-purple-600" : "text-gray-400")}>
+                            {({ isActive }) => (
+                                <>
+                                    <MessageSquare size={24} strokeWidth={isActive ? 2.5 : 2} />
+                                    <span className="text-[10px] mt-1">AI对话</span>
                                 </>
                             )}
                         </NavLink>

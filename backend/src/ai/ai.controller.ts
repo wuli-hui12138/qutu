@@ -5,10 +5,21 @@ import { AiService } from './ai.service';
 export class AiController {
     constructor(private readonly aiService: AiService) { }
 
+    @Post('models')
+    async getModels() {
+        return this.aiService.getModels();
+    }
+
     @Post('generate')
-    async generate(@Body('prompt') prompt: string) {
-        const url = await this.aiService.generateImage(prompt);
+    async generate(@Body() body: { prompt: string; model?: string }) {
+        const url = await this.aiService.generateImage(body.prompt, body.model);
         return { url };
+    }
+
+    @Post('chat')
+    async chat(@Body() body: { prompt: string; model: string }) {
+        const content = await this.aiService.generateChat(body.prompt, body.model);
+        return { content };
     }
 
     @Post('save')

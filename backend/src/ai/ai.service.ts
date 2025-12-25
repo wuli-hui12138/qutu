@@ -16,16 +16,23 @@ export class AiService {
         private systemConfigService: SystemConfigService,
     ) { }
 
-    async generateImage(prompt: string): Promise<string> {
-        // 1. Try to get from Database first
+    async getModels() {
+        const imageModels = await this.systemConfigService.get('AI_IMAGE_MODELS');
+        const chatModels = await this.systemConfigService.get('AI_CHAT_MODELS');
+        return {
+            imageModels: imageModels ? imageModels.split(',') : ['dall-e-3', 'flux'],
+            chatModels: chatModels ? chatModels.split(',') : ['gpt-4o', 'qwen-plus']
+        };
+    }
+
+    async generateImage(prompt: string, model?: string): Promise<string> {
         const dbApiKey = await this.systemConfigService.get('AI_API_KEY');
-        const dbApiUrl = await this.systemConfigService.get('AI_API_URL');
+        const dbApiUrl = await this.systemConfigService.get('AI_IMAGE_URL') || await this.systemConfigService.get('AI_API_URL');
         const dbModel = await this.systemConfigService.get('AI_MODEL');
 
-        // 2. Fallback to .env if DB is empty
         const apiKey = dbApiKey || this.configService.get<string>('AI_API_KEY');
         const apiUrl = dbApiUrl || this.configService.get<string>('AI_API_URL') || 'https://api.openai.com/v1/images/generations';
-        const model = dbModel || this.configService.get<string>('AI_MODEL') || 'dall-e-3';
+        const finalModel = model || dbModel || this.configService.get<string>('AI_MODEL') || 'dall-e-3';
 
         if (!apiKey) {
             this.logger.warn('AI_API_KEY is not set. Returning a mock image.');
@@ -33,66 +40,77 @@ export class AiService {
         }
 
         try {
-            this.logger.log(`Generating image for prompt: ${prompt} using model: ${model}`);
+            this.logger.log(`Generating image for prompt: ${prompt} using model: ${finalModel}`);
 
             const isChatEndpoint = apiUrl.includes('chat/completions');
             let body: any;
 
             if (isChatEndpoint) {
-                // Format for Chat Completion based image generation
                 body = {
-                    model: model,
+                    model: finalModel,
                     messages: [{ role: 'user', content: prompt }],
                     stream: false
                 };
             } else {
-                // Standard DALL-E format
                 body = {
-                    model: model,
+                    model: finalModel,
                     prompt: prompt,
                     n: 1,
-                    size: '1024x1792', // Portrait for wallpapers
+                    size: '1024x1792',
+                    aspect_ratio: '9:16',
                     response_format: 'url',
                 };
             }
 
-            const response = await axios.post<any>(
-                apiUrl,
-                body,
-                {
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json',
-                    },
-                    timeout: 60000,
-                },
-            );
+            const response = await axios.post<any>(apiUrl, body, {
+                headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                timeout: 60000,
+            });
 
             let imageUrl: string | undefined;
-
             if (isChatEndpoint) {
-                // Parse from Chat Completion content
                 const content = response.data?.choices?.[0]?.message?.content;
                 if (content) {
-                    // Try to extract URL from content (might be markdown or naked URL)
                     const urlRegex = /(https?:\/\/[^\s"'<>]+)/g;
-                    const matches = content.match(urlRegex);
-                    imageUrl = matches?.[0];
+                    imageUrl = content.match(urlRegex)?.[0];
                 }
             } else {
-                // Parse from standard Image Generation response
                 imageUrl = response.data?.data?.[0]?.url || response.data?.images?.[0]?.url;
             }
 
             if (!imageUrl) {
                 this.logger.error('Unexpected AI Response format:', JSON.stringify(response.data));
-                throw new Error(`No image URL found in response. Endpoint: ${isChatEndpoint ? 'Chat' : 'Images'}`);
+                throw new Error('No image URL found in response');
             }
-
             return imageUrl;
         } catch (error) {
-            this.logger.error('AI Generation Failed', error.response?.data || error.message);
+            this.logger.error('AI Image Generation Failed', error.response?.data || error.message);
             throw new Error(`AI生成失败: ${error.response?.data?.error?.message || error.message}`);
+        }
+    }
+
+    async generateChat(prompt: string, model: string): Promise<string> {
+        const apiKey = await this.systemConfigService.get('AI_API_KEY') || this.configService.get<string>('AI_API_KEY');
+        const apiUrl = await this.systemConfigService.get('AI_CHAT_URL') || 'https://api.openai.com/v1/chat/completions';
+
+        if (!apiKey) throw new Error('AI_API_KEY is not set');
+
+        try {
+            const response = await axios.post<any>(apiUrl, {
+                model: model,
+                messages: [{ role: 'user', content: prompt }],
+                stream: false
+            }, {
+                headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                timeout: 60000,
+            });
+
+            const content = response.data?.choices?.[0]?.message?.content;
+            if (!content) throw new Error('No content in chat response');
+            return content;
+        } catch (error) {
+            this.logger.error('AI Chat Failed', error.response?.data || error.message);
+            throw new Error(`AI对话失败: ${error.response?.data?.error?.message || error.message}`);
         }
     }
 
