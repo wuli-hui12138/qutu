@@ -17,6 +17,7 @@ npm run install:all
 # 2. 生成 Prisma Client
 echo "💎 正在生成 Prisma Client..."
 cd backend
+rm -rf dist
 npx prisma generate
 
 # 3. 执行数据库同步

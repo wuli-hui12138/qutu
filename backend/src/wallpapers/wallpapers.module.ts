@@ -6,5 +6,6 @@ import { PrismaService } from '../prisma.service';
 @Module({
   controllers: [WallpapersController],
   providers: [WallpapersService, PrismaService],
+  exports: [WallpapersService],
 })
 export class WallpapersModule { }
