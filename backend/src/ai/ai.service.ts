@@ -56,7 +56,8 @@ export class AiService {
 
             const imageUrl = response.data?.data?.[0]?.url || response.data?.images?.[0]?.url;
             if (!imageUrl) {
-                throw new Error('No image URL in response');
+                this.logger.error('Unexpected AI Response format:', response.data);
+                throw new Error(`No image URL in response. Check logs for response body.`);
             }
 
             return imageUrl;
