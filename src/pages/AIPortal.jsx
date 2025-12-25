@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, MessageSquare, ArrowRight, Zap, Image as ImageIcon, Heart } from 'lucide-react';
+import { Sparkles, MessageSquare, ArrowRight, Zap, Image as ImageIcon, Heart, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AIPortal() {
