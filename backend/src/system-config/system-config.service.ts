@@ -8,9 +8,9 @@ export class SystemConfigService implements OnModuleInit {
     async onModuleInit() {
         // Optionally seed default keys if they don't exist
         const defaultConfigs = [
-            { key: 'AI_API_KEY', value: '', description: 'AI API Key' },
-            { key: 'AI_API_URL', value: 'https://api.openai.com/v1/images/generations', description: 'AI API Endpoint' },
-            { key: 'AI_MODEL', value: 'dall-e-3', description: 'AI Model Name' },
+            { key: 'AI_API_KEY', value: '', description: 'AI API Key (Bearer Token)' },
+            { key: 'AI_API_URL', value: 'https://api.openai.com/v1/images/generations', description: 'AI API Endpoint (e.g., .../v1/images/generations 或 .../v1/chat/completions)' },
+            { key: 'AI_MODEL', value: 'dall-e-3', description: 'AI Model Name (e.g., dall-e-3, gpt-4o-image, flux, recraftv3)' },
         ];
 
         for (const config of defaultConfigs) {

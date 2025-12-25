@@ -42,7 +42,8 @@ export class AiService {
                 // Format for Chat Completion based image generation
                 body = {
                     model: model,
-                    messages: [{ role: 'user', content: prompt }]
+                    messages: [{ role: 'user', content: prompt }],
+                    stream: false
                 };
             } else {
                 // Standard DALL-E format
