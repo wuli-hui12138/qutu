@@ -9,8 +9,9 @@ export class SystemConfigService implements OnModuleInit {
         // Optionally seed default keys if they don't exist
         const defaultConfigs = [
             { key: 'AI_API_KEY', value: '', description: 'AI API Key (Bearer Token)' },
-            { key: 'AI_IMAGE_URL', value: 'https://api.openai.com/v1/images/generations', description: 'AI 绘图接口地址' },
-            { key: 'AI_CHAT_URL', value: 'https://api.openai.com/v1/chat/completions', description: 'AI 对话接口地址' },
+            { key: 'AI_BASE_URL', value: 'https://api.openai.com', description: 'AI 接口基础域名' },
+            { key: 'AI_IMAGE_PATH', value: '/v1/images/generations', description: 'AI 绘图请求路径' },
+            { key: 'AI_CHAT_PATH', value: '/v1/chat/completions', description: 'AI 对话请求路径' },
             { key: 'AI_IMAGE_MODELS', value: 'dall-e-3,flux,gpt-4o-image', description: '绘图模型列表 (英文逗号分隔)' },
             { key: 'AI_CHAT_MODELS', value: 'gpt-4o,gpt-4-turbo,qwen-plus', description: '对话模型列表 (英文逗号分隔)' },
         ];

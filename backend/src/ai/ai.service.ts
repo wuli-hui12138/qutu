@@ -27,11 +27,13 @@ export class AiService {
 
     async generateImage(prompt: string, model?: string): Promise<string> {
         const dbApiKey = await this.systemConfigService.get('AI_API_KEY');
-        const dbApiUrl = await this.systemConfigService.get('AI_IMAGE_URL') || await this.systemConfigService.get('AI_API_URL');
+        const dbBaseUrl = await this.systemConfigService.get('AI_BASE_URL');
+        const dbImagePath = await this.systemConfigService.get('AI_IMAGE_PATH') || '/v1/images/generations';
         const dbModel = await this.systemConfigService.get('AI_MODEL');
 
         const apiKey = dbApiKey || this.configService.get<string>('AI_API_KEY');
-        const apiUrl = dbApiUrl || this.configService.get<string>('AI_API_URL') || 'https://api.openai.com/v1/images/generations';
+        const baseUrl = (dbBaseUrl || this.configService.get<string>('AI_BASE_URL') || 'https://api.openai.com').replace(/\/$/, '');
+        const apiUrl = `${baseUrl}${dbImagePath.startsWith('/') ? '' : '/'}${dbImagePath}`;
         const finalModel = model || dbModel || this.configService.get<string>('AI_MODEL') || 'dall-e-3';
 
         if (!apiKey) {
@@ -40,7 +42,7 @@ export class AiService {
         }
 
         try {
-            this.logger.log(`Generating image for prompt: ${prompt} using model: ${finalModel}`);
+            this.logger.log(`Generating image for prompt: ${prompt} using model: ${finalModel} at ${apiUrl}`);
 
             const isChatEndpoint = apiUrl.includes('chat/completions');
             let body: any;
@@ -91,7 +93,11 @@ export class AiService {
 
     async generateChat(prompt: string, model: string): Promise<string> {
         const apiKey = await this.systemConfigService.get('AI_API_KEY') || this.configService.get<string>('AI_API_KEY');
-        const apiUrl = await this.systemConfigService.get('AI_CHAT_URL') || 'https://api.openai.com/v1/chat/completions';
+        const dbBaseUrl = await this.systemConfigService.get('AI_BASE_URL');
+        const dbChatPath = await this.systemConfigService.get('AI_CHAT_PATH') || '/v1/chat/completions';
+
+        const baseUrl = (dbBaseUrl || this.configService.get<string>('AI_BASE_URL') || 'https://api.openai.com').replace(/\/$/, '');
+        const apiUrl = `${baseUrl}${dbChatPath.startsWith('/') ? '' : '/'}${dbChatPath}`;
 
         if (!apiKey) throw new Error('AI_API_KEY is not set');
 

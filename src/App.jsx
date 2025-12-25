@@ -14,6 +14,7 @@ import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
 import TopicAudit from './pages/TopicAudit';
 import AuthorProfile from './pages/AuthorProfile';
+import AIPortal from './pages/AIPortal';
 import AIGenerator from './pages/AIGenerator';
 import AIChat from './pages/AIChat';
 import ConfigManagement from './pages/ConfigManagement';
@@ -32,8 +33,9 @@ function App() {
           <Route path="topics" element={<Topics />} />
           <Route path="topics/:id" element={<TopicDetail />} />
           <Route path="upload" element={<Upload />} />
-          <Route path="ai" element={<AIGenerator />} />
-          <Route path="ai-chat" element={<AIChat />} />
+          <Route path="ai" element={<AIPortal />} />
+          <Route path="ai/image" element={<AIGenerator />} />
+          <Route path="ai/chat" element={<AIChat />} />
           <Route path="settings" element={<Settings />} />
           <Route path="settings/tags" element={<TagManagement />} />
           <Route path="settings/categories" element={<CategoryManagement />} />

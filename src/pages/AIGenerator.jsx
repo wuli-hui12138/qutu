@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Send, Download, Save, RefreshCw, Wand2, History, ChevronRight } from 'lucide-react';
+import { Sparkles, Send, Download, Save, RefreshCw, Wand2, History, ChevronRight, ArrowLeft } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
 
@@ -98,11 +98,14 @@ export default function AIGenerator() {
         <div className="bg-white min-h-screen pb-20 pt-16 px-4 overflow-y-auto hide-scrollbar flex flex-col gap-6">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Sparkles className="text-purple-600" /> AI 创意实验室
-                    </h1>
-                    <p className="text-xs text-gray-400 mt-1 font-medium italic">Transform your imagination into visuals</p>
+                <div className="flex items-center gap-4">
+                    <ArrowLeft className="cursor-pointer text-gray-800" onClick={() => navigate(-1)} />
+                    <div>
+                        <h1 className="text-xl font-black text-gray-900 flex items-center gap-2">
+                            AI 绘图
+                        </h1>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter opacity-70">AIGC ART STUDIO</p>
+                    </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                     <div className="bg-purple-50 p-2 rounded-xl text-purple-600">
