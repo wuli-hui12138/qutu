@@ -174,8 +174,8 @@ export default function AIPortal() {
                     <button className="w-full py-4 bg-gray-900 rounded-3xl text-xs font-black text-white uppercase tracking-[0.3em] shadow-2xl shadow-gray-900/10 active:scale-95 transition-all">
                         Upgrade Pro Membership
                     </button>
+                </motion.div>
             </div>
         </div>
-        </div >
     );
 }
