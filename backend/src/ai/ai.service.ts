@@ -111,7 +111,7 @@ export class AiService {
         return { taskId: task.id };
     }
 
-    private async runBackgroundGeneration(taskId: number, apiUrl: string, apiKey: string, prompt: string, model: string) {
+    private async runBackgroundGeneration(taskId: number, apiUrl: string, apiKey: string | undefined, prompt: string, model: string) {
         try {
             if (!apiKey) {
                 // Mock behavior if no key
