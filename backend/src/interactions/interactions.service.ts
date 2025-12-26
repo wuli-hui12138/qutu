@@ -6,20 +6,32 @@ export class InteractionsService {
     constructor(private prisma: PrismaService) { }
 
     async toggleFavorite(userId: number, imageId: number) {
-        const existing = await this.prisma.favorite.findUnique({
-            where: {
-                userId_imageId: { userId, imageId }
-            }
-        });
-
-        if (existing) {
-            return this.prisma.favorite.delete({
-                where: { id: existing.id }
+        return this.prisma.$transaction(async (tx) => {
+            const existing = await tx.favorite.findUnique({
+                where: {
+                    userId_imageId: { userId, imageId }
+                }
             });
-        }
 
-        return this.prisma.favorite.create({
-            data: { userId, imageId }
+            if (existing) {
+                // Already liked, so UNLIKE
+                await tx.favorite.delete({
+                    where: { id: existing.id }
+                });
+                return tx.image.update({
+                    where: { id: imageId },
+                    data: { likes: { decrement: 1 } }
+                });
+            } else {
+                // Not liked, so LIKE
+                await tx.favorite.create({
+                    data: { userId, imageId }
+                });
+                return tx.image.update({
+                    where: { id: imageId },
+                    data: { likes: { increment: 1 } }
+                });
+            }
         });
     }
 

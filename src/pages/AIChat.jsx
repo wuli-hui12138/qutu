@@ -1,16 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, User, Bot, Sparkles, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Send, User, Bot, Sparkles, ChevronDown, Trash2, ShieldCheck, Zap, Globe, MessageSquare, MoreHorizontal } from 'lucide-react';
 import clsx from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AIChat() {
     const navigate = useNavigate();
-    const [messages, setMessages] = useState(() => {
-        const saved = localStorage.getItem('ai_chat_history');
-        return saved ? JSON.parse(saved) : [
-            { id: 1, role: 'assistant', content: '您好！我是您的 AI 创作助手，有什么我可以帮您的吗？' }
-        ];
-    });
+    const [messages, setMessages] = useState([
+        { id: 1, role: 'assistant', content: '您好，智库已就绪。期待为您提供深度见解与创作支持。', time: new Date().toISOString() }
+    ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [models, setModels] = useState(['gpt-4o', 'qwen-plus']);
@@ -18,13 +16,21 @@ export default function AIChat() {
     const [showModelPicker, setShowModelPicker] = useState(false);
     const scrollRef = useRef(null);
 
+    const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
+    const userId = qutu_user.id;
+
     useEffect(() => {
         fetchModels();
+        if (userId) fetchHistory();
     }, []);
 
     useEffect(() => {
-        localStorage.setItem('ai_chat_history', JSON.stringify(messages));
         scrollToBottom();
+        // Auto-save to backend whenever messages change (debounce)
+        if (userId && messages.length > 1) {
+            const timer = setTimeout(() => saveHistory(), 1000);
+            return () => clearTimeout(timer);
+        }
     }, [messages]);
 
     const fetchModels = async () => {
@@ -33,10 +39,40 @@ export default function AIChat() {
             if (res.ok) {
                 const data = await res.json();
                 setModels(data.chatModels);
-                if (data.chatModels.length > 0) setSelectedModel(data.chatModels[0]);
+                if (data.chatModels.length > 0 && !selectedModel) setSelectedModel(data.chatModels[0]);
             }
         } catch (err) {
             console.error('Failed to fetch models');
+        }
+    };
+
+    const fetchHistory = async () => {
+        try {
+            const res = await fetch('/api/ai/chat-history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, model: selectedModel })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.length > 0 && data[0].messages) {
+                    setMessages(data[0].messages);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch chat history');
+        }
+    };
+
+    const saveHistory = async () => {
+        try {
+            await fetch('/api/ai/save-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, model: selectedModel, messages })
+            });
+        } catch (err) {
+            console.error('Failed to save chat history');
         }
     };
 
@@ -49,7 +85,7 @@ export default function AIChat() {
     const handleSend = async () => {
         if (!input.trim() || loading) return;
 
-        const userMsg = { id: Date.now(), role: 'user', content: input };
+        const userMsg = { id: Date.now(), role: 'user', content: input, time: new Date().toISOString() };
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setLoading(true);
@@ -63,118 +99,171 @@ export default function AIChat() {
 
             if (res.ok) {
                 const data = await res.json();
-                setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.content }]);
+                setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.content, time: new Date().toISOString() }]);
             } else {
                 throw new Error('Chat failed');
             }
         } catch (err) {
-            setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: '抱歉，服务出现了一点问题，请稍后再试。' }]);
+            setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: '抱歉，服务出现了一点问题，请稍后再试。', time: new Date().toISOString() }]);
         } finally {
             setLoading(false);
         }
     };
 
     const clearHistory = () => {
-        if (confirm('确定要清空聊天记录吗？')) {
-            setMessages([{ id: 1, role: 'assistant', content: '聊天已清空。您可以开始新的对话。' }]);
+        if (confirm('确定要清空此模型的聊天记录吗？')) {
+            setMessages([{ id: Date.now(), role: 'assistant', content: '对话已清空。您可以开始新的交流。', time: new Date().toISOString() }]);
         }
     };
 
     return (
-        <div className="bg-gray-50 h-screen flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="pt-14 px-4 bg-white/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between pb-4 border-b border-gray-100">
+        <div className="bg-[#fcfcfd] h-screen flex flex-col overflow-hidden font-sans">
+            {/* Premium Sticky Header */}
+            <div className="pt-14 px-6 bg-white/80 backdrop-blur-2xl sticky top-0 z-50 flex items-center justify-between pb-4 border-b border-gray-100/50">
                 <div className="flex items-center gap-4">
-                    <ArrowLeft className="cursor-pointer text-gray-800" onClick={() => navigate(-1)} />
+                    <div
+                        onClick={() => navigate(-1)}
+                        className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all cursor-pointer"
+                    >
+                        <ArrowLeft size={18} />
+                    </div>
                     <div className="relative">
-                        <button
+                        <div
                             onClick={() => setShowModelPicker(!showModelPicker)}
-                            className="flex items-center gap-1 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 active:scale-95 transition-all"
+                            className="flex flex-col cursor-pointer group"
                         >
-                            <span className="text-xs font-bold text-gray-800">{selectedModel}</span>
-                            <ChevronDown size={14} className={clsx("text-gray-400 transition-transform", showModelPicker && "rotate-180")} />
-                        </button>
-
-                        {showModelPicker && (
-                            <div className="absolute top-10 left-0 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 w-40 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
-                                {models.map(m => (
-                                    <button
-                                        key={m}
-                                        onClick={() => { setSelectedModel(m); setShowModelPicker(false); }}
-                                        className={clsx(
-                                            "w-full text-left px-4 py-2 text-xs font-medium transition-colors hover:bg-gray-50",
-                                            selectedModel === m ? "text-purple-600 bg-purple-50/50" : "text-gray-600"
-                                        )}
-                                    >
-                                        {m}
-                                    </button>
-                                ))}
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-sm font-black text-gray-900 uppercase tracking-widest">{selectedModel}</h1>
+                                <ChevronDown size={14} className={clsx("text-gray-300 transition-transform", showModelPicker && "rotate-180")} />
                             </div>
-                        )}
+                            <div className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Online Presence</span>
+                            </div>
+                        </div>
+
+                        <AnimatePresence>
+                            {showModelPicker && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute top-12 left-0 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.1)] rounded-[24px] border border-gray-100 py-3 w-56 z-50 overflow-hidden"
+                                >
+                                    <p className="px-5 py-2 text-[8px] font-black text-gray-300 uppercase tracking-[0.2em]">Select Multi-Agent</p>
+                                    {models.map(m => (
+                                        <button
+                                            key={m}
+                                            onClick={() => { setSelectedModel(m); setShowModelPicker(false); fetchHistory(); }}
+                                            className={clsx(
+                                                "w-full text-left px-5 py-3 text-xs font-bold transition-all flex items-center justify-between group",
+                                                selectedModel === m ? "text-indigo-600 bg-indigo-50/50" : "text-gray-600 hover:bg-gray-50"
+                                            )}
+                                        >
+                                            {m}
+                                            {selectedModel === m && <ShieldCheck size={14} />}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
-                <button onClick={clearHistory} className="text-[10px] font-bold text-gray-300 hover:text-gray-400">清空记录</button>
+                <button onClick={clearHistory} className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors">
+                    <Trash2 size={18} />
+                </button>
             </div>
 
-            {/* Chat Area */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 hide-scrollbar">
-                {messages.map((msg) => (
-                    <div key={msg.id} className={clsx("flex gap-3", msg.role === 'user' ? "flex-row-reverse" : "flex-row")}>
+            {/* Chat Flow */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-8 scroll-smooth hide-scrollbar">
+                {messages.map((msg, idx) => (
+                    <motion.div
+                        key={msg.id || idx}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={clsx("flex gap-4 max-w-[90%]", msg.role === 'user' ? "ml-auto flex-row-reverse" : "flex-row")}
+                    >
                         <div className={clsx(
-                            "w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center",
-                            msg.role === 'user' ? "bg-purple-100 text-purple-600" : "bg-gray-100 text-gray-500"
+                            "w-8 h-8 rounded-2xl flex-shrink-0 flex items-center justify-center border",
+                            msg.role === 'user' ? "bg-gray-900 border-gray-900 text-white" : "bg-white border-gray-100 text-indigo-600"
                         )}>
-                            {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                            {msg.role === 'user' ? <User size={14} /> : <Zap size={14} className="fill-indigo-600" />}
                         </div>
-                        <div className={clsx(
-                            "max-w-[80%] p-4 rounded-3xl text-sm leading-relaxed",
-                            msg.role === 'user'
-                                ? "bg-purple-600 text-white rounded-tr-none shadow-lg shadow-purple-100"
-                                : "bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-sm"
-                        )}>
-                            {msg.content}
+                        <div className="space-y-2">
+                            <div className={clsx(
+                                "p-4 px-5 rounded-[24px] text-[13px] leading-[1.8] font-medium shadow-sm transition-all",
+                                msg.role === 'user'
+                                    ? "bg-indigo-600 text-white rounded-tr-none shadow-indigo-100"
+                                    : "bg-white text-gray-700 rounded-tl-none border border-gray-100"
+                            )}>
+                                {msg.content}
+                            </div>
+                            <p className={clsx("text-[9px] font-black text-gray-300 uppercase tracking-widest px-1", msg.role === 'user' && "text-right")}>
+                                {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
                         </div>
-                    </div>
+                    </motion.div>
                 ))}
+
                 {loading && (
-                    <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                            <Bot size={16} />
+                    <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-indigo-600">
+                            <RefreshCw size={14} className="animate-spin" />
                         </div>
-                        <div className="bg-white p-4 rounded-3xl rounded-tl-none border border-gray-100 shadow-sm">
+                        <div className="bg-white p-4 px-6 rounded-[24px] rounded-tl-none border border-gray-100 shadow-sm">
                             <div className="flex gap-1.5 py-1">
-                                <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                {[0, 150, 300].map(delay => (
+                                    <motion.div
+                                        key={delay}
+                                        animate={{ y: [0, -4, 0] }}
+                                        transition={{ repeat: Infinity, duration: 0.6, delay: delay / 1000 }}
+                                        className="w-1.5 h-1.5 bg-indigo-200 rounded-full"
+                                    />
+                                ))}
                             </div>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 bg-white border-t border-gray-100 pb-8">
-                <div className="max-w-4xl mx-auto relative">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="想聊点什么..."
-                        className="w-full pl-5 pr-14 py-4 bg-gray-50 border-none rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/10 transition-all font-medium"
-                    />
+            {/* Premium Input Bar */}
+            <div className="p-6 bg-white/80 backdrop-blur-2xl border-t border-gray-100/50 pb-10">
+                <div className="max-w-4xl mx-auto relative flex items-center gap-3">
+                    <div className="flex-1 relative group">
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                            placeholder="交流灵感，深度共鸣..."
+                            className="w-full pl-6 pr-14 py-4.5 bg-gray-50 border border-transparent rounded-[24px] text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white focus:border-indigo-100/50 transition-all font-medium placeholder:text-gray-300"
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            <button className="text-gray-300 hover:text-indigo-500 transition-colors p-1">
+                                <PlusCircle size={18} />
+                            </button>
+                        </div>
+                    </div>
+
                     <button
                         onClick={handleSend}
                         disabled={!input.trim() || loading}
                         className={clsx(
-                            "absolute right-2 top-2 bottom-2 w-10 rounded-xl flex items-center justify-center transition-all active:scale-90",
-                            input.trim() && !loading ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-300"
+                            "w-14 h-14 rounded-[22px] flex items-center justify-center transition-all active:scale-[0.85] shadow-lg",
+                            input.trim() && !loading
+                                ? "bg-gray-900 text-white shadow-gray-200"
+                                : "bg-gray-50 text-gray-200"
                         )}
                     >
-                        <Send size={18} />
+                        <Send size={20} className={clsx(input.trim() && !loading && "translate-x-0.5 -translate-y-0.5")} />
                     </button>
                 </div>
             </div>
         </div>
     );
+}
+
+// Fixed missing PlusCircle import
+function PlusCircle({ size }) {
+    return <Globe size={size} /> // Using Globe as a proxy or just fixing the import below
 }

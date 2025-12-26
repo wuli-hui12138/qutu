@@ -30,10 +30,40 @@ export class AiService {
         };
     }
 
-    async getTasks(limit = 10) {
+    async getTasks(userId?: number, limit = 10) {
         return this.prisma.aiTask.findMany({
+            where: userId ? { userId } : {},
             orderBy: { createdAt: 'desc' },
             take: limit
+        });
+    }
+
+    async getChatHistory(userId: number, model?: string, limit = 5) {
+        return this.prisma.aiChat.findMany({
+            where: {
+                userId,
+                ...(model ? { model } : {})
+            },
+            orderBy: { updatedAt: 'desc' },
+            take: limit
+        });
+    }
+
+    async saveChatHistory(userId: number, model: string, messages: any[]) {
+        // Find existing chat for the same model for this user
+        const existing = await this.prisma.aiChat.findFirst({
+            where: { userId, model }
+        });
+
+        if (existing) {
+            return this.prisma.aiChat.update({
+                where: { id: existing.id },
+                data: { messages, updatedAt: new Date() }
+            });
+        }
+
+        return this.prisma.aiChat.create({
+            data: { userId, model, messages }
         });
     }
 
@@ -65,10 +95,10 @@ export class AiService {
             const buffer = Buffer.from(response.data as any);
             fs.writeFileSync(originalFile, buffer);
 
-            // 2. Shrink with Sharp
+            // 2. Shrink with Sharp - MORE AGGRESSIVE for performance
             await sharp(buffer)
-                .resize(400) // Small enough for thumbnails
-                .jpeg({ quality: 80 })
+                .resize(300) // Even smaller
+                .jpeg({ quality: 70 }) // lower quality for extreme speed
                 .toFile(thumbFile);
 
             return {
@@ -85,7 +115,7 @@ export class AiService {
     /**
      * Start background generation
      */
-    async generateImage(prompt: string, model?: string): Promise<{ taskId: number }> {
+    async generateImage(prompt: string, userId?: number, model?: string): Promise<{ taskId: number }> {
         const dbApiKey = await this.systemConfigService.get('AI_API_KEY');
         const dbBaseUrl = await this.systemConfigService.get('AI_BASE_URL');
         const dbImagePath = await this.systemConfigService.get('AI_IMAGE_PATH') || '/v1/images/generations';
@@ -99,6 +129,7 @@ export class AiService {
         // 1. Create a task in DB
         const task = await this.prisma.aiTask.create({
             data: {
+                userId,
                 prompt,
                 model: finalModel,
                 status: 'PROCESSING'

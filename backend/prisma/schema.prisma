@@ -45,6 +45,8 @@ model User {
   history     History[]
   following   Follow[]  @relation("Following")
   followers   Follow[]  @relation("Followers")
+  aiChats     AiChat[]
+  aiTasks     AiTask[]
 }
 
 model Follow {
@@ -115,8 +117,20 @@ model SystemConfig {
   createdAt   DateTime @default(now())
 }
 
+model AiChat {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  model     String
+  messages  Json     // Array of {role, content, time}
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model AiTask {
   id        Int      @id @default(autoincrement())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
   prompt    String   @db.Text
   model     String
   status    String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED

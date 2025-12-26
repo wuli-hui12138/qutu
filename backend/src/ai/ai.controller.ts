@@ -11,13 +11,23 @@ export class AiController {
     }
 
     @Post('generate')
-    async generate(@Body() body: { prompt: string; model?: string }) {
-        return this.aiService.generateImage(body.prompt, body.model);
+    async generate(@Body() body: { prompt: string; model?: string; userId?: number }) {
+        return this.aiService.generateImage(body.prompt, body.userId, body.model);
     }
 
     @Post('tasks')
-    async getTasks(@Body() body: { limit?: number }) {
-        return this.aiService.getTasks(body.limit);
+    async getTasks(@Body() body: { limit?: number; userId?: number }) {
+        return this.aiService.getTasks(body.userId, body.limit);
+    }
+
+    @Post('chat-history')
+    async getChatHistory(@Body() body: { userId: number; model?: string; limit?: number }) {
+        return this.aiService.getChatHistory(body.userId, body.model, body.limit);
+    }
+
+    @Post('save-chat')
+    async saveChat(@Body() body: { userId: number; model: string; messages: any[] }) {
+        return this.aiService.saveChatHistory(body.userId, body.model, body.messages);
     }
 
     @Post('task-status')
