@@ -292,8 +292,5 @@ export default function AIGenerator() {
             )}
 
         </div>
-    )
-}
-        </div >
     );
 }
