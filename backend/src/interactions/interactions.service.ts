@@ -21,19 +21,21 @@ export class InteractionsService {
 
                 // Safety: Get current and decrement, ensuring >= 0
                 const img = await tx.image.findUnique({ where: { id: imageId } });
-                return tx.image.update({
+                const newImage = await tx.image.update({
                     where: { id: imageId },
                     data: { likes: Math.max(0, (img?.likes || 1) - 1) }
                 });
+                return { isLiked: false, likes: newImage.likes };
             } else {
                 // Not liked, so LIKE
                 await tx.favorite.create({
                     data: { userId, imageId }
                 });
-                return tx.image.update({
+                const newImage = await tx.image.update({
                     where: { id: imageId },
                     data: { likes: { increment: 1 } }
                 });
+                return { isLiked: true, likes: newImage.likes };
             }
         });
     }

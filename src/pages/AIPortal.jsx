@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, MessageSquare, ArrowRight, Zap, Image as ImageIcon, Heart, ArrowLeft, Star, Globe, Award } from 'lucide-react';
+import { Sparkles, MessageSquare, ArrowRight, Image as ImageIcon, ArrowLeft, Star, Layers, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AIPortal() {
@@ -8,171 +8,156 @@ export default function AIPortal() {
     const tools = [
         {
             id: 'drawing',
-            title: 'AI 艺术工坊',
-            desc: '构建超现实主义视觉窗口，将灵感粒子聚变为永恒画卷。支持 4K 原生画质与多风格引擎渲染。',
-            icon: <ImageIcon size={28} className="text-white" />,
-            bgColor: 'bg-[#6366f1]',
-            shadowColor: 'shadow-indigo-500/20',
-            tag: '视觉智能',
+            title: '视觉创作实验室',
+            desc: '突破次元壁的视觉引擎。将语言粒子重构为超现实影像。',
+            icon: <ImageIcon size={24} />,
+            color: 'from-indigo-500 to-purple-500',
             path: '/ai/image',
-            features: ['4K 渲染', '提示词引擎', '风格融合']
+            tag: 'Visual Intelligence'
         },
         {
             id: 'chat',
-            title: '智能智库',
-            desc: '您的多维思考伙伴。深度逻辑拆解、多语言流利切换，为您的创作提供源源不断的智慧潮汐。',
-            icon: <MessageSquare size={28} className="text-white" />,
-            bgColor: 'bg-[#3b82f6]',
-            shadowColor: 'shadow-blue-500/20',
-            tag: '语言逻辑',
+            title: '智算对话中心',
+            desc: '探索通用人工智能的边界。深度逻辑链条与多维知识图谱。',
+            icon: <MessageSquare size={24} />,
+            color: 'from-blue-500 to-cyan-500',
             path: '/ai/chat',
-            features: ['深度思考', '编程助手', '创意写作']
+            tag: 'Neural Logic'
         }
     ];
 
     return (
-        <div className="bg-[#fcfcfd] min-h-screen pb-24 relative overflow-hidden font-sans">
-            {/* Background Decorative Elements */}
-            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-100/40 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
+        <div className="bg-[#050505] min-h-screen text-white selection:bg-indigo-500/30 font-sans relative overflow-hidden">
+            {/* Ambient Background */}
+            <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse" />
+            <div className="absolute bottom-0 right-0 w-[30%] h-[30%] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Header / Nav */}
-            <div className="sticky top-0 z-50 backdrop-blur-md bg-white/70 border-b border-gray-100/50 px-6 py-4 flex items-center justify-between">
-                <div
+            {/* Nav */}
+            <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-black/20 border-b border-white/5 px-8 py-5 flex items-center justify-between">
+                <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
                     onClick={() => navigate('/')}
-                    className="flex items-center gap-2 group cursor-pointer active:scale-95 transition-all"
+                    className="flex items-center gap-4 group cursor-pointer"
                 >
-                    <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white">
-                        <ArrowLeft size={16} />
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
+                        <ArrowLeft size={18} />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-gray-900 transition-colors">返回控制中心</span>
-                </div>
-                <div className="w-8 h-8 rounded-full border border-gray-100 overflow-hidden shadow-sm">
-                    <img src="https://i.pravatar.cc/100?u=qutu" alt="user" className="w-full h-full object-cover" />
-                </div>
-            </div>
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 group-hover:text-white/60 transition-colors">返回控制台</p>
+                        <p className="text-sm font-bold tracking-tight">QUTU <span className="text-indigo-500">STUDIO</span></p>
+                    </div>
+                </motion.div>
 
-            <div className="px-6 pt-12">
+                <div className="flex items-center gap-6">
+                    <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">系统负载: 极低</span>
+                    </div>
+                    <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden ring-4 ring-white/5">
+                        <img src="https://i.pravatar.cc/100?u=qutu" alt="avatar" className="w-full h-full object-cover" />
+                    </div>
+                </div>
+            </nav>
+
+            <div className="max-w-5xl mx-auto px-8 py-20 relative z-10">
                 {/* Hero Section */}
-                <div className="mb-14 max-w-lg mx-auto text-center">
+                <div className="max-w-2xl mb-24">
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 bg-white border border-gray-100 shadow-sm px-3 py-1.5 rounded-full mb-6"
+                        className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-1.5 rounded-full mb-8"
                     >
-                        <Star size={12} className="text-amber-500 fill-amber-500" />
-                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">新一代智能创作</span>
+                        <Sparkles size={14} className="text-indigo-400" />
+                        <span className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em]">人工智能实验室 V4.0</span>
                     </motion.div>
 
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1, duration: 0.8 }}
-                        className="text-[40px] leading-[1.1] font-black text-gray-900 tracking-[-0.04em]"
+                        className="text-6xl sm:text-7xl font-black tracking-[-0.05em] leading-[0.9] mb-8"
                     >
-                        释放<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">纯粹灵感</span>
+                        探索<br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400">无限可能</span>
                     </motion.h1>
 
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.8 }}
-                        className="text-gray-400 text-sm mt-5 font-medium leading-relaxed"
+                        className="text-lg text-white/40 font-medium leading-relaxed max-w-lg"
                     >
-                        基于多维神经网络引擎，打造跨时代的<br />
-                        <span className="text-gray-800">智能创作与视觉实验室</span>
+                        深度集成多维神经网络模型，为您构建沉浸式的<br />
+                        <span className="text-white">次世代内容创作生态。</span>
                     </motion.p>
                 </div>
 
-                {/* Portal Cards */}
-                <div className="space-y-8 max-w-md mx-auto">
+                {/* Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {tools.map((tool, index) => (
                         <motion.div
                             key={tool.id}
-                            initial={{ opacity: 0, y: 30 }}
+                            initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: 0.2 + index * 0.1, duration: 0.6 }}
+                            transition={{ delay: 0.2 + index * 0.1 }}
                             onClick={() => navigate(tool.path)}
-                            className="group relative bg-white rounded-[40px] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-8 cursor-pointer overflow-hidden active:scale-[0.98] transition-all"
+                            className="group relative bg-[#111] border border-white/5 rounded-[40px] p-10 cursor-pointer overflow-hidden hover:border-white/20 transition-all active:scale-[0.98]"
                         >
-                            {/* Decorative Background Icon */}
-                            <div className={`absolute -right-10 -bottom-10 opacity-[0.03] group-hover:scale-110 transition-transform duration-700`}>
-                                {index === 0 ? <ImageIcon size={200} /> : <MessageSquare size={200} />}
-                            </div>
+                            {/* Card Glow */}
+                            <div className={`absolute -right-20 -top-20 w-64 h-64 bg-gradient-to-br ${tool.color} opacity-0 group-hover:opacity-10 blur-[80px] transition-opacity duration-700`} />
 
-                            <div className="flex justify-between items-start mb-10 relative z-10">
-                                <div className={`${tool.bgColor} w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${tool.shadowColor} group-hover:scale-110 transition-transform duration-500`}>
+                            <div className="relative z-10 flex justify-between items-start mb-12">
+                                <div className={`w-16 h-16 rounded-[24px] bg-gradient-to-br ${tool.color} flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500`}>
                                     {tool.icon}
                                 </div>
-                                <div className="flex flex-col items-end">
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-300 group-hover:text-gray-400 transition-colors mb-2">{tool.tag}</span>
-                                    <div className="flex gap-1">
-                                        {[1, 2, 3].map(dot => (
-                                            <div key={dot} className="w-1 h-1 rounded-full bg-gray-100 group-hover:bg-indigo-200 transition-colors" />
-                                        ))}
+                                <div className="text-right">
+                                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] group-hover:text-white/40 transition-colors">{tool.tag}</span>
+                                    <div className="flex gap-1 justify-end mt-2 opacity-20 group-hover:opacity-100 transition-opacity">
+                                        {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-white" />)}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="relative z-10 mb-8">
-                                <h2 className="text-2xl font-black text-gray-900 mb-3 group-hover:translate-x-1 transition-transform">{tool.title}</h2>
-                                <p className="text-[13px] text-gray-400 leading-relaxed font-medium line-clamp-2 pr-6">
-                                    {tool.desc}
-                                </p>
+                            <div className="relative z-10 mb-10">
+                                <h2 className="text-3xl font-black mb-4 tracking-tight group-hover:translate-x-2 transition-transform">{tool.title}</h2>
+                                <p className="text-white/40 text-sm leading-relaxed font-medium line-clamp-2">{tool.desc}</p>
                             </div>
 
-                            <div className="flex items-center justify-between relative z-10 pt-6 border-t border-gray-50">
-                                <div className="flex gap-4">
-                                    {tool.features.map(f => (
-                                        <div key={f} className="flex items-center gap-1">
-                                            <div className="w-1 h-1 rounded-full bg-indigo-500" />
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">{f}</span>
-                                        </div>
-                                    ))}
+                            <div className="relative z-10 flex items-center justify-between pt-8 border-t border-white/5">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">实验室状态: 就绪</span>
                                 </div>
-                                <div className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-gray-900 group-hover:text-white group-hover:border-gray-900 transition-all duration-300">
-                                    <ArrowRight size={18} />
+                                <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
+                                    <ArrowRight size={20} />
                                 </div>
                             </div>
                         </motion.div>
                     ))}
                 </div>
 
-                {/* Footer Section */}
+                {/* Footer Banner */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    className="mt-16 text-center max-w-sm mx-auto"
+                    className="mt-32 pt-20 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-12"
                 >
-                    <div className="flex items-center justify-center gap-8 mb-8">
-                        <div className="text-center">
-                            <p className="text-[20px] font-black text-gray-900">4.9/5.0</p>
-                            <div className="flex gap-0.5 justify-center mt-1">
-                                {[1, 2, 3, 4, 5].map(s => <Star key={s} size={8} className="text-amber-400 fill-amber-400" />)}
-                            </div>
+                    <div className="flex items-center gap-16">
+                        <div>
+                            <p className="text-3xl font-black">4.9/5</p>
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mt-2 text-center md:text-left">用户满意度</p>
                         </div>
-                        <div className="w-px h-8 bg-gray-100" />
-                        <div className="text-center">
-                            <p className="text-[20px] font-black text-gray-900">24/7</p>
-                            <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mt-1">全球边缘节点</p>
-                        </div>
-                        <div className="w-px h-8 bg-gray-100" />
-                        <div className="text-center">
-                            <div className="flex -space-x-1.5 justify-center mb-1">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="w-5 h-5 rounded-full border border-white bg-gray-100 overflow-hidden shadow-sm">
-                                        <img src={`https://i.pravatar.cc/100?u=qutu-${i}`} alt="user" />
-                                    </div>
-                                ))}
-                            </div>
-                            <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">活跃创作者</p>
+                        <div>
+                            <p className="text-3xl font-black">2.4M+</p>
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mt-2 text-center md:text-left">生成的作品</p>
                         </div>
                     </div>
 
-                    <button className="w-full py-4 bg-gray-900 rounded-3xl text-xs font-black text-white uppercase tracking-[0.3em] shadow-2xl shadow-gray-900/10 active:scale-95 transition-all">
-                        升级专业版会员
+                    <button className="px-10 py-5 bg-white text-black text-xs font-black uppercase tracking-[0.3em] rounded-full hover:bg-white/90 active:scale-95 transition-all">
+                        升级至 STUDIO PRO
                     </button>
                 </motion.div>
             </div>

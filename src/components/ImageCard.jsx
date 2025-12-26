@@ -19,30 +19,49 @@ export default function ImageCard({ id, src, title, categories, tags, blurData, 
         const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
         const userId = qutu_user.id;
 
+        // Optimistic update locally
         const likes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
-        let newLikes;
         const isCurrentlyLiked = likes.includes(id);
 
-        if (isCurrentlyLiked) {
-            newLikes = likes.filter(itemId => itemId !== id);
-        } else {
-            newLikes = [...likes, id];
-        }
-
-        localStorage.setItem('qutu_likes', JSON.stringify(newLikes));
+        // Toggle state immediately for responsiveness
         setIsLiked(!isCurrentlyLiked);
 
-        // Sync with backend if logged in
         if (userId) {
             try {
-                await fetch('/api/interactions/favorite', {
+                const res = await fetch('/api/interactions/favorite', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId, imageId: id })
                 });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    // data = { isLiked: boolean, likes: number }
+                    setIsLiked(data.isLiked);
+
+                    // Update localStorage with actual state from server
+                    let finalLikes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
+                    if (data.isLiked) {
+                        if (!finalLikes.includes(id)) finalLikes.push(id);
+                    } else {
+                        finalLikes = finalLikes.filter(itemId => itemId !== id);
+                    }
+                    localStorage.setItem('qutu_likes', JSON.stringify(finalLikes));
+                }
             } catch (err) {
                 console.error('Failed to sync favorite', err);
+                // Rollback on error
+                setIsLiked(isCurrentlyLiked);
             }
+        } else {
+            // If not logged in, just update local storage (fallback)
+            let localLikes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
+            if (isCurrentlyLiked) {
+                localLikes = localLikes.filter(itemId => itemId !== id);
+            } else {
+                localLikes = [...localLikes, id];
+            }
+            localStorage.setItem('qutu_likes', JSON.stringify(localLikes));
         }
     };
 

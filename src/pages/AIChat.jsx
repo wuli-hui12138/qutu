@@ -1,89 +1,74 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, User, Bot, Sparkles, ChevronDown, Trash2, ShieldCheck, Zap, Globe, MessageSquare, MoreHorizontal } from 'lucide-react';
-import clsx from 'clsx';
+import {
+    Send,
+    ArrowLeft,
+    Zap,
+    User,
+    Trash2,
+    ChevronDown,
+    ShieldCheck,
+    Sparkles,
+    Layers,
+    MessageSquare,
+    Command
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import clsx from 'clsx';
 
 export default function AIChat() {
     const navigate = useNavigate();
-    const [messages, setMessages] = useState([
-        { id: 1, role: 'assistant', content: '您好，智库已就绪。期待为您提供深度见解与创作支持。', time: new Date().toISOString() }
-    ]);
     const [input, setInput] = useState('');
+    const [messages, setMessages] = useState([
+        { id: 1, role: 'assistant', content: '您好。神经元链路已就绪。期待为您提供深度见解与跨维度创作支持。', time: new Date().toISOString() }
+    ]);
     const [loading, setLoading] = useState(false);
-    const [models, setModels] = useState(['gpt-4o', 'qwen-plus']);
-    const [selectedModel, setSelectedModel] = useState('gpt-4o');
+    const [selectedModel, setSelectedModel] = useState('GPT-4o');
     const [showModelPicker, setShowModelPicker] = useState(false);
     const scrollRef = useRef(null);
 
-    const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
-    const userId = qutu_user.id;
+    const models = ['GPT-4o', 'Claude 3.5 Sonnet', 'Gemini 1.5 Pro', 'DeepSeek-V2'];
 
     useEffect(() => {
-        fetchModels();
-        if (userId) fetchHistory();
-    }, []);
+        fetchHistory();
+    }, [selectedModel]);
 
     useEffect(() => {
-        scrollToBottom();
-        // Auto-save to backend whenever messages change (debounce)
-        if (userId && messages.length > 1) {
-            const timer = setTimeout(() => saveHistory(), 1000);
-            return () => clearTimeout(timer);
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
 
-    const fetchModels = async () => {
-        try {
-            const res = await fetch('/api/ai/models', { method: 'POST' });
-            if (res.ok) {
-                const data = await res.json();
-                setModels(data.chatModels);
-                if (data.chatModels.length > 0 && !selectedModel) setSelectedModel(data.chatModels[0]);
-            }
-        } catch (err) {
-            console.error('Failed to fetch models');
-        }
-    };
-
     const fetchHistory = async () => {
+        const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
+        const userId = qutu_user.id;
+        if (!userId) return;
+
         try {
-            const res = await fetch('/api/ai/chat-history', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, model: selectedModel })
-            });
+            const res = await fetch(`/api/ai/chat-history?userId=${userId}&model=${selectedModel}`);
             if (res.ok) {
                 const data = await res.json();
-                if (data && data.length > 0 && data[0].messages) {
-                    setMessages(data[0].messages);
+                if (data.length > 0) {
+                    setMessages(data.map(m => ({
+                        id: m.id,
+                        role: m.role,
+                        content: m.content,
+                        time: m.createdAt
+                    })));
+                } else {
+                    setMessages([{ id: Date.now(), role: 'assistant', content: `您好，我是 ${selectedModel}。请问今天有什么可以帮您的？`, time: new Date().toISOString() }]);
                 }
             }
         } catch (err) {
-            console.error('Failed to fetch chat history');
-        }
-    };
-
-    const saveHistory = async () => {
-        try {
-            await fetch('/api/ai/save-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, model: selectedModel, messages })
-            });
-        } catch (err) {
-            console.error('Failed to save chat history');
-        }
-    };
-
-    const scrollToBottom = () => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            console.error('Fetch history failed', err);
         }
     };
 
     const handleSend = async () => {
         if (!input.trim() || loading) return;
+
+        const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
+        const userId = qutu_user.id;
 
         const userMsg = { id: Date.now(), role: 'user', content: input, time: new Date().toISOString() };
         setMessages(prev => [...prev, userMsg]);
@@ -94,7 +79,7 @@ export default function AIChat() {
             const res = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: input, model: selectedModel })
+                body: JSON.stringify({ prompt: input, model: selectedModel, userId })
             });
 
             if (res.ok) {
@@ -104,41 +89,38 @@ export default function AIChat() {
                 throw new Error('Chat failed');
             }
         } catch (err) {
-            setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: '抱歉，服务出现了一点问题，请稍后再试。', time: new Date().toISOString() }]);
+            setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: '抱歉，神经元链路出现瞬时扰动，请稍后刷新重试。', time: new Date().toISOString() }]);
         } finally {
             setLoading(false);
         }
     };
 
     const clearHistory = () => {
-        if (confirm('确定要清空此模型的聊天记录吗？')) {
-            setMessages([{ id: Date.now(), role: 'assistant', content: '对话已清空。您可以开始新的交流。', time: new Date().toISOString() }]);
+        if (confirm('确定要清空此模型的对话记忆吗？')) {
+            setMessages([{ id: Date.now(), role: 'assistant', content: '记忆已清除。您可以开始新的深度对话。', time: new Date().toISOString() }]);
         }
     };
 
     return (
-        <div className="bg-[#fcfcfd] h-screen flex flex-col overflow-hidden font-sans">
-            {/* Premium Sticky Header */}
-            <div className="pt-14 px-6 bg-white/80 backdrop-blur-2xl sticky top-0 z-50 flex items-center justify-between pb-4 border-b border-gray-100/50">
-                <div className="flex items-center gap-4">
-                    <div
-                        onClick={() => navigate(-1)}
-                        className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all cursor-pointer"
-                    >
+        <div className="bg-[#050505] min-h-screen text-white font-sans flex flex-col relative overflow-hidden selection:bg-indigo-500/30">
+            {/* Ambient Background */}
+            <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-indigo-500/5 via-transparent to-transparent pointer-events-none" />
+
+            {/* Sticky Header */}
+            <header className="sticky top-0 z-50 backdrop-blur-2xl bg-black/20 border-b border-white/5 px-8 py-5 flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                    <div onClick={() => navigate('/ai')} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white hover:text-black transition-all">
                         <ArrowLeft size={18} />
                     </div>
+
                     <div className="relative">
-                        <div
-                            onClick={() => setShowModelPicker(!showModelPicker)}
-                            className="flex flex-col cursor-pointer group"
-                        >
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-sm font-black text-gray-900 uppercase tracking-widest">{selectedModel}</h1>
-                                <ChevronDown size={14} className={clsx("text-gray-300 transition-transform", showModelPicker && "rotate-180")} />
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">智库在线</span>
+                        <div onClick={() => setShowModelPicker(!showModelPicker)} className="flex items-center gap-3 cursor-pointer group">
+                            <div className="flex flex-col">
+                                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-0.5">多维智能集群</p>
+                                <div className="flex items-center gap-2">
+                                    <h1 className="text-sm font-black tracking-tight uppercase">{selectedModel}</h1>
+                                    <ChevronDown size={14} className={clsx("text-white/20 transition-transform", showModelPicker && "rotate-180")} />
+                                </div>
                             </div>
                         </div>
 
@@ -148,16 +130,16 @@ export default function AIChat() {
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    className="absolute top-12 left-0 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.1)] rounded-[24px] border border-gray-100 py-3 w-56 z-50 overflow-hidden"
+                                    className="absolute top-16 left-0 bg-[#111] border border-white/10 rounded-[32px] py-4 w-64 z-50 shadow-2xl backdrop-blur-3xl"
                                 >
-                                    <p className="px-5 py-2 text-[8px] font-black text-gray-300 uppercase tracking-[0.2em]">选择智能体集群</p>
+                                    <p className="px-6 py-2 text-[9px] font-black text-white/20 uppercase tracking-widest">选择逻辑核心</p>
                                     {models.map(m => (
                                         <button
                                             key={m}
-                                            onClick={() => { setSelectedModel(m); setShowModelPicker(false); fetchHistory(); }}
+                                            onClick={() => { setSelectedModel(m); setShowModelPicker(false); }}
                                             className={clsx(
-                                                "w-full text-left px-5 py-3 text-xs font-bold transition-all flex items-center justify-between group",
-                                                selectedModel === m ? "text-indigo-600 bg-indigo-50/50" : "text-gray-600 hover:bg-gray-50"
+                                                "w-full text-left px-6 py-3.5 text-xs font-bold transition-all flex items-center justify-between group",
+                                                selectedModel === m ? "text-indigo-400 bg-white/5" : "text-white/40 hover:bg-white/5"
                                             )}
                                         >
                                             {m}
@@ -169,101 +151,112 @@ export default function AIChat() {
                         </AnimatePresence>
                     </div>
                 </div>
-                <button onClick={clearHistory} className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors">
-                    <Trash2 size={18} />
-                </button>
-            </div>
 
-            {/* Chat Flow */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-8 scroll-smooth hide-scrollbar">
-                {messages.map((msg, idx) => (
-                    <motion.div
-                        key={msg.id || idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={clsx("flex gap-3 max-w-[92%]", msg.role === 'user' ? "ml-auto flex-row-reverse" : "flex-row")}
-                    >
-                        <div className={clsx(
-                            "w-8 h-8 rounded-2xl flex-shrink-0 flex items-center justify-center border shadow-sm",
-                            msg.role === 'user' ? "bg-gray-900 border-gray-900 text-white" : "bg-white border-gray-100 text-indigo-600"
-                        )}>
-                            {msg.role === 'user' ? <User size={14} /> : <Zap size={14} className="fill-indigo-600" />}
-                        </div>
-                        <div className={clsx("space-y-1.5", msg.role === 'user' ? "items-end flex flex-col" : "items-start flex flex-col")}>
-                            <div className={clsx(
-                                "p-4 px-5 rounded-[22px] text-[13px] leading-[1.7] font-medium shadow-sm transition-all",
-                                msg.role === 'user'
-                                    ? "bg-indigo-600 text-white rounded-tr-none shadow-indigo-100/50"
-                                    : "bg-white text-gray-700 rounded-tl-none border border-gray-100"
-                            )}>
-                                {msg.content}
+                <div className="flex items-center gap-4">
+                    <button onClick={clearHistory} className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-red-400 hover:border-red-400/20 transition-all">
+                        <Trash2 size={18} />
+                    </button>
+                    <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden ring-4 ring-white/5">
+                        <img src="https://i.pravatar.cc/100?u=qutu" alt="avatar" className="w-full h-full object-cover" />
+                    </div>
+                </div>
+            </header>
+
+            {/* Chat Container */}
+            <main ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-12 hide-scrollbar">
+                <div className="max-w-3xl mx-auto space-y-10 pb-40">
+                    <AnimatePresence>
+                        {messages.map((msg, idx) => (
+                            <motion.div
+                                key={msg.id || idx}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={clsx("flex gap-6", msg.role === 'user' ? "flex-row-reverse" : "flex-row")}
+                            >
+                                <div className={clsx(
+                                    "w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center border transition-all",
+                                    msg.role === 'user' ? "bg-white border-white text-black" : "bg-white/5 border-white/10 text-indigo-400"
+                                )}>
+                                    {msg.role === 'user' ? <User size={18} /> : <Zap size={18} className="fill-indigo-400" />}
+                                </div>
+                                <div className={clsx("flex flex-col max-w-[80%]", msg.role === 'user' ? "items-end" : "items-start")}>
+                                    <div className={clsx(
+                                        "p-5 px-7 rounded-[32px] text-sm leading-relaxed font-medium shadow-2xl transition-all",
+                                        msg.role === 'user'
+                                            ? "bg-indigo-600 text-white rounded-tr-none shadow-indigo-500/10"
+                                            : "bg-[#111] text-white/90 rounded-tl-none border border-white/5"
+                                    )}>
+                                        {msg.content}
+                                    </div>
+                                    <p className="text-[9px] font-black text-white/10 uppercase tracking-[0.2em] mt-3 px-2">
+                                        {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                    {loading && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-6">
+                            <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                <RefreshCw size={18} className="text-indigo-400 animate-spin" />
                             </div>
-                            <p className={clsx("text-[9px] font-black text-gray-300 uppercase tracking-widest px-1")}>
-                                {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                        </div>
-                    </motion.div>
-                ))}
-
-                {loading && (
-                    <div className="flex gap-4">
-                        <div className="w-8 h-8 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-indigo-600">
-                            <RefreshCw size={14} className="animate-spin" />
-                        </div>
-                        <div className="bg-white p-4 px-6 rounded-[24px] rounded-tl-none border border-gray-100 shadow-sm">
-                            <div className="flex gap-1.5 py-1">
-                                {[0, 150, 300].map(delay => (
-                                    <motion.div
-                                        key={delay}
-                                        animate={{ y: [0, -4, 0] }}
-                                        transition={{ repeat: Infinity, duration: 0.6, delay: delay / 1000 }}
-                                        className="w-1.5 h-1.5 bg-indigo-200 rounded-full"
-                                    />
+                            <div className="flex gap-1.5 items-center px-4">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
                                 ))}
                             </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+                        </motion.div>
+                    )}
+                </div>
+            </main>
 
-            {/* Premium Input Bar */}
-            <div className="p-6 bg-white/80 backdrop-blur-2xl border-t border-gray-100/50 pb-10">
-                <div className="max-w-4xl mx-auto relative flex items-center gap-3">
-                    <div className="flex-1 relative group">
+            {/* Input Area */}
+            <div className="absolute bottom-0 inset-x-0 p-8 pt-0 pointer-events-none">
+                <div className="max-w-3xl mx-auto relative pointer-events-auto">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent -top-24 -bottom-8 pointer-events-none" />
+
+                    <div className="relative group">
+                        <div className="absolute inset-0 bg-indigo-500/5 blur-2xl group-focus-within:bg-indigo-500/10 transition-all opacity-0 group-focus-within:opacity-100" />
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                             placeholder="交流灵感，探索未知..."
-                            className="w-full pl-6 pr-14 py-4 bg-gray-50 border border-transparent rounded-[24px] text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white focus:border-indigo-100/50 transition-all font-medium placeholder:text-gray-300"
+                            className="w-full pl-8 pr-20 py-6 bg-white/5 border border-white/5 rounded-[32px] text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/30 transition-all font-medium placeholder:text-white/10 backdrop-blur-3xl"
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                            <button className="text-gray-300 hover:text-indigo-500 transition-colors p-1">
-                                <PlusCircle size={18} />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/5 rounded-full border border-white/5 order-last md:order-none">
+                                <Command size={10} className="text-white/20" />
+                                <span className="text-[10px] font-black text-white/20 uppercase tracking-tighter italic">Enter</span>
+                            </div>
+                            <button
+                                onClick={handleSend}
+                                disabled={!input.trim() || loading}
+                                className={clsx(
+                                    "w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-xl",
+                                    input.trim() && !loading
+                                        ? "bg-white text-black hover:scale-105 active:scale-95"
+                                        : "bg-white/5 text-white/10 cursor-not-allowed"
+                                )}
+                            >
+                                <Send size={18} />
                             </button>
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleSend}
-                        disabled={!input.trim() || loading}
-                        className={clsx(
-                            "w-14 h-14 rounded-[22px] flex items-center justify-center transition-all active:scale-[0.85] shadow-lg",
-                            input.trim() && !loading
-                                ? "bg-gray-900 text-white shadow-gray-200"
-                                : "bg-gray-50 text-gray-200"
-                        )}
-                    >
-                        <Send size={20} className={clsx(input.trim() && !loading && "translate-x-0.5 -translate-y-0.5")} />
-                    </button>
+                    <div className="flex justify-center gap-6 mt-6 pb-2">
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck size={12} className="text-white/20" />
+                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">端到端加密</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Sparkles size={12} className="text-white/20" />
+                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">神经元就绪</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
-}
-
-// Fixed missing PlusCircle import
-function PlusCircle({ size }) {
-    return <Globe size={size} /> // Using Globe as a proxy or just fixing the import below
 }
