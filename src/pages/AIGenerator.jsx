@@ -10,17 +10,49 @@ export default function AIGenerator() {
     const [resultImage, setResultImage] = useState(null);
     const [error, setError] = useState(null);
     const [steps, setSteps] = useState([]);
-    const [history, setHistory] = useState([]);
     const [models, setModels] = useState(['dall-e-3', 'flux']);
     const [selectedModel, setSelectedModel] = useState('dall-e-3');
     const [tasks, setTasks] = useState([]);
+    const [isPolling, setIsPolling] = useState(false);
 
-    // Load local history and models on mount
+    // Initialize: load models and tasks
     useEffect(() => {
-        const savedHistory = localStorage.getItem('ai_gen_history');
-        if (savedHistory) setHistory(JSON.parse(savedHistory));
         fetchModels();
+        fetchTasks();
     }, []);
+
+    // Polling logic: if any task is 'PROCESSING', poll every 3 seconds
+    useEffect(() => {
+        const hasProcessing = tasks.some(t => t.status === 'PROCESSING');
+        if (hasProcessing && !isPolling) {
+            setIsPolling(true);
+            const timer = setInterval(() => {
+                fetchTasks();
+            }, 3000);
+            return () => {
+                clearInterval(timer);
+                setIsPolling(false);
+            };
+        } else if (!hasProcessing && isPolling) {
+            setIsPolling(false);
+        }
+    }, [tasks, isPolling]);
+
+    const fetchTasks = async () => {
+        try {
+            const response = await fetch('/api/ai/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ limit: 12 })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setTasks(data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch tasks', err);
+        }
+    };
 
     const fetchModels = async () => {
         try {
@@ -46,22 +78,13 @@ export default function AIGenerator() {
         if (!prompt.trim()) return;
 
         // Limit active tasks to 4
-        const activeTasks = tasks.filter(t => t.status === 'executing');
+        const activeTasks = tasks.filter(t => t.status === 'PROCESSING');
         if (activeTasks.length >= 4) {
             alert('当前生成任务已达上限(4个)，请稍候。');
             return;
         }
 
-        const taskId = Date.now();
-        const newTask = {
-            id: taskId,
-            prompt: prompt,
-            status: 'executing',
-            model: selectedModel,
-            createdAt: new Date().toISOString()
-        };
-
-        setTasks(prev => [newTask, ...prev]);
+        const originalPrompt = prompt;
         setPrompt(''); // Clear input for next prompt
         setError(null);
 
@@ -69,7 +92,7 @@ export default function AIGenerator() {
             const response = await fetch('/api/ai/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: newTask.prompt, model: selectedModel })
+                body: JSON.stringify({ prompt: originalPrompt, model: selectedModel })
             });
 
             if (!response.ok) {
@@ -77,18 +100,11 @@ export default function AIGenerator() {
                 throw new Error(errData.message || '生成失败');
             }
 
-            const data = await response.json(); // { url, thumb }
-
-            setTasks(prev => prev.map(t =>
-                t.id === taskId ? { ...t, status: 'done', result: data } : t
-            ));
-            setResultImage(data.url); // Set as main preview if it's the latest
-            addToHistory(data, newTask.prompt);
+            // Immediately refresh list
+            await fetchTasks();
 
         } catch (err) {
-            setTasks(prev => prev.map(t =>
-                t.id === taskId ? { ...t, status: 'failed', error: err.message } : t
-            ));
+            setError(err.message);
         }
     };
 
@@ -185,46 +201,48 @@ export default function AIGenerator() {
                 {tasks.length > 0 ? (
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-2">
-                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">当前任务 ({tasks.filter(t => t.status === 'executing').length}/4)</h3>
-                            <button onClick={() => setTasks([])} className="text-[10px] font-bold text-gray-300">全部清除</button>
+                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">任务动态 ({tasks.filter(t => t.status === 'PROCESSING').length}/4)</h3>
                         </div>
                         {tasks.map(task => (
                             <div key={task.id} className="bg-white border border-gray-100 rounded-[24px] p-4 flex gap-4 items-center shadow-sm relative overflow-hidden group">
-                                {task.status === 'executing' && (
+                                {task.status === 'PROCESSING' && (
                                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 animate-pulse pointer-events-none"></div>
                                 )}
 
                                 <div className="w-16 h-20 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-50">
-                                    {task.status === 'executing' ? (
+                                    {task.status === 'PROCESSING' ? (
                                         <RefreshCw size={20} className="text-purple-200 animate-spin" />
-                                    ) : task.status === 'done' ? (
-                                        <img src={task.result.thumb} className="w-full h-full object-cover" alt="thumb" />
+                                    ) : task.status === 'COMPLETED' ? (
+                                        <img src={task.thumbUrl} className="w-full h-full object-cover" alt="thumb" />
                                     ) : (
                                         <div className="text-red-300">!</div>
                                     )}
                                 </div>
 
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] text-gray-400 font-bold mb-1 truncate">{task.model}</p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="text-[10px] text-gray-400 font-bold truncate">{task.model}</p>
+                                        <span className={clsx("text-[9px] px-1.5 py-0.5 rounded-md font-black uppercase",
+                                            task.status === 'PROCESSING' ? "bg-blue-50 text-blue-500" :
+                                                task.status === 'COMPLETED' ? "bg-green-50 text-green-500" :
+                                                    "bg-red-50 text-red-500"
+                                        )}>
+                                            {task.status}
+                                        </span>
+                                    </div>
                                     <p className="text-xs text-gray-800 font-medium line-clamp-2 leading-snug">{task.prompt}</p>
-                                    {task.status === 'failed' && (
+                                    {task.status === 'FAILED' && (
                                         <p className="text-[10px] text-red-500 mt-1 font-bold">错误: {task.error}</p>
                                     )}
                                 </div>
 
-                                {task.status === 'done' && (
-                                    <div className="flex flex-col gap-2">
+                                {task.status === 'COMPLETED' && (
+                                    <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => setResultImage(task.result.url)}
-                                            className="p-2 bg-purple-50 text-purple-600 rounded-lg active:scale-95 transition-all"
+                                            onClick={() => setResultImage(task.resultUrl)}
+                                            className="p-3 bg-purple-50 text-purple-600 rounded-xl active:scale-95 transition-all shadow-sm"
                                         >
-                                            <Sparkles size={16} />
-                                        </button>
-                                        <button
-                                            onClick={() => window.open(task.result.url, '_blank')}
-                                            className="p-2 bg-gray-50 text-gray-600 rounded-lg active:scale-95 transition-all"
-                                        >
-                                            <Download size={16} />
+                                            <Sparkles size={18} />
                                         </button>
                                     </div>
                                 )}
@@ -273,23 +291,9 @@ export default function AIGenerator() {
                 </div>
             )}
 
-            {/* History Brief */}
-            {history.length > 0 && (
-                <div className="mt-4 pb-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                            <History size={16} className="text-gray-400" /> 历史杰作
-                        </h3>
-                    </div>
-                    <div className="flex gap-3 overflow-x-auto hide-scrollbar">
-                        {history.map((item, i) => (
-                            <div key={i} onClick={() => setResultImage(item.url)} className="w-16 h-28 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden cursor-pointer active:scale-95 transition-all shadow-sm">
-                                <img src={item.thumb || item.url} className="w-full h-full object-cover" alt="history" />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
+    )
+}
+        </div >
     );
 }

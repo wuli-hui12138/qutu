@@ -12,8 +12,17 @@ export class AiController {
 
     @Post('generate')
     async generate(@Body() body: { prompt: string; model?: string }) {
-        const url = await this.aiService.generateImage(body.prompt, body.model);
-        return { url };
+        return this.aiService.generateImage(body.prompt, body.model);
+    }
+
+    @Post('tasks')
+    async getTasks(@Body() body: { limit?: number }) {
+        return this.aiService.getTasks(body.limit);
+    }
+
+    @Post('task-status')
+    async getTaskStatus(@Body() body: { id: number }) {
+        return this.aiService.getTaskStatus(body.id);
     }
 
     @Post('chat')

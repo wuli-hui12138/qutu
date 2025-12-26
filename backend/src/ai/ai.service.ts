@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WallpapersService } from '../wallpapers/wallpapers.service';
 import { SystemConfigService } from '../system-config/system-config.service';
+import { PrismaService } from '../prisma.service';
 import axios from 'axios';
 import * as fs from 'fs';
 import { join } from 'path';
@@ -17,6 +18,7 @@ export class AiService {
         private configService: ConfigService,
         private wallpapersService: WallpapersService,
         private systemConfigService: SystemConfigService,
+        private prisma: PrismaService,
     ) { }
 
     async getModels() {
@@ -26,6 +28,19 @@ export class AiService {
             imageModels: imageModels ? imageModels.split(',') : ['dall-e-3', 'flux'],
             chatModels: chatModels ? chatModels.split(',') : ['gpt-4o', 'qwen-plus']
         };
+    }
+
+    async getTasks(limit = 10) {
+        return this.prisma.aiTask.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: limit
+        });
+    }
+
+    async getTaskStatus(id: number) {
+        return this.prisma.aiTask.findUnique({
+            where: { id }
+        });
     }
 
     private async downloadAndProcessImage(externalUrl: string): Promise<{ url: string; thumb: string }> {
@@ -67,7 +82,10 @@ export class AiService {
         }
     }
 
-    async generateImage(prompt: string, model?: string): Promise<{ url: string; thumb: string }> {
+    /**
+     * Start background generation
+     */
+    async generateImage(prompt: string, model?: string): Promise<{ taskId: number }> {
         const dbApiKey = await this.systemConfigService.get('AI_API_KEY');
         const dbBaseUrl = await this.systemConfigService.get('AI_BASE_URL');
         const dbImagePath = await this.systemConfigService.get('AI_IMAGE_PATH') || '/v1/images/generations';
@@ -78,27 +96,52 @@ export class AiService {
         const apiUrl = `${baseUrl}${dbImagePath.startsWith('/') ? '' : '/'}${dbImagePath}`;
         const finalModel = model || dbModel || this.configService.get<string>('AI_MODEL') || 'dall-e-3';
 
-        if (!apiKey) {
-            this.logger.warn('AI_API_KEY is not set. Returning a mock image.');
-            const mockUrl = `https://picsum.photos/seed/${encodeURIComponent(prompt)}/1024/1792`;
-            return { url: mockUrl, thumb: mockUrl };
-        }
+        // 1. Create a task in DB
+        const task = await this.prisma.aiTask.create({
+            data: {
+                prompt,
+                model: finalModel,
+                status: 'PROCESSING'
+            }
+        });
 
+        // 2. Run background process (Don't await it!)
+        this.runBackgroundGeneration(task.id, apiUrl, apiKey, prompt, finalModel);
+
+        return { taskId: task.id };
+    }
+
+    private async runBackgroundGeneration(taskId: number, apiUrl: string, apiKey: string, prompt: string, model: string) {
         try {
-            this.logger.log(`Generating image for prompt: ${prompt} using model: ${finalModel} at ${apiUrl}`);
+            if (!apiKey) {
+                // Mock behavior if no key
+                setTimeout(async () => {
+                    const mockUrl = `https://picsum.photos/seed/${encodeURIComponent(prompt)}/1024/1792`;
+                    const result = await this.downloadAndProcessImage(mockUrl);
+                    await this.prisma.aiTask.update({
+                        where: { id: taskId },
+                        data: {
+                            status: 'COMPLETED',
+                            resultUrl: result.url,
+                            thumbUrl: result.thumb
+                        }
+                    });
+                }, 2000);
+                return;
+            }
 
             const isChatEndpoint = apiUrl.includes('chat/completions');
             let body: any;
 
             if (isChatEndpoint) {
                 body = {
-                    model: finalModel,
+                    model: model,
                     messages: [{ role: 'user', content: prompt }],
                     stream: false
                 };
             } else {
                 body = {
-                    model: finalModel,
+                    model: model,
                     prompt: prompt,
                     n: 1,
                     size: '1024x1792',
@@ -109,7 +152,7 @@ export class AiService {
 
             const response = await axios.post<any>(apiUrl, body, {
                 headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-                timeout: 60000,
+                timeout: 120000, // Longer timeout for background
             });
 
             let imageUrl: string | undefined;
@@ -123,16 +166,28 @@ export class AiService {
                 imageUrl = response.data?.data?.[0]?.url || response.data?.images?.[0]?.url;
             }
 
-            if (!imageUrl) {
-                this.logger.error('Unexpected AI Response format:', JSON.stringify(response.data));
-                throw new Error('No image URL found in response');
-            }
+            if (!imageUrl) throw new Error('No image URL in response');
 
-            // 3. Download and shrink locally for better performance
-            return this.downloadAndProcessImage(imageUrl);
-        } catch (error) {
-            this.logger.error('AI Image Generation Failed', error.response?.data || error.message);
-            throw new Error(`AI生成失败: ${error.response?.data?.error?.message || error.message}`);
+            const localResult = await this.downloadAndProcessImage(imageUrl);
+
+            await this.prisma.aiTask.update({
+                where: { id: taskId },
+                data: {
+                    status: 'COMPLETED',
+                    resultUrl: localResult.url,
+                    thumbUrl: localResult.thumb
+                }
+            });
+
+        } catch (err) {
+            this.logger.error(`Task ${taskId} failed:`, err.message);
+            await this.prisma.aiTask.update({
+                where: { id: taskId },
+                data: {
+                    status: 'FAILED',
+                    error: err.response?.data?.error?.message || err.message
+                }
+            });
         }
     }
 

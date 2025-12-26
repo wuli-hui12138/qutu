@@ -114,3 +114,15 @@ model SystemConfig {
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
 }
+
+model AiTask {
+  id        Int      @id @default(autoincrement())
+  prompt    String   @db.Text
+  model     String
+  status    String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  resultUrl String?  @db.Text
+  thumbUrl  String?  @db.Text
+  error     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
