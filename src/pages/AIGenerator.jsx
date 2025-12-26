@@ -144,13 +144,13 @@ export default function AIGenerator() {
                         <ArrowLeft size={18} />
                     </div>
                     <div>
-                        <h1 className="text-lg font-black text-gray-900 leading-none mb-1">艺术实验室</h1>
-                        <p className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em]">Neural Engine v4.0</p>
+                        <h1 className="text-lg font-black text-gray-900 leading-none mb-1">提示词实验室</h1>
+                        <p className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em]">神经元引擎 v4.0</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="hidden xs:flex flex-col items-end">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Model</span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">活跃模型</span>
                         <span className="text-[11px] font-bold text-gray-900">{selectedModel}</span>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/50">
@@ -170,7 +170,7 @@ export default function AIGenerator() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Describe your vision</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">描述您的创意愿景</span>
                             </div>
                             <select
                                 value={selectedModel}
@@ -185,8 +185,8 @@ export default function AIGenerator() {
                             <textarea
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
-                                placeholder="输入无限可能..."
-                                className="w-full h-40 p-0 text-gray-900 text-lg font-medium placeholder:text-gray-200 outline-none resize-none hide-scrollbar transition-all leading-relaxed"
+                                placeholder="在这里输入您的创意提示词..."
+                                className="w-full h-28 p-0 text-gray-900 text-lg font-medium placeholder:text-gray-200 outline-none resize-none hide-scrollbar transition-all leading-relaxed"
                             />
                             {prompt && (
                                 <motion.button
@@ -224,7 +224,7 @@ export default function AIGenerator() {
                         )}
                     >
                         {isGenerating ? <RefreshCw className="animate-spin" size={18} /> : <Zap size={18} className="fill-white" />}
-                        {isGenerating ? 'Computing...' : 'Initialize Creation'}
+                        {isGenerating ? '正在计算...' : '开始初始化创作'}
                     </button>
                 </motion.div>
 
@@ -232,9 +232,9 @@ export default function AIGenerator() {
                 <div className="space-y-6 pb-12">
                     <div className="flex items-center justify-between px-2">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Laboratory Records</h2>
+                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">实验创作档案</h2>
                             <div className="px-2 py-0.5 bg-gray-100 rounded text-[9px] font-black text-gray-400">
-                                {tasks.length} PROJECTS
+                                {tasks.length} 项工程
                             </div>
                         </div>
                         <button onClick={fetchTasks} className="text-gray-300 hover:text-gray-900 transition-colors">
@@ -260,12 +260,12 @@ export default function AIGenerator() {
                                                 <div className="w-12 h-12 rounded-full border-2 border-indigo-100 border-t-indigo-500 animate-spin" />
                                                 <Zap size={16} className="absolute inset-0 m-auto text-indigo-500 fill-indigo-500 animate-pulse" />
                                             </div>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">Synthesizing<br />Particles...</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">正在合成<br />像素粒子...</p>
                                         </div>
                                     ) : task.status === 'FAILED' ? (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center gap-2 bg-red-50/30">
                                             <Info size={24} className="text-red-400" />
-                                            <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">Error Ocurred</p>
+                                            <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">服务异常</p>
                                         </div>
                                     ) : (
                                         <>
@@ -287,7 +287,7 @@ export default function AIGenerator() {
                     ) : (
                         <div className="py-20 flex flex-col items-center justify-center text-center opacity-30 grayscale pointer-events-none">
                             <ImageIcon size={48} className="mb-4 text-gray-400" />
-                            <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Wait for Inspiration</p>
+                            <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">等待灵感降临</p>
                         </div>
                     )}
                 </div>
@@ -317,7 +317,7 @@ export default function AIGenerator() {
                                     onClick={() => window.open(previewTask.resultUrl, '_blank')}
                                     className="px-6 h-12 rounded-full bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all flex items-center gap-2"
                                 >
-                                    <Download size={16} /> Download
+                                    <Download size={16} /> 保存原图
                                 </button>
                             </div>
                         </div>
@@ -331,9 +331,9 @@ export default function AIGenerator() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Masterpiece Metadata</span>
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">杰作元数据</span>
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-900 leading-tight">Prompt Detail</h3>
+                                    <h3 className="text-2xl font-black text-gray-900 leading-tight">提示词详情</h3>
                                     <p className="text-gray-500 text-sm font-medium leading-relaxed italic">
                                         "{previewTask.prompt}"
                                     </p>
@@ -341,11 +341,11 @@ export default function AIGenerator() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-5 bg-gray-50 rounded-[28px] space-y-1">
-                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Algorithm</p>
+                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">算法引擎</p>
                                         <p className="text-xs font-bold text-gray-900">{previewTask.model}</p>
                                     </div>
                                     <div className="p-5 bg-gray-50 rounded-[28px] space-y-1">
-                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Timestamp</p>
+                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">创作时间</p>
                                         <p className="text-xs font-bold text-gray-900">{new Date(previewTask.createdAt).toLocaleDateString()}</p>
                                     </div>
                                 </div>
@@ -354,7 +354,7 @@ export default function AIGenerator() {
                                     onClick={() => handleSaveToGallery(previewTask)}
                                     className="w-full py-5 bg-indigo-50 rounded-[28px] text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2"
                                 >
-                                    <Save size={16} /> Save to Gallery
+                                    <Save size={16} /> 同步至公共集锦
                                 </button>
                             </div>
                         </div>

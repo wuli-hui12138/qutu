@@ -138,7 +138,7 @@ export default function AIChat() {
                             </div>
                             <div className="flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Online Presence</span>
+                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">智库在线</span>
                             </div>
                         </div>
 
@@ -150,7 +150,7 @@ export default function AIChat() {
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                     className="absolute top-12 left-0 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.1)] rounded-[24px] border border-gray-100 py-3 w-56 z-50 overflow-hidden"
                                 >
-                                    <p className="px-5 py-2 text-[8px] font-black text-gray-300 uppercase tracking-[0.2em]">Select Multi-Agent</p>
+                                    <p className="px-5 py-2 text-[8px] font-black text-gray-300 uppercase tracking-[0.2em]">选择智能体集群</p>
                                     {models.map(m => (
                                         <button
                                             key={m}
@@ -181,24 +181,24 @@ export default function AIChat() {
                         key={msg.id || idx}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={clsx("flex gap-4 max-w-[90%]", msg.role === 'user' ? "ml-auto flex-row-reverse" : "flex-row")}
+                        className={clsx("flex gap-3 max-w-[92%]", msg.role === 'user' ? "ml-auto flex-row-reverse" : "flex-row")}
                     >
                         <div className={clsx(
-                            "w-8 h-8 rounded-2xl flex-shrink-0 flex items-center justify-center border",
+                            "w-8 h-8 rounded-2xl flex-shrink-0 flex items-center justify-center border shadow-sm",
                             msg.role === 'user' ? "bg-gray-900 border-gray-900 text-white" : "bg-white border-gray-100 text-indigo-600"
                         )}>
                             {msg.role === 'user' ? <User size={14} /> : <Zap size={14} className="fill-indigo-600" />}
                         </div>
-                        <div className="space-y-2">
+                        <div className={clsx("space-y-1.5", msg.role === 'user' ? "items-end flex flex-col" : "items-start flex flex-col")}>
                             <div className={clsx(
-                                "p-4 px-5 rounded-[24px] text-[13px] leading-[1.8] font-medium shadow-sm transition-all",
+                                "p-4 px-5 rounded-[22px] text-[13px] leading-[1.7] font-medium shadow-sm transition-all",
                                 msg.role === 'user'
-                                    ? "bg-indigo-600 text-white rounded-tr-none shadow-indigo-100"
+                                    ? "bg-indigo-600 text-white rounded-tr-none shadow-indigo-100/50"
                                     : "bg-white text-gray-700 rounded-tl-none border border-gray-100"
                             )}>
                                 {msg.content}
                             </div>
-                            <p className={clsx("text-[9px] font-black text-gray-300 uppercase tracking-widest px-1", msg.role === 'user' && "text-right")}>
+                            <p className={clsx("text-[9px] font-black text-gray-300 uppercase tracking-widest px-1")}>
                                 {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                         </div>
@@ -235,8 +235,8 @@ export default function AIChat() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="交流灵感，深度共鸣..."
-                            className="w-full pl-6 pr-14 py-4.5 bg-gray-50 border border-transparent rounded-[24px] text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white focus:border-indigo-100/50 transition-all font-medium placeholder:text-gray-300"
+                            placeholder="交流灵感，探索未知..."
+                            className="w-full pl-6 pr-14 py-4 bg-gray-50 border border-transparent rounded-[24px] text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white focus:border-indigo-100/50 transition-all font-medium placeholder:text-gray-300"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                             <button className="text-gray-300 hover:text-indigo-500 transition-colors p-1">

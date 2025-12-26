@@ -18,9 +18,12 @@ export class InteractionsService {
                 await tx.favorite.delete({
                     where: { id: existing.id }
                 });
+
+                // Safety: Get current and decrement, ensuring >= 0
+                const img = await tx.image.findUnique({ where: { id: imageId } });
                 return tx.image.update({
                     where: { id: imageId },
-                    data: { likes: { decrement: 1 } }
+                    data: { likes: Math.max(0, (img?.likes || 1) - 1) }
                 });
             } else {
                 // Not liked, so LIKE
@@ -33,6 +36,23 @@ export class InteractionsService {
                 });
             }
         });
+    }
+
+    async syncAllLikeCounts() {
+        const images = await this.prisma.image.findMany({
+            select: { id: true }
+        });
+
+        for (const img of images) {
+            const count = await this.prisma.favorite.count({
+                where: { imageId: img.id }
+            });
+            await this.prisma.image.update({
+                where: { id: img.id },
+                data: { likes: count }
+            });
+        }
+        return { success: true };
     }
 
     async getFavorites(userId: number) {

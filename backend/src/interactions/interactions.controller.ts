@@ -24,4 +24,9 @@ export class InteractionsController {
     getHistory(@Param('userId') userId: string) {
         return this.interactionsService.getHistory(+userId);
     }
+
+    @Post('sync-likes')
+    syncLikes() {
+        return this.interactionsService.syncAllLikeCounts();
+    }
 }

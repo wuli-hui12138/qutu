@@ -13,9 +13,9 @@ export default function AIPortal() {
             icon: <ImageIcon size={28} className="text-white" />,
             bgColor: 'bg-[#6366f1]',
             shadowColor: 'shadow-indigo-500/20',
-            tag: 'Visual Intelligence',
+            tag: '视觉智能',
             path: '/ai/image',
-            features: ['4K Render', 'Prompt Engine', 'Style Fusion']
+            features: ['4K 渲染', '提示词引擎', '风格融合']
         },
         {
             id: 'chat',
@@ -24,9 +24,9 @@ export default function AIPortal() {
             icon: <MessageSquare size={28} className="text-white" />,
             bgColor: 'bg-[#3b82f6]',
             shadowColor: 'shadow-blue-500/20',
-            tag: 'Linguistic Logic',
+            tag: '语言逻辑',
             path: '/ai/chat',
-            features: ['Deep Thinking', 'Code Assist', 'Creative Writing']
+            features: ['深度思考', '编程助手', '创意写作']
         }
     ];
 
@@ -45,7 +45,7 @@ export default function AIPortal() {
                     <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white">
                         <ArrowLeft size={16} />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-gray-900 transition-colors">Back to Hub</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-gray-900 transition-colors">返回控制中心</span>
                 </div>
                 <div className="w-8 h-8 rounded-full border border-gray-100 overflow-hidden shadow-sm">
                     <img src="https://i.pravatar.cc/100?u=qutu" alt="user" className="w-full h-full object-cover" />
@@ -61,7 +61,7 @@ export default function AIPortal() {
                         className="inline-flex items-center gap-2 bg-white border border-gray-100 shadow-sm px-3 py-1.5 rounded-full mb-6"
                     >
                         <Star size={12} className="text-amber-500 fill-amber-500" />
-                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Next Era of Creation</span>
+                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">新一代智能创作</span>
                     </motion.div>
 
                     <motion.h1
@@ -156,7 +156,7 @@ export default function AIPortal() {
                         <div className="w-px h-8 bg-gray-100" />
                         <div className="text-center">
                             <p className="text-[20px] font-black text-gray-900">24/7</p>
-                            <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mt-1">Global Node API</p>
+                            <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mt-1">全球边缘节点</p>
                         </div>
                         <div className="w-px h-8 bg-gray-100" />
                         <div className="text-center">
@@ -167,12 +167,12 @@ export default function AIPortal() {
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Active Creators</p>
+                            <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">活跃创作者</p>
                         </div>
                     </div>
 
                     <button className="w-full py-4 bg-gray-900 rounded-3xl text-xs font-black text-white uppercase tracking-[0.3em] shadow-2xl shadow-gray-900/10 active:scale-95 transition-all">
-                        Upgrade Pro Membership
+                        升级专业版会员
                     </button>
                 </motion.div>
             </div>
