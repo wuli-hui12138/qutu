@@ -36,7 +36,6 @@ export default function AIGenerator() {
     const [selectedModel, setSelectedModel] = useState('Stable Diffusion XL');
     const [models, setModels] = useState(['Stable Diffusion XL']);
     const [showModelPicker, setShowModelPicker] = useState(false);
-    const [cfgScale, setCfgScale] = useState(7);
     const [tasks, setTasks] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
@@ -44,14 +43,7 @@ export default function AIGenerator() {
     const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
     const userId = qutu_user.id;
 
-    const styles = [
-        { name: 'Realistic', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200&h=200' },
-        { name: 'Anime', img: 'https://images.unsplash.com/photo-1578632738980-43318b773537?auto=format&fit=crop&q=80&w=200&h=200' },
-        { name: 'Cyberpunk', img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=200&h=200' },
-        { name: 'Watercolor', img: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&q=80&w=200&h=200' },
-        { name: 'Oil Painting', img: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=200&h=200' },
-        { name: '3D Render', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=200&h=200' }
-    ];
+    // Style selection is removed, but we keep a default or internal value if needed by backend
 
     const aspectRatios = [
         { label: '1:1', icon: <div className="w-4 h-4 border-2 border-current rounded-sm" /> },
@@ -97,6 +89,24 @@ export default function AIGenerator() {
         }
     };
 
+    const updatePromptWithAR = (newPrompt, newAR) => {
+        let text = newPrompt;
+        const arRegex = /--ar\s+\d+:\d+/g;
+        const newARString = `--ar ${newAR}`;
+
+        if (arRegex.test(text)) {
+            text = text.replace(arRegex, newARString);
+        } else {
+            text = text.trim() ? `${text.trim()} ${newARString}` : newARString;
+        }
+        return text;
+    };
+
+    const handleARChange = (newAR) => {
+        setAspectRatio(newAR);
+        setPrompt(prev => updatePromptWithAR(prev, newAR));
+    };
+
     const handleGenerate = async () => {
         if (!prompt.trim() || !userId) return;
 
@@ -108,12 +118,11 @@ export default function AIGenerator() {
 
         setIsGenerating(true);
         try {
-            const fullPrompt = `${prompt} --ar ${aspectRatio}`;
             const response = await fetch('/api/ai/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    prompt: fullPrompt,
+                    prompt: prompt, // Prompt already includes --ar
                     negativePrompt: showNegative ? negativePrompt : '',
                     model: selectedModel,
                     userId,
@@ -132,15 +141,7 @@ export default function AIGenerator() {
         }
     };
 
-    const randomizePrompt = () => {
-        const prompts = [
-            "末日后的丛林之城，摩天大楼被发光的藤蔓覆盖",
-            "一位身着赛博朋克服饰的武士，在霓虹绚烂的雨中独行",
-            "一颗被冰雪覆盖的行星，地平线上升起三颗紫色的太阳",
-            "古风亭台楼阁悬浮在云海之上，仙鹤在周围翱翔"
-        ];
-        setPrompt(prompts[Math.floor(Math.random() * prompts.length)]);
-    };
+    // randomizePrompt is removed
 
     return (
         <div className="bg-white min-h-screen text-gray-900 font-sans flex flex-col overflow-hidden selection:bg-indigo-100">
@@ -194,137 +195,79 @@ export default function AIGenerator() {
             </header>
 
             <div className="flex-1 overflow-y-auto hide-scrollbar bg-gray-50/50">
-                {/* Creation Section */}
-                <section className="max-w-4xl mx-auto px-8 py-8 space-y-8">
-                    {/* Prompt Box */}
-                    <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
-                        <div className="flex items-center justify-between">
+                <main className="max-w-6xl mx-auto px-8 py-10">
+                    {/* Creation Area */}
+                    <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-8">
+                        <div className="space-y-4">
                             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">灵感提示词</span>
-                            <button onClick={randomizePrompt} className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-100 transition-all">
-                                <Dices size={14} /> 随机灵感
-                            </button>
-                        </div>
-
-                        <div className="relative group">
-                            <textarea
-                                value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                                placeholder="描述您脑海中的视觉奇观..."
-                                className="w-full h-32 bg-gray-50 border border-gray-100 rounded-[20px] p-6 text-[15px] font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-200 transition-all resize-none placeholder:text-gray-300"
-                            />
-                            <div className="absolute left-6 bottom-4">
-                                <button
-                                    onClick={() => setShowNegative(!showNegative)}
-                                    className={clsx("text-[10px] font-bold uppercase tracking-widest transition-colors", showNegative ? "text-red-500" : "text-gray-400 hover:text-gray-600")}
-                                >
-                                    {showNegative ? '✕ 移除负向提示' : '+ 添加负向提示'}
-                                </button>
-                            </div>
-                        </div>
-
-                        <AnimatePresence>
-                            {showNegative && (
-                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
-                                    <textarea
-                                        value={negativePrompt}
-                                        onChange={(e) => setNegativePrompt(e.target.value)}
-                                        placeholder="不希望在画面中出现的内容（如：模糊、变形的手指...）"
-                                        className="w-full h-20 bg-red-50 border border-red-100 rounded-[16px] p-4 text-[13px] font-medium focus:outline-none focus:border-red-200 transition-all resize-none placeholder:text-red-200 text-red-700 mt-2"
-                                    />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Style Selector */}
-                    <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">创意风格</span>
-                            <span className="text-[10px] font-bold text-indigo-600">{selectedStyle}</span>
-                        </div>
-                        <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
-                            {styles.map(style => (
-                                <button
-                                    key={style.name}
-                                    onClick={() => setSelectedStyle(style.name)}
-                                    className={clsx(
-                                        "flex-shrink-0 w-28 group relative rounded-[20px] overflow-hidden border-2 transition-all active:scale-95",
-                                        selectedStyle === style.name ? "border-indigo-500 shadow-lg shadow-indigo-100" : "border-gray-100 hover:border-gray-200"
-                                    )}
-                                >
-                                    <img src={style.img} alt={style.name} className="w-full h-24 object-cover" />
-                                    <div className={clsx("absolute inset-x-0 bottom-0 py-2 bg-white/90 backdrop-blur-sm border-t border-gray-100 flex items-center justify-center transition-all", selectedStyle === style.name ? "text-indigo-600" : "text-gray-500")}>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">{style.name}</span>
-                                    </div>
-                                    {selectedStyle === style.name && (
-                                        <div className="absolute top-2 right-2 bg-indigo-600 text-white rounded-full p-1 shadow-sm">
-                                            <Check size={8} />
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Parameters Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">画幅比例</span>
-                                <span className="text-[10px] font-bold text-indigo-600">{aspectRatio}</span>
-                            </div>
-                            <div className="flex gap-3">
-                                {aspectRatios.map(ar => (
-                                    <button
-                                        key={ar.label}
-                                        onClick={() => setAspectRatio(ar.label)}
-                                        className={clsx(
-                                            "flex-1 py-4 rounded-2xl border transition-all flex flex-col items-center justify-center gap-2",
-                                            aspectRatio === ar.label ? "bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm" : "bg-gray-50 border-gray-100 text-gray-400 hover:bg-white hover:border-gray-200"
-                                        )}
-                                    >
-                                        {ar.icon}
-                                        <span className="text-[10px] font-bold">{ar.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">精细程度 (CFG)</span>
-                                <span className="text-[10px] font-bold text-indigo-600">{cfgScale}</span>
-                            </div>
-                            <div className="px-1 py-4">
-                                <input
-                                    type="range" min="1" max="20" step="1"
-                                    value={cfgScale}
-                                    onChange={(e) => setCfgScale(parseInt(e.target.value))}
-                                    className="w-full h-1.5 bg-gray-100 rounded-full appearance-none accent-indigo-600 cursor-pointer"
+                            <div className="relative group">
+                                <textarea
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    placeholder="描述您脑海中的视觉奇观..."
+                                    className="w-full h-32 bg-gray-50 border border-gray-100 rounded-[20px] p-6 text-[15px] font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-200 transition-all resize-none placeholder:text-gray-300"
                                 />
-                                <div className="flex justify-between mt-3">
-                                    <span className="text-[9px] font-bold text-gray-300">自然自由</span>
-                                    <span className="text-[9px] font-bold text-gray-300">严格还原</span>
+                                <div className="absolute left-6 bottom-4">
+                                    <button
+                                        onClick={() => setShowNegative(!showNegative)}
+                                        className={clsx("text-[10px] font-bold uppercase tracking-widest transition-colors", showNegative ? "text-red-500" : "text-gray-400 hover:text-gray-600")}
+                                    >
+                                        {showNegative ? '✕ 移除负向提示' : '+ 添加负向提示'}
+                                    </button>
                                 </div>
                             </div>
+
+                            <AnimatePresence>
+                                {showNegative && (
+                                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
+                                        <textarea
+                                            value={negativePrompt}
+                                            onChange={(e) => setNegativePrompt(e.target.value)}
+                                            placeholder="不希望在画面中出现的内容（如：模糊、变形的手指...）"
+                                            className="w-full h-20 bg-red-50 border border-red-100 rounded-[16px] p-4 text-[13px] font-medium focus:outline-none focus:border-red-200 transition-all resize-none placeholder:text-red-200 text-red-700 mt-2"
+                                        />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Aspect Ratio & Generate */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
+                            <div className="lg:col-span-2 space-y-4">
+                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">选择画幅比例 (参数联动)</span>
+                                <div className="flex gap-4">
+                                    {aspectRatios.map(ar => (
+                                        <button
+                                            key={ar.label}
+                                            onClick={() => handleARChange(ar.label)}
+                                            className={clsx(
+                                                "flex-1 py-4 rounded-2xl border transition-all flex items-center justify-center gap-3",
+                                                aspectRatio === ar.label ? "bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm" : "bg-gray-50 border-gray-100 text-gray-400 hover:bg-white hover:border-gray-200"
+                                            )}
+                                        >
+                                            {ar.icon}
+                                            <span className="text-[10px] font-bold">{ar.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleGenerate}
+                                disabled={!prompt.trim() || isGenerating}
+                                className={clsx(
+                                    "w-full py-5 rounded-[24px] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-xl",
+                                    prompt.trim() && !isGenerating
+                                        ? "bg-indigo-600 text-white font-black uppercase text-sm tracking-[0.2em] hover:bg-indigo-700 shadow-indigo-100"
+                                        : "bg-gray-100 text-gray-300 cursor-not-allowed shadow-none"
+                                )}
+                            >
+                                {isGenerating ? <RefreshCw size={20} className="animate-spin" /> : <Zap size={20} className="fill-current" />}
+                                {isGenerating ? '正在构建...' : '立即生成'}
+                            </button>
                         </div>
                     </div>
-
-                    {/* Action Button */}
-                    <button
-                        onClick={handleGenerate}
-                        disabled={!prompt.trim() || isGenerating}
-                        className={clsx(
-                            "w-full py-6 rounded-[32px] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-xl",
-                            prompt.trim() && !isGenerating
-                                ? "bg-indigo-600 text-white font-black uppercase text-sm tracking-[0.4em] hover:bg-indigo-700 shadow-indigo-100"
-                                : "bg-gray-100 text-gray-300 cursor-not-allowed shadow-none"
-                        )}
-                    >
-                        {isGenerating ? <RefreshCw size={20} className="animate-spin" /> : <Zap size={20} className="fill-current" />}
-                        {isGenerating ? '正在构建像素粒子...' : '一键开启视觉创作'}
-                    </button>
-                </section>
+                </main>
 
                 {/* Results Section */}
                 <section className="bg-white border-t border-gray-100">
