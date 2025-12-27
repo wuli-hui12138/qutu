@@ -34,6 +34,8 @@ export default function AIGenerator() {
     const [selectedStyle, setSelectedStyle] = useState('Realistic');
     const [aspectRatio, setAspectRatio] = useState('1:1');
     const [selectedModel, setSelectedModel] = useState('Stable Diffusion XL');
+    const [models, setModels] = useState(['Stable Diffusion XL']);
+    const [showModelPicker, setShowModelPicker] = useState(false);
     const [cfgScale, setCfgScale] = useState(7);
     const [tasks, setTasks] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -56,6 +58,24 @@ export default function AIGenerator() {
         { label: '9:16', icon: <div className="w-3 h-5 border-2 border-current rounded-sm" /> },
         { label: '16:9', icon: <div className="w-5 h-3 border-2 border-current rounded-sm" /> }
     ];
+
+    useEffect(() => {
+        const fetchModels = async () => {
+            try {
+                const res = await fetch('/api/ai/models', { method: 'POST' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.imageModels && data.imageModels.length > 0) {
+                        setModels(data.imageModels);
+                        setSelectedModel(data.imageModels[0]);
+                    }
+                }
+            } catch (err) {
+                console.error('Fetch models failed', err);
+            }
+        };
+        fetchModels();
+    }, []);
 
     useEffect(() => {
         fetchTasks();
@@ -129,13 +149,47 @@ export default function AIGenerator() {
                 <div onClick={() => navigate('/ai')} className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200/50 flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-all text-gray-600">
                     <ArrowLeft size={18} />
                 </div>
-                <div className="flex flex-col items-center">
-                    <h1 className="text-sm font-black tracking-widest text-gray-900 uppercase">CREATION LAB</h1>
-                    <div className="flex items-center gap-2 mt-0.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.3)] animate-pulse" />
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Compute Ready</span>
+
+                {/* Model Switcher */}
+                <div className="absolute left-1/2 -translate-x-1/2">
+                    <div className="relative">
+                        <div
+                            onClick={() => setShowModelPicker(!showModelPicker)}
+                            className="flex items-center gap-2 px-4 py-1.5 bg-gray-50 border border-gray-200/50 rounded-full cursor-pointer hover:bg-gray-100 transition-all select-none group shadow-sm"
+                        >
+                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]" />
+                            <span className="text-xs font-bold text-gray-700">{selectedModel}</span>
+                            <ChevronDown size={14} className={clsx("text-gray-400 group-hover:text-gray-600 transition-transform", showModelPicker && "rotate-180")} />
+                        </div>
+
+                        <AnimatePresence>
+                            {showModelPicker && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute top-12 left-1/2 -translate-x-1/2 bg-white border border-gray-100 rounded-[20px] py-2 w-52 z-50 shadow-2xl shadow-gray-200/50"
+                                >
+                                    <p className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">选择绘画模型</p>
+                                    {models.map(m => (
+                                        <button
+                                            key={m}
+                                            onClick={() => { setSelectedModel(m); setShowModelPicker(false); }}
+                                            className={clsx(
+                                                "w-full text-left px-4 py-2.5 text-sm font-medium transition-all flex items-center justify-between group",
+                                                selectedModel === m ? "text-indigo-600 bg-indigo-50" : "text-gray-600 hover:bg-gray-50"
+                                            )}
+                                        >
+                                            {m}
+                                            {selectedModel === m && <Check size={14} />}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
+
                 <div className="w-9 h-9" />
             </header>
 

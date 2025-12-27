@@ -33,12 +33,11 @@ export default function AIChat() {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [models, setModels] = useState(['GPT-4o']);
     const [selectedModel, setSelectedModel] = useState('GPT-4o');
     const [showModelPicker, setShowModelPicker] = useState(false);
     const [streamingText, setStreamingText] = useState('');
     const scrollRef = useRef(null);
-
-    const models = ['GPT-4o', 'Claude 3.5 Sonnet', 'Gemini 1.5 Pro', 'DeepSeek-V2'];
 
     const suggestedPrompts = [
         { icon: <Code size={14} />, label: '代码助手', text: '请帮我优化这段代码的运行效率...' },
@@ -53,7 +52,27 @@ export default function AIChat() {
     ];
 
     useEffect(() => {
-        fetchHistory();
+        const fetchModels = async () => {
+            try {
+                const res = await fetch('/api/ai/models', { method: 'POST' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.chatModels && data.chatModels.length > 0) {
+                        setModels(data.chatModels);
+                        setSelectedModel(data.chatModels[0]);
+                    }
+                }
+            } catch (err) {
+                console.error('Fetch models failed', err);
+            }
+        };
+        fetchModels();
+    }, []);
+
+    useEffect(() => {
+        if (selectedModel) {
+            fetchHistory();
+        }
     }, [selectedModel]);
 
     useEffect(() => {
