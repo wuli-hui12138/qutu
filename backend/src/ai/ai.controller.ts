@@ -55,4 +55,9 @@ export class AiController {
             description: body.description
         });
     }
+
+    @Post('delete-task')
+    async deleteTask(@Body() body: { id: number }) {
+        return this.aiService.deleteTask(body.id);
+    }
 }

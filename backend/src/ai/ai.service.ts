@@ -369,7 +369,30 @@ export class AiService {
             return result;
         } catch (err) {
             this.logger.error(`Failed to submit AI image to gallery for task ${taskId}: ${err.message}`, err.stack);
-            throw err;
         }
+    }
+
+    async deleteTask(id: number) {
+        const task = await this.prisma.aiTask.findUnique({ where: { id } });
+        if (!task) throw new Error('任务不存在');
+
+        const fs = require('fs');
+        const path = require('path');
+
+        // Delete files
+        try {
+            if (task.resultUrl) {
+                const fullPath = path.join(process.cwd(), task.resultUrl.replace(/^\//, ''));
+                if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+            }
+            if (task.thumbUrl) {
+                const fullThumbPath = path.join(process.cwd(), task.thumbUrl.replace(/^\//, ''));
+                if (fs.existsSync(fullThumbPath)) fs.unlinkSync(fullThumbPath);
+            }
+        } catch (err) {
+            this.logger.error(`Failed to delete files for task ${id}: ${err.message}`);
+        }
+
+        return this.prisma.aiTask.delete({ where: { id } });
     }
 }

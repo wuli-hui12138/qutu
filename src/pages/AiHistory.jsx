@@ -145,13 +145,32 @@ export default function AiHistory() {
         }
     };
 
+    const handleDeleteTask = async (id) => {
+        if (!window.confirm('确定要删除这张创作吗？此操作无法撤销。')) return;
+        try {
+            const res = await fetch('/api/ai/delete-task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            if (res.ok) {
+                setTasks(tasks.filter(t => t.id !== id));
+            } else {
+                alert('删除失败');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('删除出错');
+        }
+    };
+
     return (
         <div className="bg-gray-50 min-h-screen pb-24 font-sans selection:bg-indigo-100">
             {/* Header */}
             <div className="pt-14 px-6 bg-white sticky top-0 z-40 flex items-center justify-between pb-6 border-b border-gray-100/50 backdrop-blur-xl bg-white/80">
                 <div className="flex items-center gap-5">
                     <div
-                        onClick={() => navigate('/ai/generator')}
+                        onClick={() => navigate('/ai/image')}
                         className="p-2.5 bg-gray-50 rounded-2xl text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-all cursor-pointer border border-gray-100"
                     >
                         <ArrowLeft size={18} />
@@ -234,6 +253,13 @@ export default function AiHistory() {
                                                         className="px-2.5 bg-white text-indigo-600 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center gap-1"
                                                     >
                                                         <Send size={10} /> 发布
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteTask(task.id)}
+                                                        className="w-10 bg-red-500/80 backdrop-blur-md text-white rounded-xl flex items-center justify-center hover:bg-red-600 transition-all"
+                                                        title="删除"
+                                                    >
+                                                        <Trash2 size={12} />
                                                     </button>
                                                 </div>
                                             </div>
