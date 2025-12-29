@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WallpapersService } from '../wallpapers/wallpapers.service';
 import { SystemConfigService } from '../system-config/system-config.service';
+import { AiModelService } from '../ai-models/ai-model.service';
 import { PrismaService } from '../prisma.service';
 import axios from 'axios';
 import * as fs from 'fs';
@@ -19,14 +20,29 @@ export class AiService {
         private wallpapersService: WallpapersService,
         private systemConfigService: SystemConfigService,
         private prisma: PrismaService,
+        private aiModelService: AiModelService,
     ) { }
 
     async getModels() {
-        const imageModels = await this.systemConfigService.get('AI_IMAGE_MODELS');
-        const chatModels = await this.systemConfigService.get('AI_CHAT_MODELS');
+        const chatModels = await this.aiModelService.findEnabledByType('CHAT');
+        const imageModels = await this.aiModelService.findEnabledByType('IMAGE');
+        const videoModels = await this.aiModelService.findEnabledByType('VIDEO');
+        const musicModels = await this.aiModelService.findEnabledByType('MUSIC');
+        const pptModels = await this.aiModelService.findEnabledByType('PPT');
+
         return {
-            imageModels: imageModels ? imageModels.split(',') : ['dall-e-3', 'flux'],
-            chatModels: chatModels ? chatModels.split(',') : ['gpt-4o', 'qwen-plus']
+            chatModels: chatModels.map(m => m.name),
+            imageModels: imageModels.map(m => m.name),
+            videoModels: videoModels.map(m => m.name),
+            musicModels: musicModels.map(m => m.name),
+            pptModels: pptModels.map(m => m.name),
+            details: {
+                chat: chatModels,
+                image: imageModels,
+                video: videoModels,
+                music: musicModels,
+                ppt: pptModels
+            }
         };
     }
 
@@ -115,7 +131,7 @@ export class AiService {
     /**
      * Start background generation
      */
-    async generateImage(prompt: string, userId?: number, model?: string): Promise<{ taskId: number }> {
+    async generateImage(prompt: string, userId?: number, model?: string, aspectRatio?: string): Promise<{ taskId: number }> {
         const dbApiKey = await this.systemConfigService.get('AI_API_KEY');
         const dbBaseUrl = await this.systemConfigService.get('AI_BASE_URL');
         const dbImagePath = await this.systemConfigService.get('AI_IMAGE_PATH') || '/v1/images/generations';
@@ -137,12 +153,12 @@ export class AiService {
         });
 
         // 2. Run background process (Don't await it!)
-        this.runBackgroundGeneration(task.id, apiUrl, apiKey, prompt, finalModel);
+        this.runBackgroundGeneration(task.id, apiUrl, apiKey, prompt, finalModel, aspectRatio);
 
         return { taskId: task.id };
     }
 
-    private async runBackgroundGeneration(taskId: number, apiUrl: string, apiKey: string | undefined, prompt: string, model: string) {
+    private async runBackgroundGeneration(taskId: number, apiUrl: string, apiKey: string | undefined, prompt: string, model: string, aspectRatio?: string) {
         try {
             if (!apiKey) {
                 // Mock behavior if no key
@@ -175,9 +191,8 @@ export class AiService {
                     model: model,
                     prompt: prompt,
                     n: 1,
-                    size: '1024x1792',
-                    aspect_ratio: '9:16',
                     response_format: 'url',
+                    ...(aspectRatio ? { aspect_ratio: aspectRatio } : { size: '1024x1024' })
                 };
             }
 

@@ -35,7 +35,7 @@ export default function AIGenerator() {
     const [prompt, setPrompt] = useState('');
     const [negativePrompt, setNegativePrompt] = useState('');
     const [showNegative, setShowNegative] = useState(false);
-    const [aspectRatio, setAspectRatio] = useState('1:1');
+    const [aspectRatio, setAspectRatio] = useState(null);
     const [selectedModel, setSelectedModel] = useState('Stable Diffusion XL');
     const [models, setModels] = useState(['Stable Diffusion XL']);
     const [showModelPicker, setShowModelPicker] = useState(false);
@@ -94,22 +94,12 @@ export default function AIGenerator() {
         }
     };
 
-    const updatePromptWithAR = (newPrompt, newAR) => {
-        let text = newPrompt;
-        const arRegex = /--ar\s+\d+:\d+/g;
-        const newARString = `--ar ${newAR}`;
-
-        if (arRegex.test(text)) {
-            text = text.replace(arRegex, newARString);
-        } else {
-            text = text.trim() ? `${text.trim()} ${newARString}` : newARString;
-        }
-        return text;
-    };
-
     const handleARChange = (newAR) => {
-        setAspectRatio(newAR);
-        setPrompt(prev => updatePromptWithAR(prev, newAR));
+        if (aspectRatio === newAR) {
+            setAspectRatio(null); // Unset if clicking already selected
+        } else {
+            setAspectRatio(newAR);
+        }
     };
 
     const handleGenerate = async () => {
@@ -131,7 +121,8 @@ export default function AIGenerator() {
                     prompt: prompt,
                     negativePrompt: showNegative ? negativePrompt : '',
                     model: selectedModel,
-                    userId
+                    userId,
+                    ...(aspectRatio ? { aspect_ratio: aspectRatio } : {})
                 })
             });
 

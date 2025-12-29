@@ -11,8 +11,8 @@ export class AiController {
     }
 
     @Post('generate')
-    async generate(@Body() body: { prompt: string; model?: string; userId?: number }) {
-        return this.aiService.generateImage(body.prompt, body.userId, body.model);
+    async generate(@Body() body: { prompt: string; model?: string; userId?: number; aspect_ratio?: string }) {
+        return this.aiService.generateImage(body.prompt, body.userId, body.model, body.aspect_ratio);
     }
 
     @Post('tasks')

@@ -12,6 +12,7 @@ import { AiModule } from './ai/ai.module';
 import { SystemConfigModule } from './system-config/system-config.module';
 import { UsersModule } from './users/users.module';
 import { InteractionsModule } from './interactions/interactions.module';
+import { AiModelModule } from './ai-models/ai-model.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { InteractionsModule } from './interactions/interactions.module';
     InteractionsModule,
     AiModule,
     SystemConfigModule,
+    AiModelModule,
   ],
   controllers: [AppController],
   providers: [AppService],

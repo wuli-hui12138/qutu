@@ -140,3 +140,17 @@ model AiTask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model AiModel {
+  id          Int      @id @default(autoincrement())
+  type        String   // CHAT, IMAGE, VIDEO, MUSIC, PPT
+  vendor      String   // openai, anthropic, aliyun, etc.
+  name        String   // model identifier e.g. gpt-4o
+  displayName String   // user friendly name e.g. GPT-4o Pro
+  isEnabled   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type])
+}

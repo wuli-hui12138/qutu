@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, Hash, LayoutGrid, Info, ShieldCheck, Image as ImageIcon, Settings2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Hash, LayoutGrid, Info, ShieldCheck, Image as ImageIcon, Settings2, Cpu } from 'lucide-react';
 
 export default function Settings() {
     const navigate = useNavigate();
@@ -45,6 +45,12 @@ export default function Settings() {
                             title="配置管理"
                             desc="管理 AI 密钥及系统参数"
                             to="/settings/config"
+                        />
+                        <LinkSection
+                            icon={<Cpu size={20} className="text-indigo-600" />}
+                            title="AI 模型管理"
+                            desc="对话、绘图、视频及 PPT 模型维护"
+                            to="/settings/ai-models"
                         />
                     </div>
                 </div>
