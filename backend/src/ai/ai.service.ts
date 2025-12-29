@@ -307,4 +307,57 @@ export class AiService {
             throw err;
         }
     }
+
+    async submitToGallery(taskId: number, data: { title: string, categories: string, tags: string, description?: string }) {
+        const task = await this.prisma.aiTask.findUnique({ where: { id: taskId } });
+        if (!task || !task.resultUrl) throw new Error('任务不存在或未完成');
+
+        const uploadDir = join(process.cwd(), 'uploads');
+        const thumbDir = join(uploadDir, 'thumbs');
+
+        if (!fs.existsSync(thumbDir)) {
+            fs.mkdirSync(thumbDir, { recursive: true });
+        }
+
+        const getFilename = (url: string) => url.split('/').pop();
+
+        const originalFilename = getFilename(task.resultUrl);
+        const thumbFilename = task.thumbUrl ? getFilename(task.thumbUrl) : originalFilename;
+
+        const sourcePath = join(process.cwd(), task.resultUrl.replace(/^\//, ''));
+        const sourceThumbPath = task.thumbUrl ? join(process.cwd(), task.thumbUrl.replace(/^\//, '')) : null;
+
+        const targetFilename = `ai-submit-${uuidv4()}.jpg`;
+        const targetPath = join(uploadDir, targetFilename);
+        const targetThumbPath = join(thumbDir, targetFilename);
+
+        try {
+            if (fs.existsSync(sourcePath)) {
+                fs.copyFileSync(sourcePath, targetPath);
+            } else {
+                throw new Error('原始文件不存在');
+            }
+
+            if (sourceThumbPath && fs.existsSync(sourceThumbPath)) {
+                fs.copyFileSync(sourceThumbPath, targetThumbPath);
+            } else {
+                const buffer = fs.readFileSync(targetPath);
+                await sharp(buffer).resize(400).jpeg({ quality: 80 }).toFile(targetThumbPath);
+            }
+
+            return this.wallpapersService.create({
+                title: data.title,
+                description: data.description || task.prompt,
+                categories: data.categories,
+                tags: data.tags,
+                url: `/uploads/${targetFilename}`,
+                thumb: `/uploads/thumbs/${targetFilename}`,
+                status: 'PENDING',
+                authorId: task.userId
+            });
+        } catch (err) {
+            this.logger.error('Failed to submit AI image to gallery', err);
+            throw err;
+        }
+    }
 }

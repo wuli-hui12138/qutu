@@ -19,6 +19,7 @@ import AIGenerator from './pages/AIGenerator';
 import AIChat from './pages/AIChat';
 import ConfigManagement from './pages/ConfigManagement';
 import AiModelManagement from './pages/AiModelManagement';
+import AiHistory from './pages/AiHistory';
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
           <Route path="settings/topics-audit" element={<TopicAudit />} />
           <Route path="settings/config" element={<ConfigManagement />} />
           <Route path="settings/ai-models" element={<AiModelManagement />} />
+          <Route path="ai/history" element={<AiHistory />} />
         </Route>
       </Routes>
     </BrowserRouter>

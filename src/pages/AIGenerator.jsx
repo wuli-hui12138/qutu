@@ -24,7 +24,11 @@ import {
     Trash2,
     Smartphone,
     Monitor,
-    UserCircle
+    Monitor,
+    UserCircle,
+    ChevronRight as RightIcon,
+    ArrowUpRight,
+    Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -45,6 +49,19 @@ export default function AIGenerator() {
     // Preview State
     const [previewType, setPreviewType] = useState(null); // 'mobile', 'pc', 'avatar'
     const [previewImage, setPreviewImage] = useState(null);
+
+    // Review Modal State
+    const [showSubmitModal, setShowSubmitModal] = useState(false);
+    const [submittingTask, setSubmittingTask] = useState(null);
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [tags, setTags] = useState([]);
+    const [formData, setFormData] = useState({
+        title: '',
+        categories: '',
+        tags: '',
+        description: ''
+    });
 
     const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
     const userId = qutu_user.id;
@@ -78,8 +95,22 @@ export default function AIGenerator() {
     useEffect(() => {
         fetchTasks();
         const interval = setInterval(fetchTasks, 3000); // Polling every 3s
+        fetchMetadata();
         return () => clearInterval(interval);
     }, [userId]);
+
+    const fetchMetadata = async () => {
+        try {
+            const [catsRes, tagsRes] = await Promise.all([
+                fetch('/api/categories'),
+                fetch('/api/tags')
+            ]);
+            if (catsRes.ok) setCategories(await catsRes.json());
+            if (tagsRes.ok) setTags(await tagsRes.json());
+        } catch (err) {
+            console.error('Fetch metadata failed', err);
+        }
+    };
 
     const fetchTasks = async () => {
         if (!userId) return;
@@ -154,9 +185,55 @@ export default function AIGenerator() {
             link.click();
             document.body.removeChild(link);
         } catch (err) {
-            console.error('Download failed', err);
-            // Fallback to direct link opening if blob fetch fails
             window.open(url, '_blank');
+        }
+    };
+
+    const handleOpenSubmit = (task) => {
+        setSubmittingTask(task);
+        setFormData({
+            title: `AI 创作 - ${new Date().toLocaleDateString()}`,
+            categories: '',
+            tags: '',
+            description: task.prompt
+        });
+        setShowSubmitModal(true);
+    };
+
+    const handleSubmitForReview = async (e) => {
+        e.preventDefault();
+        if (!formData.categories) return alert('请至少选择一个分类');
+
+        setSubmitLoading(true);
+        try {
+            const res = await fetch('/api/ai/submit-to-gallery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    taskId: submittingTask.id,
+                    ...formData
+                })
+            });
+            if (res.ok) {
+                alert('提交成功！请等待管理员审核。');
+                setShowSubmitModal(false);
+            } else {
+                throw new Error('Submit failed');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('提交失败，请重试');
+        } finally {
+            setSubmitLoading(false);
+        }
+    };
+
+    const toggleMeta = (field, name) => {
+        const current = formData[field] ? formData[field].split(',').map(s => s.trim()).filter(Boolean) : [];
+        if (current.includes(name)) {
+            setFormData({ ...formData, [field]: current.filter(s => s !== name).join(',') });
+        } else {
+            setFormData({ ...formData, [field]: [...current, name].join(',') });
         }
     };
 
@@ -319,24 +396,32 @@ export default function AIGenerator() {
                                 <LayoutGrid size={20} className="text-gray-300" />
                                 <h2 className="text-[12px] font-bold uppercase tracking-widest text-gray-400">历史创作画廊</h2>
                             </div>
-                            <div className="px-3 py-1 bg-gray-50 rounded-full border border-gray-100 text-[10px] font-bold text-gray-400">
-                                {tasks.filter(t => t.status === 'COMPLETED').length} 作品
+                            <div className="flex items-center gap-4">
+                                <div className="px-3 py-1 bg-gray-50 rounded-full border border-gray-100 text-[10px] font-bold text-gray-400">
+                                    {tasks.filter(t => t.status === 'COMPLETED').length} 作品
+                                </div>
+                                <button
+                                    onClick={() => navigate('/ai/history')}
+                                    className="flex items-center gap-1.5 text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors group"
+                                >
+                                    查看全部 <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                </button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {tasks.filter(t => t.status === 'COMPLETED').map((task) => (
+                        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+                            {tasks.filter(t => t.status === 'COMPLETED').slice(0, 6).map((task) => (
                                 <motion.div
                                     layout
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     key={task.id}
-                                    className="group relative bg-white border border-gray-100 rounded-[32px] overflow-hidden shadow-sm hover:shadow-xl transition-all"
+                                    className="group relative bg-white border border-gray-100 rounded-[32px] overflow-hidden shadow-sm hover:shadow-xl transition-all break-inside-avoid"
                                 >
-                                    <div className="aspect-[4/5] relative overflow-hidden bg-gray-50">
+                                    <div className="relative overflow-hidden bg-gray-50">
                                         <img
                                             src={task.thumbUrl || task.resultUrl}
-                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                            className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-110"
                                             alt="result"
                                         />
 
@@ -370,7 +455,7 @@ export default function AIGenerator() {
                                                 </button>
                                             </div>
 
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 mb-2">
                                                 <button
                                                     onClick={() => handleDownload(task.resultUrl)}
                                                     className="flex-1 py-3.5 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
@@ -385,6 +470,12 @@ export default function AIGenerator() {
                                                     <RefreshCw size={18} />
                                                 </button>
                                             </div>
+                                            <button
+                                                onClick={() => handleOpenSubmit(task)}
+                                                className="w-full py-3.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <Send size={14} /> 投稿至公共画廊
+                                            </button>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -412,6 +503,111 @@ export default function AIGenerator() {
                 )}
             </AnimatePresence>
 
+            {/* Submit Modal */}
+            <AnimatePresence>
+                {showSubmitModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="bg-white w-full max-w-xl rounded-[32px] overflow-hidden shadow-2xl border border-white/20 flex"
+                        >
+                            <div className="flex h-[450px] w-full">
+                                {/* Preview Side */}
+                                <div className="w-1/3 bg-gray-100 relative group overflow-hidden">
+                                    <img src={submittingTask?.thumbUrl || submittingTask?.resultUrl} className="w-full h-full object-cover" alt="Preview" />
+                                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                        <span className="text-[10px] font-black text-white px-3 py-1 bg-black/50 backdrop-blur-md rounded-full uppercase tracking-widest">预览作品</span>
+                                    </div>
+                                </div>
+
+                                {/* Form Side */}
+                                <div className="flex-1 p-8 flex flex-col relative text-left">
+                                    <button onClick={() => setShowSubmitModal(false)} className="absolute right-6 top-6 p-2 text-gray-300 hover:text-gray-900 transition-colors">
+                                        <X size={20} />
+                                    </button>
+
+                                    <div className="mb-8">
+                                        <h2 className="text-lg font-black text-gray-900 tracking-tight">发布作品审核</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 italic text-left">Submit to Global Gallery</p>
+                                    </div>
+
+                                    <form onSubmit={handleSubmitForReview} className="flex-1 space-y-5 overflow-y-auto hide-scrollbar pr-1">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">作品标题 (必填)</label>
+                                            <input
+                                                required
+                                                value={formData.title}
+                                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white transition-all shadow-sm"
+                                                placeholder="给您的创作起个名字"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">选择分类 (必选)</label>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {categories.map(cat => (
+                                                    <button
+                                                        key={cat.id}
+                                                        type="button"
+                                                        onClick={() => toggleMeta('categories', cat.name)}
+                                                        className={clsx(
+                                                            "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                                            formData.categories.split(',').includes(cat.name)
+                                                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100"
+                                                                : "bg-gray-50 text-gray-400 border border-gray-100 hover:bg-gray-100"
+                                                        )}
+                                                    >
+                                                        {cat.name}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">常用标签 (多选)</label>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {tags.map(tag => (
+                                                    <button
+                                                        key={tag.id}
+                                                        type="button"
+                                                        onClick={() => toggleMeta('tags', tag.name)}
+                                                        className={clsx(
+                                                            "px-3 py-1.5 rounded-full text-[9px] font-bold transition-all border",
+                                                            formData.tags.split(',').includes(tag.name)
+                                                                ? "bg-emerald-50 border-emerald-200 text-emerald-600"
+                                                                : "bg-white border-gray-100 text-gray-400 hover:border-indigo-200"
+                                                        )}
+                                                    >
+                                                        #{tag.name}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-4 sticky bottom-0 bg-white pb-2">
+                                            <button
+                                                disabled={submitLoading}
+                                                type="submit"
+                                                className={clsx(
+                                                    "w-full py-4 rounded-[20px] text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3",
+                                                    submitLoading ? "bg-gray-100 text-gray-400 animate-pulse" : "bg-gray-900 text-white hover:bg-black active:scale-[0.98]"
+                                                )}
+                                            >
+                                                {submitLoading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />}
+                                                {submitLoading ? '正在上传云端...' : '提交人工审核'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             <style sx>{`
                 .hide-scrollbar::-webkit-scrollbar {
                     display: none;
@@ -419,6 +615,9 @@ export default function AIGenerator() {
                 .hide-scrollbar {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
+                }
+                .break-inside-avoid {
+                    break-inside: avoid;
                 }
                 @keyframes progress {
                     0% { width: 0%; }

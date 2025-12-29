@@ -45,4 +45,14 @@ export class AiController {
     async save(@Body() data: { url: string; title: string; description?: string }) {
         return this.aiService.saveToGallery(data);
     }
+
+    @Post('submit-to-gallery')
+    async submitToGallery(@Body() body: { taskId: number, title: string, categories: string, tags: string, description?: string }) {
+        return this.aiService.submitToGallery(body.taskId, {
+            title: body.title,
+            categories: body.categories,
+            tags: body.tags,
+            description: body.description
+        });
+    }
 }
