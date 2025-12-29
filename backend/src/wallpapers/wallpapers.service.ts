@@ -57,23 +57,31 @@ export class WallpapersService {
 
     // AND logic for multiple categories
     if (query?.categories) {
-      const catArray = Array.isArray(query.categories) ? query.categories : [query.categories];
+      const catArray = Array.isArray(query.categories)
+        ? query.categories
+        : query.categories.split(',').map(c => c.trim()).filter(Boolean);
+
       if (catArray.length > 0) {
-        where.AND = where.AND || [];
-        catArray.forEach(cat => {
-          where.AND.push({ categories: { some: { name: cat } } });
-        });
+        where.categories = {
+          some: {
+            name: { in: catArray }
+          }
+        };
       }
     }
 
     // AND logic for multiple tags
     if (query?.tags) {
-      const tagArray = Array.isArray(query.tags) ? query.tags : [query.tags];
+      const tagArray = Array.isArray(query.tags)
+        ? query.tags
+        : query.tags.split(',').map(t => t.trim()).filter(Boolean);
+
       if (tagArray.length > 0) {
-        where.AND = where.AND || [];
-        tagArray.forEach(tag => {
-          where.AND.push({ tags: { some: { name: tag } } });
-        });
+        where.tags = {
+          some: {
+            name: { in: tagArray }
+          }
+        };
       }
     }
 
@@ -92,6 +100,8 @@ export class WallpapersService {
       where.isBanner = true;
     }
 
+    const limit = query?.limit ? parseInt(query.limit) : undefined;
+
     return this.prisma.image.findMany({
       where,
       include: {
@@ -99,7 +109,8 @@ export class WallpapersService {
         tags: true,
         topic: true
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      take: limit && !isNaN(limit) ? limit : undefined
     });
   }
 

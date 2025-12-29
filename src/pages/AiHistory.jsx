@@ -26,6 +26,8 @@ export default function AiHistory() {
     const [loading, setLoading] = useState(true);
     const [previewType, setPreviewType] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Review Modal State
     const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -147,20 +149,47 @@ export default function AiHistory() {
 
     const handleDeleteTask = async (id) => {
         if (!window.confirm('确定要删除这张创作吗？此操作无法撤销。')) return;
+        await handleBatchDelete([id]);
+    };
+
+    const handleBatchDelete = async (ids) => {
+        if (ids.length === 0) return;
+        if (!window.confirm(`确定要删除选中的 ${ids.length} 张创作吗？此操作无法撤销。`)) return;
+
+        setIsDeleting(true);
         try {
-            const res = await fetch('/api/ai/delete-task', {
+            const res = await fetch('/api/ai/delete-tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+                body: JSON.stringify({ ids })
             });
             if (res.ok) {
-                setTasks(tasks.filter(t => t.id !== id));
+                setTasks(tasks.filter(t => !ids.includes(t.id)));
+                setSelectedIds(selectedIds.filter(id => !ids.includes(id)));
             } else {
                 alert('删除失败');
             }
         } catch (err) {
             console.error(err);
             alert('删除出错');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const toggleSelect = (id) => {
+        if (selectedIds.includes(id)) {
+            setSelectedIds(selectedIds.filter(i => i !== id));
+        } else {
+            setSelectedIds([...selectedIds, id]);
+        }
+    };
+
+    const selectAll = () => {
+        if (selectedIds.length === tasks.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(tasks.map(t => t.id));
         }
     };
 
@@ -180,8 +209,16 @@ export default function AiHistory() {
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Your Neural Masterpieces</p>
                     </div>
                 </div>
-                <div className="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{tasks.length} 作品</span>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={selectAll}
+                        className="px-4 py-2 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black text-gray-500 uppercase tracking-widest hover:bg-gray-100 transition-all"
+                    >
+                        {selectedIds.length === tasks.length && tasks.length > 0 ? '取消全选' : '全选'}
+                    </button>
+                    <div className="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{tasks.length} 作品</span>
+                    </div>
                 </div>
             </div>
 
@@ -206,9 +243,23 @@ export default function AiHistory() {
                                         <img
                                             src={task.thumbUrl || task.resultUrl}
                                             className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-105"
+                                            onClick={() => toggleSelect(task.id)}
                                             alt="result"
                                             loading="lazy"
                                         />
+
+                                        {/* Selection Checkbox */}
+                                        <div
+                                            onClick={(e) => { e.stopPropagation(); toggleSelect(task.id); }}
+                                            className={clsx(
+                                                "absolute top-3 left-3 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer z-50",
+                                                selectedIds.includes(task.id)
+                                                    ? "bg-indigo-600 border-indigo-600 text-white shadow-lg"
+                                                    : "bg-black/20 border-white/40 backdrop-blur-md opacity-0 group-hover:opacity-100"
+                                            )}
+                                        >
+                                            {selectedIds.includes(task.id) && <Check size={14} strokeWidth={4} />}
+                                        </div>
 
                                         {/* Top-Right Delete Button */}
                                         <button
@@ -290,6 +341,52 @@ export default function AiHistory() {
                     </>
                 )}
             </main>
+
+            {/* Batch Action Bar */}
+            <AnimatePresence>
+                {selectedIds.length > 0 && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-lg"
+                    >
+                        <div className="bg-gray-900/90 backdrop-blur-2xl border border-white/10 rounded-[32px] p-4 shadow-2xl flex items-center justify-between gap-6">
+                            <div className="flex items-center gap-4 ml-2">
+                                <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-sm">
+                                    {selectedIds.length}
+                                </div>
+                                <div>
+                                    <p className="text-white text-xs font-black uppercase tracking-widest">已选择作品</p>
+                                    <p className="text-white/40 text-[9px] font-bold uppercase tracking-tight">Batch Management Active</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setSelectedIds([])}
+                                    className="px-5 py-3 rounded-2xl text-[10px] font-black text-white/60 hover:text-white uppercase tracking-widest transition-colors"
+                                >
+                                    取消
+                                </button>
+                                <button
+                                    onClick={() => handleBatchDelete(selectedIds)}
+                                    disabled={isDeleting}
+                                    className={clsx(
+                                        "px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
+                                        isDeleting
+                                            ? "bg-gray-800 text-gray-500 cursor-not-allowed"
+                                            : "bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-900/20 active:scale-95"
+                                    )}
+                                >
+                                    {isDeleting ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                    批量删除
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Submit Modal - Simplified */}
             <AnimatePresence>

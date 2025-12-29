@@ -60,4 +60,9 @@ export class AiController {
     async deleteTask(@Body() body: { id: number }) {
         return this.aiService.deleteTask(body.id);
     }
+
+    @Post('delete-tasks')
+    async deleteTasks(@Body() body: { ids: number[] }) {
+        return this.aiService.deleteTasks(body.ids);
+    }
 }

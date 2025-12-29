@@ -319,42 +319,56 @@ export class AiService {
         const uploadDir = join(process.cwd(), 'uploads');
         const thumbDir = join(uploadDir, 'thumbs');
 
-        if (!fs.existsSync(thumbDir)) {
-            fs.mkdirSync(thumbDir, { recursive: true });
-        }
-
-        const getFilename = (url: string) => url.split('/').pop();
-
-        const originalFilename = getFilename(task.resultUrl);
-        const thumbFilename = task.thumbUrl ? getFilename(task.thumbUrl) : originalFilename;
-
-        const sourcePath = join(process.cwd(), task.resultUrl.replace(/^\//, ''));
-        const sourceThumbPath = task.thumbUrl ? join(process.cwd(), task.thumbUrl.replace(/^\//, '')) : null;
+        // Ensure directories exist
+        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+        if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir, { recursive: true });
 
         const targetFilename = `ai-submit-${uuidv4()}.jpg`;
         const targetPath = join(uploadDir, targetFilename);
         const targetThumbPath = join(thumbDir, targetFilename);
 
-        // Ensure directories exist
-        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-        if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir, { recursive: true });
-
-        this.logger.log(`Source path: ${sourcePath}`);
-        this.logger.log(`Target path: ${targetPath}`);
+        const isRemote = (url: string) => url.startsWith('http');
 
         try {
-            if (fs.existsSync(sourcePath)) {
-                fs.copyFileSync(sourcePath, targetPath);
+            // 1. Process Main Image
+            if (isRemote(task.resultUrl)) {
+                this.logger.log(`Downloading remote resultUrl: ${task.resultUrl}`);
+                const response = await axios({
+                    method: 'get',
+                    url: task.resultUrl,
+                    responseType: 'arraybuffer'
+                });
+                fs.writeFileSync(targetPath, Buffer.from(response.data as any));
             } else {
-                this.logger.error(`Source file not found: ${sourcePath}`);
-                throw new Error('原始文件不存在');
+                const sourcePath = join(process.cwd(), task.resultUrl.replace(/^\//, ''));
+                if (fs.existsSync(sourcePath)) {
+                    fs.copyFileSync(sourcePath, targetPath);
+                } else {
+                    this.logger.error(`Source file not found: ${sourcePath}`);
+                    throw new Error('原始文件不存在');
+                }
             }
 
-            if (sourceThumbPath && fs.existsSync(sourceThumbPath)) {
-                this.logger.log(`Copying thumb from: ${sourceThumbPath}`);
-                fs.copyFileSync(sourceThumbPath, targetThumbPath);
+            // 2. Process Thumbnail
+            if (task.thumbUrl && isRemote(task.thumbUrl)) {
+                this.logger.log(`Downloading remote thumbUrl: ${task.thumbUrl}`);
+                const response = await axios({
+                    method: 'get',
+                    url: task.thumbUrl,
+                    responseType: 'arraybuffer'
+                });
+                fs.writeFileSync(targetThumbPath, Buffer.from(response.data as any));
+            } else if (task.thumbUrl) {
+                const sourceThumbPath = join(process.cwd(), task.thumbUrl.replace(/^\//, ''));
+                if (fs.existsSync(sourceThumbPath)) {
+                    fs.copyFileSync(sourceThumbPath, targetThumbPath);
+                } else {
+                    this.logger.log('Local thumb not found, generating from targetPath');
+                    const buffer = fs.readFileSync(targetPath);
+                    await sharp(buffer).resize(400).jpeg({ quality: 80 }).toFile(targetThumbPath);
+                }
             } else {
-                this.logger.log(`Generating thumb for: ${targetPath}`);
+                this.logger.log('No thumbUrl provided, generating from targetPath');
                 const buffer = fs.readFileSync(targetPath);
                 await sharp(buffer).resize(400).jpeg({ quality: 80 }).toFile(targetThumbPath);
             }
@@ -373,30 +387,39 @@ export class AiService {
             return result;
         } catch (err) {
             this.logger.error(`Failed to submit AI image to gallery for task ${taskId}: ${err.message}`, err.stack);
+            throw err;
         }
     }
 
     async deleteTask(id: number) {
-        const task = await this.prisma.aiTask.findUnique({ where: { id } });
-        if (!task) throw new Error('任务不存在');
+        return this.deleteTasks([id]);
+    }
 
-        const fs = require('fs');
-        const path = require('path');
+    async deleteTasks(ids: number[]) {
+        const tasks = await this.prisma.aiTask.findMany({
+            where: { id: { in: ids } }
+        });
 
-        // Delete files
-        try {
-            if (task.resultUrl) {
-                const fullPath = path.join(process.cwd(), task.resultUrl.replace(/^\//, ''));
-                if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+        const isRemote = (url: string | null) => url && url.startsWith('http');
+
+        for (const task of tasks) {
+            // Delete files
+            try {
+                if (task.resultUrl && !isRemote(task.resultUrl)) {
+                    const fullPath = join(process.cwd(), task.resultUrl.replace(/^\//, ''));
+                    if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+                }
+                if (task.thumbUrl && !isRemote(task.thumbUrl)) {
+                    const fullThumbPath = join(process.cwd(), task.thumbUrl.replace(/^\//, ''));
+                    if (fs.existsSync(fullThumbPath)) fs.unlinkSync(fullThumbPath);
+                }
+            } catch (err) {
+                this.logger.error(`Failed to delete files for task ${task.id}: ${err.message}`);
             }
-            if (task.thumbUrl) {
-                const fullThumbPath = path.join(process.cwd(), task.thumbUrl.replace(/^\//, ''));
-                if (fs.existsSync(fullThumbPath)) fs.unlinkSync(fullThumbPath);
-            }
-        } catch (err) {
-            this.logger.error(`Failed to delete files for task ${id}: ${err.message}`);
         }
 
-        return this.prisma.aiTask.delete({ where: { id } });
+        return this.prisma.aiTask.deleteMany({
+            where: { id: { in: ids } }
+        });
     }
 }
