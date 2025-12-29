@@ -24,7 +24,6 @@ import {
     Trash2,
     Smartphone,
     Monitor,
-    Monitor,
     UserCircle,
     ChevronRight as RightIcon,
     ArrowUpRight,
