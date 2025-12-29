@@ -161,9 +161,29 @@ export default function Detail() {
             <div className="absolute top-0 w-full pt-14 px-4 z-40 flex justify-between items-center pointer-events-none">
                 <div
                     onClick={() => navigate(-1)}
-                    className="w-10 h-10 bg-black/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white cursor-pointer pointer-events-auto active:scale-90 transition"
+                    className="w-11 h-11 bg-white/10 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center justify-center text-white cursor-pointer pointer-events-auto active:scale-95 transition-all"
                 >
                     <ChevronLeft size={24} />
+                </div>
+
+                <div className="flex gap-3 pointer-events-auto">
+                    <button
+                        onClick={() => { /* share logic */ }}
+                        className="w-11 h-11 bg-white/10 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-all"
+                    >
+                        <Share2 size={20} />
+                    </button>
+                    <button
+                        onClick={toggleLike}
+                        className={clsx(
+                            "w-11 h-11 backdrop-blur-2xl rounded-2xl flex flex-col items-center justify-center transition-all border",
+                            isLiked
+                                ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20"
+                                : "bg-white/10 border-white/10 text-white"
+                        )}
+                    >
+                        <Heart size={20} className={isLiked ? "fill-white" : ""} />
+                    </button>
                 </div>
             </div>
 
@@ -176,21 +196,6 @@ export default function Detail() {
                     alt={image.title}
                 />
 
-                {/* Float Like Button */}
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={toggleLike}
-                    className={clsx(
-                        "absolute top-1/2 -translate-y-1/2 right-6 w-14 h-14 rounded-2xl flex flex-col items-center justify-center transition-all shadow-2xl z-50",
-                        isLiked
-                            ? "bg-red-500 text-white shadow-red-900/40"
-                            : "bg-white/10 backdrop-blur-2xl text-white border border-white/10"
-                    )}
-                >
-                    <Heart size={24} className={isLiked ? "fill-white" : ""} />
-                    <span className="text-[8px] font-black mt-1 opacity-60">{likeCount}</span>
-                </motion.button>
             </div>
 
             {/* 信息面板 (不再绝对定位，适应图片高度) */}
@@ -199,7 +204,16 @@ export default function Detail() {
                     {/* 信息面板 */}
                     <div className="mb-8 space-y-4">
                         <div className="space-y-4">
-                            <h2 className="text-white text-3xl font-black tracking-tight leading-tight">{image.title}</h2>
+                            <div className="flex items-start justify-between gap-4">
+                                <h2 className="text-white text-3xl font-black tracking-tight leading-tight flex-1">{image.title}</h2>
+                                <div className="flex flex-col items-end shrink-0 pt-1">
+                                    <div className="text-[14px] font-black text-white flex items-center gap-1.5 mb-1">
+                                        <Heart size={14} className="text-red-500 fill-red-500" />
+                                        {likeCount}
+                                    </div>
+                                    <div className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Fans LIKED</div>
+                                </div>
+                            </div>
 
                             {/* Improved Author Section - Below Title */}
                             <div className="flex items-center gap-4 py-2">
@@ -264,14 +278,38 @@ export default function Detail() {
                         </button>
                     </div>
 
-                    <div className="flex justify-between items-center gap-4">
-                        <button
-                            onClick={handleDownload}
-                            className="flex-1 bg-white text-gray-900 h-14 rounded-2xl font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-gray-100 active:scale-[0.98] transition shadow-2xl shadow-indigo-500/10"
-                        >
-                            <Download size={20} />
-                            下载原图
-                        </button>
+                    <div className="mt-12 flex justify-center">
+                        <div className="inline-flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[28px] p-2 pr-4 shadow-2xl shadow-indigo-500/10 group">
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={toggleLike}
+                                className={clsx(
+                                    "flex items-center gap-2.5 px-6 py-3.5 rounded-[22px] transition-all duration-500",
+                                    isLiked
+                                        ? "bg-red-500 text-white shadow-xl shadow-red-500/30"
+                                        : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                                )}
+                            >
+                                <Heart size={18} className={clsx("transition-transform duration-300", isLiked ? "fill-white" : "group-hover:scale-110")} />
+                                <div className="flex flex-col items-start leading-none gap-0.5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{isLiked ? 'Loved' : 'Like'}</span>
+                                    <span className="text-[8px] font-bold opacity-60">{likeCount}</span>
+                                </div>
+                            </motion.button>
+
+                            <div className="w-px h-8 bg-white/10 mx-2" />
+
+                            <button
+                                onClick={handleDownload}
+                                className="flex items-center gap-3 px-8 py-3.5 rounded-[22px] bg-white text-gray-900 hover:bg-gray-100 transition-all group/dl"
+                            >
+                                <div className="flex flex-col items-end leading-none gap-0.5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-right">Download</span>
+                                    <span className="text-[8px] font-black text-indigo-600 opacity-60">ORIGINAL 4K</span>
+                                </div>
+                                <Download size={18} className="group-hover/dl:translate-y-0.5 transition-transform" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 

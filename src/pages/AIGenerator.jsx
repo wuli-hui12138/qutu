@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
     Sparkles,
     Image as ImageIcon,
@@ -25,7 +25,6 @@ import {
     Smartphone,
     Monitor,
     UserCircle,
-    ChevronRight as RightIcon,
     ArrowUpRight,
     Send
 } from 'lucide-react';
@@ -464,11 +463,11 @@ export default function AIGenerator() {
                             )}
                         </div>
                     </div>
-                </section >
-            </div >
+                </section>
+            </div>
 
             {/* Global Previews */}
-            < AnimatePresence >
+            <AnimatePresence>
                 {previewType && (
                     <PreviewOverlay
                         type={previewType}
@@ -477,10 +476,10 @@ export default function AIGenerator() {
                     />
                 )
                 }
-            </AnimatePresence >
+            </AnimatePresence>
 
             {/* Submit Modal */}
-            < AnimatePresence >
+            <AnimatePresence>
                 {showSubmitModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
                         <motion.div
@@ -578,9 +577,9 @@ export default function AIGenerator() {
                         </motion.div>
                     </div>
                 )}
-            </AnimatePresence >
+            </AnimatePresence>
 
-            <style sx>{`
+            <style>{`
                 .hide-scrollbar::-webkit-scrollbar {
                     display: none;
                 }
@@ -605,6 +604,6 @@ export default function AIGenerator() {
                     text-transform: uppercase;
                 }
             `}</style>
-        </div >
+        </div>
     );
 }
