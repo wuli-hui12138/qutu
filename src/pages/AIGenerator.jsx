@@ -21,29 +21,33 @@ import {
     Check,
     Box,
     X,
-    Trash2
+    Trash2,
+    Smartphone,
+    Monitor,
+    UserCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+import PreviewOverlay from '../components/PreviewOverlay';
 
 export default function AIGenerator() {
     const navigate = useNavigate();
     const [prompt, setPrompt] = useState('');
     const [negativePrompt, setNegativePrompt] = useState('');
     const [showNegative, setShowNegative] = useState(false);
-    const [selectedStyle, setSelectedStyle] = useState('Realistic');
     const [aspectRatio, setAspectRatio] = useState('1:1');
     const [selectedModel, setSelectedModel] = useState('Stable Diffusion XL');
     const [models, setModels] = useState(['Stable Diffusion XL']);
     const [showModelPicker, setShowModelPicker] = useState(false);
     const [tasks, setTasks] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [selectedTask, setSelectedTask] = useState(null);
+
+    // Preview State
+    const [previewType, setPreviewType] = useState(null); // 'mobile', 'pc', 'avatar'
+    const [previewImage, setPreviewImage] = useState(null);
 
     const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
     const userId = qutu_user.id;
-
-    // Style selection is removed, but we keep a default or internal value if needed by backend
 
     const aspectRatios = [
         { label: '1:1', icon: <div className="w-4 h-4 border-2 border-current rounded-sm" /> },
@@ -59,7 +63,9 @@ export default function AIGenerator() {
                     const data = await res.json();
                     if (data.imageModels && data.imageModels.length > 0) {
                         setModels(data.imageModels);
-                        setSelectedModel(data.imageModels[0]);
+                        if (!selectedModel || !data.imageModels.includes(selectedModel)) {
+                            setSelectedModel(data.imageModels[0]);
+                        }
                     }
                 }
             } catch (err) {
@@ -71,7 +77,7 @@ export default function AIGenerator() {
 
     useEffect(() => {
         fetchTasks();
-        const interval = setInterval(fetchTasks, 5000);
+        const interval = setInterval(fetchTasks, 3000); // Polling every 3s
         return () => clearInterval(interval);
     }, [userId]);
 
@@ -82,7 +88,6 @@ export default function AIGenerator() {
             if (res.ok) {
                 const data = await res.json();
                 setTasks(data);
-                if (data.length > 0 && !selectedTask) setSelectedTask(data[0]);
             }
         } catch (err) {
             console.error('Fetch tasks failed', err);
@@ -110,6 +115,7 @@ export default function AIGenerator() {
     const handleGenerate = async () => {
         if (!prompt.trim() || !userId) return;
 
+        // Check if there are already too many active tasks
         const activeTasks = tasks.filter(t => t.status === 'PROCESSING');
         if (activeTasks.length >= 4) {
             alert('当前生成任务已达上限 (4)，请稍候。');
@@ -122,11 +128,10 @@ export default function AIGenerator() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    prompt: prompt, // Prompt already includes --ar
+                    prompt: prompt,
                     negativePrompt: showNegative ? negativePrompt : '',
                     model: selectedModel,
-                    userId,
-                    style: selectedStyle
+                    userId
                 })
             });
 
@@ -136,15 +141,32 @@ export default function AIGenerator() {
             await fetchTasks();
         } catch (err) {
             console.error(err);
+            alert('生成请求提交失败，请重试');
         } finally {
             setIsGenerating(false);
         }
     };
 
-    // randomizePrompt is removed
+    const handleDownload = async (url) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `qutu-ai-${Date.now()}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (err) {
+            console.error('Download failed', err);
+            // Fallback to direct link opening if blob fetch fails
+            window.open(url, '_blank');
+        }
+    };
 
     return (
-        <div className="bg-white min-h-screen text-gray-900 font-sans flex flex-col overflow-hidden selection:bg-indigo-100">
+        <div className="bg-white min-h-screen text-gray-900 font-sans flex flex-col overflow-hidden selection:bg-indigo-100 uppercase-buttons">
             {/* Header */}
             <header className="flex-shrink-0 z-50 bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between shadow-sm">
                 <div onClick={() => navigate('/ai')} className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200/50 flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-all text-gray-600">
@@ -263,78 +285,120 @@ export default function AIGenerator() {
                                 )}
                             >
                                 {isGenerating ? <RefreshCw size={20} className="animate-spin" /> : <Zap size={20} className="fill-current" />}
-                                {isGenerating ? '正在构建...' : '立即生成'}
+                                {isGenerating ? '正在提交...' : '立即生成'}
                             </button>
                         </div>
                     </div>
+
+                    {/* Pending Tasks (Horizontal Stream) */}
+                    {tasks.some(t => t.status === 'PROCESSING') && (
+                        <div className="mt-8 space-y-4">
+                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                <Clock size={14} className="animate-spin text-indigo-500" />
+                                正在进行的任务 ({tasks.filter(t => t.status === 'PROCESSING').length})
+                            </span>
+                            <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+                                {tasks.filter(t => t.status === 'PROCESSING').map(task => (
+                                    <div key={task.id} className="flex-shrink-0 w-64 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
+                                            <RefreshCw size={20} className="animate-spin" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[12px] font-medium text-gray-700 truncate">"{task.prompt}"</p>
+                                            <div className="w-full h-1 bg-gray-50 rounded-full mt-2 overflow-hidden">
+                                                <div className="h-full bg-indigo-500 animate-pulse w-1/2" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </main>
 
                 {/* Results Section */}
                 <section className="bg-white border-t border-gray-100">
-                    <div className="max-w-4xl mx-auto px-8 py-16">
+                    <div className="max-w-6xl mx-auto px-8 py-16">
                         <div className="flex items-center justify-between mb-10">
                             <div className="flex items-center gap-3">
                                 <LayoutGrid size={20} className="text-gray-300" />
                                 <h2 className="text-[12px] font-bold uppercase tracking-widest text-gray-400">历史创作画廊</h2>
                             </div>
                             <div className="px-3 py-1 bg-gray-50 rounded-full border border-gray-100 text-[10px] font-bold text-gray-400">
-                                {tasks.length} 作品
+                                {tasks.filter(t => t.status === 'COMPLETED').length} 作品
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {tasks.map((task) => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {tasks.filter(t => t.status === 'COMPLETED').map((task) => (
                                 <motion.div
                                     layout
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     key={task.id}
-                                    className="group relative bg-white border border-gray-100 rounded-[36px] overflow-hidden shadow-sm hover:shadow-xl transition-all"
+                                    className="group relative bg-white border border-gray-100 rounded-[32px] overflow-hidden shadow-sm hover:shadow-xl transition-all"
                                 >
-                                    {task.status === 'COMPLETED' ? (
-                                        <div className="aspect-[4/5] relative overflow-hidden">
-                                            <img src={task.resultUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="result" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                                <div className="absolute top-6 right-6 flex flex-col gap-2">
-                                                    <button className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-indigo-600 transition-all">
-                                                        <Heart size={16} />
-                                                    </button>
-                                                </div>
-                                                <div className="absolute bottom-6 left-6 right-6 space-y-4">
-                                                    <p className="text-xs text-white/90 line-clamp-2 leading-relaxed font-medium">"{task.prompt}"</p>
-                                                    <div className="flex gap-2">
-                                                        <button className="flex-1 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-indigo-600 transition-all">U (精制)</button>
-                                                        <button className="flex-1 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-indigo-600 transition-all">V (变体)</button>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => setPrompt(task.prompt)}
-                                                        className="w-full py-3.5 bg-white rounded-xl text-indigo-600 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-100 transition-all active:scale-95 shadow-lg"
-                                                    >一键做同款</button>
-                                                </div>
+                                    <div className="aspect-[4/5] relative overflow-hidden bg-gray-50">
+                                        <img
+                                            src={task.thumbUrl || task.resultUrl}
+                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                            alt="result"
+                                        />
+
+                                        {/* Hover Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6">
+                                            <p className="text-white/90 text-[13px] font-medium mb-6 line-clamp-3 leading-relaxed">
+                                                "{task.prompt}"
+                                            </p>
+
+                                            <div className="grid grid-cols-3 gap-2 mb-4">
+                                                <button
+                                                    onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('mobile'); }}
+                                                    className="py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-1 hover:bg-white hover:text-indigo-600 transition-all"
+                                                >
+                                                    <Smartphone size={16} />
+                                                    <span className="text-[9px] font-bold uppercase">手机</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('pc'); }}
+                                                    className="py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-1 hover:bg-white hover:text-indigo-600 transition-all"
+                                                >
+                                                    <Monitor size={16} />
+                                                    <span className="text-[9px] font-bold uppercase">电脑</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('avatar'); }}
+                                                    className="py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-1 hover:bg-white hover:text-indigo-600 transition-all"
+                                                >
+                                                    <UserCircle size={16} />
+                                                    <span className="text-[9px] font-bold uppercase">头像</span>
+                                                </button>
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleDownload(task.resultUrl)}
+                                                    className="flex-1 py-3.5 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <Download size={14} /> 下载原图
+                                                </button>
+                                                <button
+                                                    onClick={() => setPrompt(task.prompt)}
+                                                    className="w-12 h-12 bg-white rounded-xl text-indigo-600 flex items-center justify-center hover:bg-gray-100 transition-all shadow-lg shrink-0"
+                                                    title="一键同款"
+                                                >
+                                                    <RefreshCw size={18} />
+                                                </button>
                                             </div>
                                         </div>
-                                    ) : (
-                                        <div className="aspect-[4/5] flex flex-col items-center justify-center p-12 text-center bg-gray-50/50">
-                                            <div className="relative mb-6">
-                                                <div className="w-20 h-20 rounded-full border-2 border-gray-100 border-t-indigo-500 animate-spin" />
-                                                <ImageIcon size={24} className="absolute inset-0 m-auto text-indigo-300 animate-pulse" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">正在重塑视觉粒子</h3>
-                                                <p className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em] leading-relaxed">Crafting Masterpiece... (Est. 20s)</p>
-                                            </div>
-                                            <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden mt-6">
-                                                <div className="w-1/3 h-full bg-indigo-500 animate-progress" />
-                                            </div>
-                                        </div>
-                                    )}
+                                    </div>
                                 </motion.div>
                             ))}
 
-                            {tasks.length === 0 && (
-                                <div className="col-span-1 md:col-span-2 py-40 flex flex-col items-center justify-center text-center opacity-20">
+                            {tasks.filter(t => t.status === 'COMPLETED').length === 0 && (
+                                <div className="col-span-full py-40 flex flex-col items-center justify-center text-center opacity-20">
                                     <Box size={64} className="mb-6 text-gray-300" />
-                                    <p className="text-sm font-bold uppercase tracking-[0.5em] text-gray-400">实验室尚未开启</p>
+                                    <p className="text-sm font-bold uppercase tracking-[0.5em] text-gray-400">历史创作尚空</p>
                                 </div>
                             )}
                         </div>
@@ -342,16 +406,24 @@ export default function AIGenerator() {
                 </section>
             </div>
 
+            {/* Global Previews */}
+            <AnimatePresence>
+                {previewType && (
+                    <PreviewOverlay
+                        type={previewType}
+                        imageSrc={previewImage}
+                        onClose={() => setPreviewType(null)}
+                    />
+                )}
+            </AnimatePresence>
+
             <style sx>{`
-                input[type=range]::-webkit-slider-thumb {
-                    -webkit-appearance: none;
-                    height: 20px;
-                    width: 20px;
-                    border-radius: 50%;
-                    background: white;
-                    cursor: pointer;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                    border: 4px solid #4f46e5;
+                .hide-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .hide-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
                 }
                 @keyframes progress {
                     0% { width: 0%; }
@@ -359,6 +431,9 @@ export default function AIGenerator() {
                 }
                 .animate-progress {
                     animation: progress 20s linear infinite;
+                }
+                .uppercase-buttons button {
+                    text-transform: uppercase;
                 }
             `}</style>
         </div>
