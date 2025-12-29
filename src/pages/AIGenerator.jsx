@@ -445,6 +445,15 @@ export default function AIGenerator() {
                                             alt="result"
                                         />
 
+                                        {/* Top-Right Delete Button */}
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}
+                                            className="absolute top-4 right-4 w-9 h-9 bg-red-800/80 backdrop-blur-md border border-red-500/30 text-white rounded-2xl flex items-center justify-center hover:bg-red-600 transition-all shadow-lg opacity-0 group-hover:opacity-100 z-50 transform translate-y-2 group-hover:translate-y-0 duration-300"
+                                            title="删除"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+
                                         {/* Hover Overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 overflow-y-auto custom-scrollbar">
                                             <div className="min-h-full flex flex-col justify-end">
@@ -491,19 +500,14 @@ export default function AIGenerator() {
                                                         <RefreshCw size={14} />
                                                     </button>
                                                 </div>
-                                                <button
-                                                    onClick={() => handleOpenSubmit(task)}
-                                                    className="flex-1 py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-[8px] font-bold uppercase tracking-widest hover:bg-white hover:text-indigo-600 transition-all flex items-center justify-center gap-1.5"
-                                                >
-                                                    <Send size={10} /> 发布作品
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteTask(task.id)}
-                                                    className="w-10 bg-red-800/80 backdrop-blur-md border border-red-500/30 text-white rounded-xl flex items-center justify-center hover:bg-red-600 transition-all shadow-lg shadow-red-900/10"
-                                                    title="删除"
-                                                >
-                                                    <Trash2 size={12} />
-                                                </button>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleOpenSubmit(task)}
+                                                        className="flex-1 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-[9px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        <Send size={12} /> 发布作品
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

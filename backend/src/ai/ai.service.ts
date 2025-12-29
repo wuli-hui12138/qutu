@@ -335,6 +335,10 @@ export class AiService {
         const targetPath = join(uploadDir, targetFilename);
         const targetThumbPath = join(thumbDir, targetFilename);
 
+        // Ensure directories exist
+        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+        if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir, { recursive: true });
+
         this.logger.log(`Source path: ${sourcePath}`);
         this.logger.log(`Target path: ${targetPath}`);
 

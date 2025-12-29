@@ -291,21 +291,31 @@ export default function Detail() {
 function ExpandableTags({ categories = [], tags = [] }) {
     const [expanded, setExpanded] = useState(false);
     const limit = 6;
-    const hasMore = tags.length > limit;
-    const displayTags = expanded ? tags : tags.slice(0, limit);
+
+    // Merge categories and tags for unified limiting
+    const allItems = [
+        ...categories.map(c => ({ type: 'category', ...c })),
+        ...tags.map(t => ({ type: 'tag', ...t }))
+    ];
+
+    const hasMore = allItems.length > limit;
+    const displayItems = expanded ? allItems : allItems.slice(0, limit);
 
     return (
         <div className="flex flex-col gap-3">
             <div className="flex gap-2 flex-wrap mb-2">
-                {categories.map(cat => <CategoryTag key={cat.id} text={cat.name} />)}
-                {displayTags.map(tag => <Tag key={tag.id} text={`#${tag.name}`} />)}
+                {displayItems.map((item, idx) => (
+                    item.type === 'category'
+                        ? <CategoryTag key={`cat-${item.id}`} text={item.name} />
+                        : <Tag key={`tag-${item.id}`} text={`#${item.name}`} />
+                ))}
 
                 {hasMore && (
                     <button
                         onClick={() => setExpanded(!expanded)}
                         className="bg-white/5 backdrop-blur-md text-indigo-300 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-400/20 active:scale-95 transition"
                     >
-                        {expanded ? '收起' : `展开+${tags.length - limit}`}
+                        {expanded ? '收起' : `展开+${allItems.length - limit}`}
                     </button>
                 )}
             </div>
