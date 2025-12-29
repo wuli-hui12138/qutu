@@ -88,11 +88,23 @@ async function main() {
     }
 
     // 4. Approve existing pending images
-    console.log('✅ Approving pending images...');
-    await prisma.image.updateMany({
-        where: { status: 'PENDING' },
-        data: { status: 'APPROVED' },
-    });
+    // 5. Default AI Models
+    console.log('🤖 Seeding AI models...');
+    const defaultModels = [
+        { type: 'CHAT', vendor: 'openai', name: 'gpt-4o', displayName: 'GPT-4o Pro', sortOrder: 100 },
+        { type: 'CHAT', vendor: 'aliyun', name: 'qwen-plus', displayName: '通义千问 Plus', sortOrder: 90 },
+        { type: 'CHAT', vendor: 'deepseek', name: 'deepseek-chat', displayName: 'DeepSeek V3', sortOrder: 80 },
+        { type: 'IMAGE', vendor: 'openai', name: 'dall-e-3', displayName: 'DALL-E 3', sortOrder: 100 },
+        { type: 'IMAGE', vendor: 'aliyun', name: 'flux', displayName: 'Flux.1 极速版', sortOrder: 90 },
+    ];
+
+    for (const model of defaultModels) {
+        await prisma.aiModel.upsert({
+            where: { id: defaultModels.indexOf(model) + 1 }, // Simple ID fallback or use unique name/type combo
+            update: model,
+            create: model,
+        });
+    }
 
     console.log('✨ Seeding finished successfully!');
 }

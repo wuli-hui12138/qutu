@@ -8,8 +8,7 @@ import axios from 'axios';
 import * as fs from 'fs';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import * as _sharp from 'sharp';
-const sharp = _sharp as any;
+import sharp from 'sharp';
 
 @Injectable()
 export class AiService {

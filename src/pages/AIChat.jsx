@@ -87,7 +87,11 @@ export default function AIChat() {
         if (!userId) return;
 
         try {
-            const res = await fetch(`/api/ai/chat-history?userId=${userId}&model=${selectedModel}`);
+            const res = await fetch('/api/ai/chat-history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, model: selectedModel })
+            });
             if (res.ok) {
                 const data = await res.json();
                 if (data.length > 0) {
