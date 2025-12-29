@@ -20,6 +20,7 @@ import AIChat from './pages/AIChat';
 import ConfigManagement from './pages/ConfigManagement';
 import AiModelManagement from './pages/AiModelManagement';
 import AiHistory from './pages/AiHistory';
+import AiTaskDetail from './pages/AiTaskDetail';
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
           <Route path="settings/config" element={<ConfigManagement />} />
           <Route path="settings/ai-models" element={<AiModelManagement />} />
           <Route path="ai/history" element={<AiHistory />} />
+          <Route path="ai/task/:id" element={<AiTaskDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

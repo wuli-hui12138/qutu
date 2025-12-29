@@ -1,4 +1,5 @@
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import clsx from 'clsx';
 import { ChevronLeft, Heart, Share2, Download, Check, Image as ImageIcon, Info, Smartphone, Monitor, User, Layers } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +13,7 @@ export default function Detail() {
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(0);
     const [previewType, setPreviewType] = useState(null); // 'mobile', 'pc', 'avatar', null
 
     useEffect(() => {
@@ -47,6 +49,11 @@ export default function Detail() {
                 }
 
                 setLoading(false);
+
+                // Initialize like state
+                const likes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
+                setIsLiked(likes.includes(data.id));
+                setLikeCount(data.likes || 0);
             })
             .catch(err => {
                 console.error(err);
@@ -82,6 +89,51 @@ export default function Detail() {
             } catch (err) {
                 console.error('Failed to sync history', err);
             }
+        }
+    };
+
+    const toggleLike = async () => {
+        const qutu_user = JSON.parse(localStorage.getItem('qutu_user') || '{}');
+        const userId = qutu_user.id;
+
+        // Optimistic update
+        const prevLiked = isLiked;
+        setIsLiked(!prevLiked);
+        setLikeCount(prev => prevLiked ? prev - 1 : prev + 1);
+
+        if (userId) {
+            try {
+                const res = await fetch('/api/interactions/favorite', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, imageId: image.id })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsLiked(data.isLiked);
+                    setLikeCount(data.likes);
+
+                    let finalLikes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
+                    if (data.isLiked) {
+                        if (!finalLikes.includes(image.id)) finalLikes.push(image.id);
+                    } else {
+                        finalLikes = finalLikes.filter(id => id !== image.id);
+                    }
+                    localStorage.setItem('qutu_likes', JSON.stringify(finalLikes));
+                }
+            } catch (err) {
+                console.error('Failed to sync favorite', err);
+                setIsLiked(prevLiked);
+            }
+        } else {
+            let localLikes = JSON.parse(localStorage.getItem('qutu_likes') || '[]');
+            if (prevLiked) {
+                localLikes = localLikes.filter(id => id !== image.id);
+            } else {
+                localLikes = [...localLikes, image.id];
+            }
+            localStorage.setItem('qutu_likes', JSON.stringify(localLikes));
         }
     };
 
@@ -123,6 +175,22 @@ export default function Detail() {
                     className="w-full max-h-full object-contain rounded-3xl"
                     alt={image.title}
                 />
+
+                {/* Float Like Button */}
+                <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={toggleLike}
+                    className={clsx(
+                        "absolute top-1/2 -translate-y-1/2 right-6 w-14 h-14 rounded-2xl flex flex-col items-center justify-center transition-all shadow-2xl z-50",
+                        isLiked
+                            ? "bg-red-500 text-white shadow-red-900/40"
+                            : "bg-white/10 backdrop-blur-2xl text-white border border-white/10"
+                    )}
+                >
+                    <Heart size={24} className={isLiked ? "fill-white" : ""} />
+                    <span className="text-[8px] font-black mt-1 opacity-60">{likeCount}</span>
+                </motion.button>
             </div>
 
             {/* 信息面板 (不再绝对定位，适应图片高度) */}

@@ -100,15 +100,6 @@ export default function ImageCard({ id, src, title, categories, tags, blurData, 
                     />
                     <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={toggleLike}
-                        className={`absolute top-4 right-4 z-30 p-2.5 backdrop-blur-xl rounded-full text-white transition-all transform ${isLiked ? 'bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] border-none' : 'bg-black/20 group-hover:bg-black/40 border border-white/10'
-                            }`}
-                    >
-                        <Heart size={16} className={isLiked ? "fill-white" : ""} />
-                    </motion.button>
                 </div>
 
                 <div className="p-4 bg-white/80 backdrop-blur-sm text-left">

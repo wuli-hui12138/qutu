@@ -438,7 +438,7 @@ export default function AIGenerator() {
                                     key={task.id}
                                     className="group relative bg-white border border-gray-100 rounded-[32px] overflow-hidden shadow-sm hover:shadow-xl transition-all break-inside-avoid"
                                 >
-                                    <div className="relative overflow-hidden bg-gray-50">
+                                    <Link to={`/ai/task/${task.id}`} className="relative overflow-hidden bg-gray-50">
                                         <img
                                             src={task.thumbUrl || task.resultUrl}
                                             className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -447,56 +447,12 @@ export default function AIGenerator() {
 
 
 
-                                        {/* Hover Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 overflow-y-auto custom-scrollbar">
-                                            <div className="min-h-full flex flex-col justify-end">
-                                                <p className="text-white/90 text-[10px] md:text-[11px] font-medium mb-3 line-clamp-3 leading-relaxed">
-                                                    "{task.prompt}"
-                                                </p>
-
-                                                <div className="grid grid-cols-3 gap-1.5 mb-2.5">
-                                                    <button
-                                                        onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('mobile'); }}
-                                                        className="py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-0.5 hover:bg-white hover:text-indigo-600 transition-all"
-                                                    >
-                                                        <Smartphone size={12} />
-                                                        <span className="text-[7px] font-bold uppercase">手机</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('pc'); }}
-                                                        className="py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-0.5 hover:bg-white hover:text-indigo-600 transition-all"
-                                                    >
-                                                        <Monitor size={12} />
-                                                        <span className="text-[7px] font-bold uppercase">电脑</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('avatar'); }}
-                                                        className="py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-0.5 hover:bg-white hover:text-indigo-600 transition-all"
-                                                    >
-                                                        <UserCircle size={12} />
-                                                        <span className="text-[7px] font-bold uppercase">头像</span>
-                                                    </button>
-                                                </div>
-
-                                                <div className="flex gap-2 mb-2">
-                                                    <button
-                                                        onClick={() => handleDownload(task.resultUrl)}
-                                                        className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-[8px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-1.5"
-                                                    >
-                                                        <Download size={10} /> 下载原图
-                                                    </button>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => handleOpenSubmit(task)}
-                                                        className="flex-1 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-[9px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
-                                                    >
-                                                        <Send size={12} /> 发布作品
-                                                    </button>
-                                                </div>
-                                            </div>
+                                        {/* Simple Metadata Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6">
+                                            <p className="text-white text-[10px] font-black uppercase tracking-widest opacity-80 mb-2">查看详情</p>
+                                            <p className="text-white/60 text-[9px] font-medium line-clamp-2 italic">"{task.prompt}"</p>
                                         </div>
-                                    </div>
+                                    </Link>
                                 </motion.div>
                             ))}
 
@@ -508,22 +464,23 @@ export default function AIGenerator() {
                             )}
                         </div>
                     </div>
-                </section>
-            </div>
+                </section >
+            </div >
 
             {/* Global Previews */}
-            <AnimatePresence>
+            < AnimatePresence >
                 {previewType && (
                     <PreviewOverlay
                         type={previewType}
                         imageSrc={previewImage}
                         onClose={() => setPreviewType(null)}
                     />
-                )}
-            </AnimatePresence>
+                )
+                }
+            </AnimatePresence >
 
             {/* Submit Modal */}
-            <AnimatePresence>
+            < AnimatePresence >
                 {showSubmitModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
                         <motion.div
@@ -621,7 +578,7 @@ export default function AIGenerator() {
                         </motion.div>
                     </div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
             <style sx>{`
                 .hide-scrollbar::-webkit-scrollbar {
@@ -648,6 +605,6 @@ export default function AIGenerator() {
                     text-transform: uppercase;
                 }
             `}</style>
-        </div>
+        </div >
     );
 }
