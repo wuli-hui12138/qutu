@@ -217,11 +217,12 @@ export default function AIGenerator() {
                 alert('提交成功！请等待管理员审核。');
                 setShowSubmitModal(false);
             } else {
-                throw new Error('Submit failed');
+                const errData = await res.json();
+                throw new Error(errData.message || 'Submit failed');
             }
         } catch (err) {
             console.error(err);
-            alert('提交失败，请重试');
+            alert(`提交失败: ${err.message}`);
         } finally {
             setSubmitLoading(false);
         }
@@ -425,56 +426,58 @@ export default function AIGenerator() {
                                         />
 
                                         {/* Hover Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6">
-                                            <p className="text-white/90 text-[13px] font-medium mb-6 line-clamp-3 leading-relaxed">
-                                                "{task.prompt}"
-                                            </p>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 overflow-y-auto custom-scrollbar">
+                                            <div className="min-h-full flex flex-col justify-end">
+                                                <p className="text-white/90 text-[10px] md:text-[11px] font-medium mb-3 line-clamp-3 leading-relaxed">
+                                                    "{task.prompt}"
+                                                </p>
 
-                                            <div className="grid grid-cols-3 gap-2 mb-4">
+                                                <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+                                                    <button
+                                                        onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('mobile'); }}
+                                                        className="py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-0.5 hover:bg-white hover:text-indigo-600 transition-all"
+                                                    >
+                                                        <Smartphone size={12} />
+                                                        <span className="text-[7px] font-bold uppercase">手机</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('pc'); }}
+                                                        className="py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-0.5 hover:bg-white hover:text-indigo-600 transition-all"
+                                                    >
+                                                        <Monitor size={12} />
+                                                        <span className="text-[7px] font-bold uppercase">电脑</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('avatar'); }}
+                                                        className="py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-0.5 hover:bg-white hover:text-indigo-600 transition-all"
+                                                    >
+                                                        <UserCircle size={12} />
+                                                        <span className="text-[7px] font-bold uppercase">头像</span>
+                                                    </button>
+                                                </div>
+
+                                                <div className="flex gap-2 mb-2">
+                                                    <button
+                                                        onClick={() => handleDownload(task.resultUrl)}
+                                                        className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-[8px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-1.5"
+                                                    >
+                                                        <Download size={10} /> 下载原图
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setPrompt(task.prompt)}
+                                                        className="w-10 h-10 bg-white rounded-xl text-indigo-600 flex items-center justify-center hover:bg-gray-100 transition-all shadow-lg shrink-0"
+                                                        title="一键同款"
+                                                    >
+                                                        <RefreshCw size={14} />
+                                                    </button>
+                                                </div>
                                                 <button
-                                                    onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('mobile'); }}
-                                                    className="py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-1 hover:bg-white hover:text-indigo-600 transition-all"
+                                                    onClick={() => handleOpenSubmit(task)}
+                                                    className="w-full py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-[8px] font-bold uppercase tracking-widest hover:bg-white hover:text-indigo-600 transition-all flex items-center justify-center gap-1.5"
                                                 >
-                                                    <Smartphone size={16} />
-                                                    <span className="text-[9px] font-bold uppercase">手机</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('pc'); }}
-                                                    className="py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-1 hover:bg-white hover:text-indigo-600 transition-all"
-                                                >
-                                                    <Monitor size={16} />
-                                                    <span className="text-[9px] font-bold uppercase">电脑</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => { setPreviewImage(task.resultUrl); setPreviewType('avatar'); }}
-                                                    className="py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white flex flex-col items-center gap-1 hover:bg-white hover:text-indigo-600 transition-all"
-                                                >
-                                                    <UserCircle size={16} />
-                                                    <span className="text-[9px] font-bold uppercase">头像</span>
+                                                    <Send size={10} /> 发布作品
                                                 </button>
                                             </div>
-
-                                            <div className="flex gap-2 mb-2">
-                                                <button
-                                                    onClick={() => handleDownload(task.resultUrl)}
-                                                    className="flex-1 py-3.5 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <Download size={14} /> 下载原图
-                                                </button>
-                                                <button
-                                                    onClick={() => setPrompt(task.prompt)}
-                                                    className="w-12 h-12 bg-white rounded-xl text-indigo-600 flex items-center justify-center hover:bg-gray-100 transition-all shadow-lg shrink-0"
-                                                    title="一键同款"
-                                                >
-                                                    <RefreshCw size={18} />
-                                                </button>
-                                            </div>
-                                            <button
-                                                onClick={() => handleOpenSubmit(task)}
-                                                className="w-full py-3.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
-                                            >
-                                                <Send size={14} /> 投稿至公共画廊
-                                            </button>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -510,97 +513,93 @@ export default function AIGenerator() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-white w-full max-w-xl rounded-[32px] overflow-hidden shadow-2xl border border-white/20 flex"
+                            className="bg-white w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl border border-white/20"
                         >
-                            <div className="flex h-[450px] w-full">
-                                {/* Preview Side */}
-                                <div className="w-1/3 bg-gray-100 relative group overflow-hidden">
-                                    <img src={submittingTask?.thumbUrl || submittingTask?.resultUrl} className="w-full h-full object-cover" alt="Preview" />
-                                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                        <span className="text-[10px] font-black text-white px-3 py-1 bg-black/50 backdrop-blur-md rounded-full uppercase tracking-widest">预览作品</span>
-                                    </div>
+                            <div className="p-8 flex flex-col relative text-left">
+                                <button onClick={() => setShowSubmitModal(false)} className="absolute right-6 top-6 p-2 text-gray-300 hover:text-gray-900 transition-colors">
+                                    <X size={20} />
+                                </button>
+
+                                <div className="mb-8">
+                                    <h2 className="text-lg font-black text-gray-900 tracking-tight">发布作品审核</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 italic text-left">Submit for Review</p>
                                 </div>
 
-                                {/* Form Side */}
-                                <div className="flex-1 p-8 flex flex-col relative text-left">
-                                    <button onClick={() => setShowSubmitModal(false)} className="absolute right-6 top-6 p-2 text-gray-300 hover:text-gray-900 transition-colors">
-                                        <X size={20} />
-                                    </button>
-
-                                    <div className="mb-8">
-                                        <h2 className="text-lg font-black text-gray-900 tracking-tight">发布作品审核</h2>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 italic text-left">Submit to Global Gallery</p>
+                                <form onSubmit={handleSubmitForReview} className="space-y-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">作品标题 (必填)</label>
+                                        <input
+                                            required
+                                            value={formData.title}
+                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white transition-all shadow-sm"
+                                            placeholder="给您的创作起个名字"
+                                        />
                                     </div>
 
-                                    <form onSubmit={handleSubmitForReview} className="flex-1 space-y-5 overflow-y-auto hide-scrollbar pr-1">
-                                        <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">作品标题 (必填)</label>
-                                            <input
-                                                required
-                                                value={formData.title}
-                                                onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white transition-all shadow-sm"
-                                                placeholder="给您的创作起个名字"
-                                            />
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">选择分类 (必选)</label>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {categories.map(cat => (
+                                                <button
+                                                    key={cat.id}
+                                                    type="button"
+                                                    onClick={() => toggleMeta('categories', cat.name)}
+                                                    className={clsx(
+                                                        "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                                        formData.categories.split(',').includes(cat.name)
+                                                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100"
+                                                            : "bg-gray-50 text-gray-400 border border-gray-100 hover:bg-gray-100"
+                                                    )}
+                                                >
+                                                    {cat.name}
+                                                </button>
+                                            ))}
                                         </div>
+                                    </div>
 
-                                        <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">选择分类 (必选)</label>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {categories.map(cat => (
-                                                    <button
-                                                        key={cat.id}
-                                                        type="button"
-                                                        onClick={() => toggleMeta('categories', cat.name)}
-                                                        className={clsx(
-                                                            "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                                            formData.categories.split(',').includes(cat.name)
-                                                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100"
-                                                                : "bg-gray-50 text-gray-400 border border-gray-100 hover:bg-gray-100"
-                                                        )}
-                                                    >
-                                                        {cat.name}
-                                                    </button>
-                                                ))}
-                                            </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">常用标签 (多选)</label>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {tags.map(tag => (
+                                                <button
+                                                    key={tag.id}
+                                                    type="button"
+                                                    onClick={() => toggleMeta('tags', tag.name)}
+                                                    className={clsx(
+                                                        "px-3 py-1.5 rounded-full text-[9px] font-bold transition-all border",
+                                                        formData.tags.split(',').includes(tag.name)
+                                                            ? "bg-emerald-50 border-emerald-200 text-emerald-600"
+                                                            : "bg-white border-gray-100 text-gray-400 hover:border-indigo-200"
+                                                    )}
+                                                >
+                                                    #{tag.name}
+                                                </button>
+                                            ))}
                                         </div>
+                                    </div>
 
-                                        <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">常用标签 (多选)</label>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {tags.map(tag => (
-                                                    <button
-                                                        key={tag.id}
-                                                        type="button"
-                                                        onClick={() => toggleMeta('tags', tag.name)}
-                                                        className={clsx(
-                                                            "px-3 py-1.5 rounded-full text-[9px] font-bold transition-all border",
-                                                            formData.tags.split(',').includes(tag.name)
-                                                                ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-                                                                : "bg-white border-gray-100 text-gray-400 hover:border-indigo-200"
-                                                        )}
-                                                    >
-                                                        #{tag.name}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-4 sticky bottom-0 bg-white pb-2">
-                                            <button
-                                                disabled={submitLoading}
-                                                type="submit"
-                                                className={clsx(
-                                                    "w-full py-4 rounded-[20px] text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3",
-                                                    submitLoading ? "bg-gray-100 text-gray-400 animate-pulse" : "bg-gray-900 text-white hover:bg-black active:scale-[0.98]"
-                                                )}
-                                            >
-                                                {submitLoading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />}
-                                                {submitLoading ? '正在上传云端...' : '提交人工审核'}
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
+                                    <div className="pt-4 flex gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowSubmitModal(false)}
+                                            className="px-6 py-4 rounded-[20px] text-[11px] font-black uppercase tracking-widest bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all font-sans"
+                                        >
+                                            取消
+                                        </button>
+                                        <button
+                                            disabled={submitLoading}
+                                            type="submit"
+                                            className={clsx(
+                                                "flex-1 py-4 rounded-[20px] text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3",
+                                                submitLoading ? "bg-gray-100 text-gray-400 animate-pulse" : "bg-gray-900 text-white hover:bg-black active:scale-[0.98]"
+                                            )}
+                                        >
+                                            {submitLoading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />}
+                                            {submitLoading ? '提交中...' : '提交人工审核'}
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </motion.div>
                     </div>
@@ -618,6 +617,9 @@ export default function AIGenerator() {
                 .break-inside-avoid {
                     break-inside: avoid;
                 }
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
                 @keyframes progress {
                     0% { width: 0%; }
                     100% { width: 100%; }

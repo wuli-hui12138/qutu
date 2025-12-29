@@ -309,8 +309,12 @@ export class AiService {
     }
 
     async submitToGallery(taskId: number, data: { title: string, categories: string, tags: string, description?: string }) {
+        this.logger.log(`Submitting task ${taskId} to gallery: ${JSON.stringify(data)}`);
         const task = await this.prisma.aiTask.findUnique({ where: { id: taskId } });
-        if (!task || !task.resultUrl) throw new Error('任务不存在或未完成');
+        if (!task || !task.resultUrl) {
+            this.logger.error(`Task ${taskId} not found or has no resultUrl`);
+            throw new Error('任务不存在或未完成');
+        }
 
         const uploadDir = join(process.cwd(), 'uploads');
         const thumbDir = join(uploadDir, 'thumbs');
@@ -331,21 +335,27 @@ export class AiService {
         const targetPath = join(uploadDir, targetFilename);
         const targetThumbPath = join(thumbDir, targetFilename);
 
+        this.logger.log(`Source path: ${sourcePath}`);
+        this.logger.log(`Target path: ${targetPath}`);
+
         try {
             if (fs.existsSync(sourcePath)) {
                 fs.copyFileSync(sourcePath, targetPath);
             } else {
+                this.logger.error(`Source file not found: ${sourcePath}`);
                 throw new Error('原始文件不存在');
             }
 
             if (sourceThumbPath && fs.existsSync(sourceThumbPath)) {
+                this.logger.log(`Copying thumb from: ${sourceThumbPath}`);
                 fs.copyFileSync(sourceThumbPath, targetThumbPath);
             } else {
+                this.logger.log(`Generating thumb for: ${targetPath}`);
                 const buffer = fs.readFileSync(targetPath);
                 await sharp(buffer).resize(400).jpeg({ quality: 80 }).toFile(targetThumbPath);
             }
 
-            return this.wallpapersService.create({
+            const result = await this.wallpapersService.create({
                 title: data.title,
                 description: data.description || task.prompt,
                 categories: data.categories,
@@ -355,8 +365,10 @@ export class AiService {
                 status: 'PENDING',
                 authorId: task.userId
             });
+            this.logger.log(`Gallery submission created: ${result.id}`);
+            return result;
         } catch (err) {
-            this.logger.error('Failed to submit AI image to gallery', err);
+            this.logger.error(`Failed to submit AI image to gallery for task ${taskId}: ${err.message}`, err.stack);
             throw err;
         }
     }
