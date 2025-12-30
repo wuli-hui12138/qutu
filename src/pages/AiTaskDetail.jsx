@@ -165,12 +165,6 @@ export default function AiTaskDetail() {
                 >
                     <ChevronLeft size={20} />
                 </button>
-                <button
-                    onClick={handleDelete}
-                    className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-center text-red-500 active:scale-95 transition"
-                >
-                    <Trash2 size={18} />
-                </button>
             </div>
 
             <div className="w-full flex-1 flex items-center justify-center p-6 min-h-[60vh] relative">

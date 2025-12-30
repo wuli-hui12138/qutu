@@ -210,30 +210,27 @@ export default function AiHistory() {
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Your Neural Masterpieces</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <button
                         onClick={() => {
                             setIsManageMode(!isManageMode);
                             if (isManageMode) setSelectedIds([]);
                         }}
                         className={clsx(
-                            "px-4 py-2 border rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
-                            isManageMode ? "bg-indigo-600 border-indigo-600 text-white" : "bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100"
+                            "px-5 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+                            isManageMode
+                                ? "bg-black text-white shadow-lg"
+                                : "bg-gray-50 border border-gray-100 text-gray-500 hover:bg-gray-100"
                         )}
                     >
-                        {isManageMode ? '退出管理' : '管理模式'}
+                        {isManageMode ? <X size={14} /> : <LayoutGrid size={14} />}
+                        {isManageMode ? '取消选择' : '批量管理'}
                     </button>
-                    {isManageMode && (
-                        <button
-                            onClick={selectAll}
-                            className="px-4 py-2 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black text-gray-500 uppercase tracking-widest hover:bg-gray-100 transition-all"
-                        >
-                            {selectedIds.length === tasks.length && tasks.length > 0 ? '取消全选' : '全选'}
-                        </button>
+                    {!isManageMode && (
+                        <div className="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{tasks.length} 作品</span>
+                        </div>
                     )}
-                    <div className="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{tasks.length} 作品</span>
-                    </div>
                 </div>
             </div>
 
@@ -249,10 +246,23 @@ export default function AiHistory() {
                             {tasks.map((task) => (
                                 <motion.div
                                     layout
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{
+                                        opacity: 1,
+                                        scale: selectedIds.includes(task.id) ? 0.94 : 1,
+                                    }}
                                     key={task.id}
-                                    className="group relative bg-white border border-gray-100 rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl transition-all break-inside-avoid"
+                                    className={clsx(
+                                        "group relative bg-white border rounded-[28px] overflow-hidden transition-all break-inside-avoid",
+                                        selectedIds.includes(task.id) ? "border-indigo-500 shadow-2xl ring-4 ring-indigo-500/10" : "border-gray-100 shadow-sm"
+                                    )}
+                                    onContextMenu={(e) => {
+                                        e.preventDefault();
+                                        if (!isManageMode) {
+                                            setIsManageMode(true);
+                                            setSelectedIds([task.id]);
+                                        }
+                                    }}
                                 >
                                     <div
                                         onClick={() => isManageMode ? toggleSelect(task.id) : navigate(`/ai/task/${task.id}`)}
@@ -260,41 +270,58 @@ export default function AiHistory() {
                                     >
                                         <img
                                             src={task.thumbUrl || task.resultUrl}
-                                            className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-105"
+                                            className={clsx(
+                                                "w-full h-auto object-cover transition-all duration-700",
+                                                selectedIds.includes(task.id) ? "brightness-90 scale-105" : "group-hover:scale-105"
+                                            )}
                                             alt="result"
                                             loading="lazy"
                                         />
 
-                                        {/* Selection Checkbox - Always visible in Manage Mode */}
-                                        {(isManageMode || selectedIds.length > 0) && (
-                                            <div
-                                                onClick={(e) => { e.stopPropagation(); toggleSelect(task.id); }}
-                                                className={clsx(
-                                                    "absolute top-3 left-3 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all z-50",
-                                                    selectedIds.includes(task.id)
-                                                        ? "bg-indigo-600 border-indigo-100 text-white shadow-lg"
-                                                        : "bg-white/20 border-white/40 backdrop-blur-md"
-                                                )}
-                                            >
-                                                {selectedIds.includes(task.id) && <Check size={14} strokeWidth={4} />}
+                                        {/* Selection Circular Badge */}
+                                        {isManageMode && (
+                                            <div className="absolute top-4 left-4 z-50">
+                                                <div
+                                                    onClick={(e) => { e.stopPropagation(); toggleSelect(task.id); }}
+                                                    className={clsx(
+                                                        "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all",
+                                                        selectedIds.includes(task.id)
+                                                            ? "bg-indigo-600 border-white text-white shadow-xl scale-110"
+                                                            : "bg-black/20 border-white/60 backdrop-blur-md"
+                                                    )}
+                                                >
+                                                    {selectedIds.includes(task.id) ? (
+                                                        <Check size={14} strokeWidth={4} />
+                                                    ) : (
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
 
-                                        {/* Simple Info Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
-                                            <p className="text-white text-[9px] font-black uppercase tracking-widest opacity-80 mb-1">
-                                                {isManageMode ? '选择作品' : '查看详情'}
-                                            </p>
-                                            <p className="text-white/60 text-[8px] font-medium line-clamp-1 italic">"{task.prompt}"</p>
-                                        </div>
+                                        {/* Selection Overlay */}
+                                        {selectedIds.includes(task.id) && (
+                                            <div className="absolute inset-0 bg-indigo-600/5 backdrop-blur-[2px] pointer-events-none" />
+                                        )}
+
+                                        {/* Simplified Hover Info */}
+                                        {!isManageMode && (
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-5">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-white text-[9px] font-black uppercase tracking-widest bg-indigo-600 px-2 py-0.5 rounded-lg">查看详情</span>
+                                                </div>
+                                                <p className="text-white/70 text-[10px] font-medium line-clamp-2 leading-relaxed italic">"{task.prompt}"</p>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="p-3 bg-white/50 backdrop-blur-md flex items-center justify-between">
-                                        <div className="flex items-center gap-1.5 overflow-hidden">
-                                            <Sparkles size={10} className="text-indigo-400 shrink-0" />
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest truncate">{task.model}</span>
+                                    <div className="p-4 bg-white flex items-center justify-between border-t border-gray-50">
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <div className="w-4 h-4 rounded-full bg-indigo-50 flex items-center justify-center">
+                                                <Sparkles size={8} className="text-indigo-400" />
+                                            </div>
+                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest truncate">{task.model}</span>
                                         </div>
-                                        <div className="flex items-center gap-1 text-[9px] font-bold text-gray-300">
-                                            <Clock size={10} />
+                                        <div className="text-[10px] font-bold text-gray-300">
                                             {new Date(task.createdAt).toLocaleDateString()}
                                         </div>
                                     </div>
@@ -316,43 +343,44 @@ export default function AiHistory() {
             <AnimatePresence>
                 {selectedIds.length > 0 && (
                     <motion.div
-                        initial={{ y: 100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: 100, opacity: 0 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-lg"
+                        initial={{ y: 100, x: '-50%', opacity: 0 }}
+                        animate={{ y: 0, x: '-50%', opacity: 1 }}
+                        exit={{ y: 100, x: '-50%', opacity: 0 }}
+                        className="fixed bottom-8 left-1/2 z-[60] w-[92%] max-w-sm"
                     >
-                        <div className="bg-gray-900/90 backdrop-blur-2xl border border-white/10 rounded-[32px] p-4 shadow-2xl flex items-center justify-between gap-6">
-                            <div className="flex items-center gap-4 ml-2">
-                                <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-sm">
-                                    {selectedIds.length}
-                                </div>
-                                <div>
-                                    <p className="text-white text-xs font-black uppercase tracking-widest">已选择作品</p>
-                                    <p className="text-white/40 text-[9px] font-bold uppercase tracking-tight">Batch Management Active</p>
+                        <div className="bg-black/90 backdrop-blur-3xl border border-white/10 rounded-[32px] p-2 flex items-center gap-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                            <div className="flex-1 flex items-center gap-4 pl-6">
+                                <span className="text-white font-black text-lg">{selectedIds.length}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-white/40 text-[9px] font-black uppercase tracking-widest">Selected</span>
+                                    <span className="text-white text-[10px] font-bold">ITEMS READY</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setSelectedIds([])}
-                                    className="px-5 py-3 rounded-2xl text-[10px] font-black text-white/60 hover:text-white uppercase tracking-widest transition-colors"
-                                >
-                                    取消
-                                </button>
-                                <button
-                                    onClick={() => handleBatchDelete(selectedIds)}
-                                    disabled={isDeleting}
-                                    className={clsx(
-                                        "px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
-                                        isDeleting
-                                            ? "bg-gray-800 text-gray-500 cursor-not-allowed"
-                                            : "bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-900/20 active:scale-95"
-                                    )}
-                                >
-                                    {isDeleting ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                    批量删除
-                                </button>
-                            </div>
+                            <button
+                                onClick={selectAll}
+                                className="px-6 py-4 rounded-2xl text-[10px] font-black text-white hover:bg-white/5 uppercase tracking-widest transition-colors"
+                            >
+                                {selectedIds.length === tasks.length ? '取消' : '全选'}
+                            </button>
+
+                            <button
+                                onClick={() => handleBatchDelete(selectedIds)}
+                                disabled={isDeleting}
+                                className={clsx(
+                                    "px-8 py-4 rounded-[24px] text-[11px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
+                                    isDeleting
+                                        ? "bg-gray-800 text-gray-500"
+                                        : "bg-red-500 text-white shadow-xl shadow-red-500/20 active:scale-95"
+                                )}
+                            >
+                                {isDeleting ? (
+                                    <RefreshCw size={16} className="animate-spin" />
+                                ) : (
+                                    <Trash2 size={16} />
+                                )}
+                                删除
+                            </button>
                         </div>
                     </motion.div>
                 )}

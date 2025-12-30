@@ -26,8 +26,8 @@ export default function Detail() {
 
                 // Fetch Recommendations (4 from tags, 2 from categories)
                 try {
-                    const tagNames = data.tags.map(t => t.name).join(',');
-                    const catNames = data.categories.map(c => c.name).join(',');
+                    const tagNames = (data.tags || []).map(t => t.name).join(',');
+                    const catNames = (data.categories || []).map(c => c.name).join(',');
 
                     const [tagRes, catRes] = await Promise.all([
                         fetch(`/api/wallpapers?tags=${tagNames}&limit=10`),
@@ -383,8 +383,8 @@ function ExpandableTags({ categories = [], tags = [] }) {
 
     // Merge categories and tags for unified limiting
     const allItems = [
-        ...categories.map(c => ({ type: 'category', ...c })),
-        ...tags.map(t => ({ type: 'tag', ...t }))
+        ...(categories || []).map(c => ({ type: 'category', ...c })),
+        ...(tags || []).map(t => ({ type: 'tag', ...t }))
     ];
 
     const hasMore = allItems.length > limit;
