@@ -157,45 +157,66 @@ export default function Detail() {
 
     return (
         <div className="min-h-screen w-full bg-black relative flex flex-col pb-10">
-            {/* 沉浸式顶部 */}
-            <div className="absolute top-0 w-full pt-14 px-4 z-40 flex justify-between items-center pointer-events-none">
-                <div
+            {/* 顶部导航 (非悬浮) */}
+            <div className="w-full flex justify-between items-center px-6 py-4 bg-black border-b border-white/5">
+                <button
                     onClick={() => navigate(-1)}
-                    className="w-11 h-11 bg-white/10 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center justify-center text-white cursor-pointer pointer-events-auto active:scale-95 transition-all"
+                    className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white active:scale-95 transition-all"
                 >
-                    <ChevronLeft size={24} />
-                </div>
+                    <ChevronLeft size={20} />
+                </button>
 
-                <div className="flex gap-3 pointer-events-auto">
+                <div className="flex gap-2">
                     <button
                         onClick={() => { /* share logic */ }}
-                        className="w-11 h-11 bg-white/10 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-all"
+                        className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white active:scale-95 transition-all"
                     >
-                        <Share2 size={20} />
+                        <Share2 size={18} />
                     </button>
                     <button
                         onClick={toggleLike}
                         className={clsx(
-                            "w-11 h-11 backdrop-blur-2xl rounded-2xl flex flex-col items-center justify-center transition-all border",
+                            "w-10 h-10 rounded-xl flex items-center justify-center transition-all border",
                             isLiked
                                 ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20"
-                                : "bg-white/10 border-white/10 text-white"
+                                : "bg-white/5 border-white/10 text-white"
                         )}
                     >
-                        <Heart size={20} className={isLiked ? "fill-white" : ""} />
+                        <Heart size={18} className={isLiked ? "fill-white" : ""} />
                     </button>
                 </div>
             </div>
 
             {/* Main Image Container (Changed to responsive) */}
-            <div className="w-full min-h-[50vh] max-h-[75vh] flex items-center justify-center p-4 shrink-0 overflow-hidden">
+            <div className="w-full min-h-[50vh] max-h-[75vh] flex items-center justify-center p-4 shrink-0 overflow-hidden relative">
                 <motion.img
                     layoutId={`img-${image.id}`}
                     src={image.url}
                     className="w-full max-h-full object-contain rounded-3xl"
                     alt={image.title}
                 />
+            </div>
 
+            {/* 快捷预览功能 (移动至此) */}
+            <div className="flex gap-3 px-6 py-4">
+                <button
+                    onClick={() => setPreviewType('mobile')}
+                    className="flex-1 bg-white/5 border border-white/10 text-white h-11 rounded-2xl font-bold text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                >
+                    <Smartphone size={14} /> 手机预览
+                </button>
+                <button
+                    onClick={() => setPreviewType('pc')}
+                    className="flex-1 bg-white/5 border border-white/10 text-white h-11 rounded-2xl font-bold text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                >
+                    <Monitor size={14} /> 电脑预览
+                </button>
+                <button
+                    onClick={() => setPreviewType('avatar')}
+                    className="flex-1 bg-white/5 border border-white/10 text-white h-11 rounded-2xl font-bold text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                >
+                    <User size={14} /> 头像预览
+                </button>
             </div>
 
             {/* 信息面板 (不再绝对定位，适应图片高度) */}
@@ -203,22 +224,22 @@ export default function Detail() {
                 <div className="bg-white/5 backdrop-blur-2xl rounded-[32px] p-8 border border-white/10 shadow-2xl">
                     {/* 信息面板 */}
                     <div className="mb-8 space-y-4">
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <div className="flex items-start justify-between gap-4">
-                                <h2 className="text-white text-3xl font-black tracking-tight leading-tight flex-1">{image.title}</h2>
+                                <h2 className="text-white text-2xl font-black tracking-tight leading-tight flex-1">{image.title}</h2>
                                 <div className="flex flex-col items-end shrink-0 pt-1">
-                                    <div className="text-[14px] font-black text-white flex items-center gap-1.5 mb-1">
-                                        <Heart size={14} className="text-red-500 fill-red-500" />
+                                    <div className="text-[12px] font-black text-white flex items-center gap-1 mb-0.5">
+                                        <Heart size={12} className="text-red-500 fill-red-500" />
                                         {likeCount}
                                     </div>
-                                    <div className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Fans LIKED</div>
+                                    <div className="text-[7px] font-black text-gray-500 uppercase tracking-widest">Fans LIKED</div>
                                 </div>
                             </div>
 
                             {/* Improved Author Section - Below Title */}
-                            <div className="flex items-center gap-4 py-2">
-                                <Link to={`/profile/${image.author?.id}`} className="flex items-center gap-2.5 group">
-                                    <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 ring-2 ring-white/5 group-hover:ring-indigo-500/50 transition-all">
+                            <div className="flex items-center gap-3 py-1">
+                                <Link to={`/profile/${image.author?.id}`} className="flex items-center gap-2 group">
+                                    <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 ring-2 ring-white/5 group-hover:ring-indigo-500/50 transition-all">
                                         <img
                                             src={image.author?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"}
                                             className="w-full h-full object-cover"
@@ -226,15 +247,15 @@ export default function Detail() {
                                         />
                                     </div>
                                     <div>
-                                        <div className="text-white text-[13px] font-black group-hover:text-indigo-400 transition-colors uppercase tracking-wide">{image.author?.nickname || "未名画师"}</div>
-                                        <div className="text-[8px] text-gray-500 font-bold uppercase tracking-[0.15em] mt-0.5 flex items-center gap-1.5">
+                                        <div className="text-white text-[11px] font-black group-hover:text-indigo-400 transition-colors uppercase tracking-wide">{image.author?.nickname || "未名画师"}</div>
+                                        <div className="text-[7px] text-gray-500 font-bold uppercase tracking-[0.1em] mt-0.5 flex items-center gap-1">
                                             <span className="w-1 h-1 rounded-full bg-indigo-500"></span>
                                             Verified Artist
                                         </div>
                                     </div>
                                 </Link>
-                                <div className="h-4 w-px bg-white/10 mx-2"></div>
-                                <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest leading-none">
+                                <div className="h-3 w-px bg-white/10 mx-1"></div>
+                                <p className="text-gray-500 text-[8px] font-bold uppercase tracking-widest leading-none">
                                     {new Date(image.createdAt).toLocaleDateString()}
                                 </p>
                             </div>
@@ -244,73 +265,35 @@ export default function Detail() {
                         <ExpandableTags categories={image.categories} tags={image.tags} />
                     </div>
 
-                    {/* 图片描述 (移动到标签下方) */}
+                    {/* 图片描述 (带一键绘图功能) */}
                     {image.description && (
-                        <div className="flex items-start gap-2 bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 mt-6 min-h-[80px]">
-                            <Info size={14} className="text-purple-400 mt-0.5 shrink-0" />
-                            <p className="text-gray-200 text-xs leading-relaxed font-medium">
-                                {image.description}
-                            </p>
+                        <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 mt-6 min-h-[80px]">
+                            <div className="flex items-start gap-2 mb-3">
+                                <Info size={13} className="text-purple-400 mt-0.5 shrink-0" />
+                                <p className="text-gray-300 text-[11px] leading-relaxed font-medium">
+                                    {image.description}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => navigate('/ai/image', { state: { prompt: image.description } })}
+                                className="w-full py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                            >
+                                <Sparkles size={12} />
+                                一键以此灵感绘图
+                            </button>
                         </div>
                     )}
                 </div>
 
-                {/* 操作按钮 */}
-                <div className="flex flex-col gap-4">
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => setPreviewType('mobile')}
-                            className="flex-1 bg-white/10 backdrop-blur-xl border border-white/10 text-white h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
-                        >
-                            <Smartphone size={14} /> 手机预览
-                        </button>
-                        <button
-                            onClick={() => setPreviewType('pc')}
-                            className="flex-1 bg-white/10 backdrop-blur-xl border border-white/10 text-white h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
-                        >
-                            <Monitor size={14} /> 电脑预览
-                        </button>
-                        <button
-                            onClick={() => setPreviewType('avatar')}
-                            className="flex-1 bg-white/10 backdrop-blur-xl border border-white/10 text-white h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
-                        >
-                            <User size={14} /> 头像预览
-                        </button>
-                    </div>
-
-                    <div className="mt-12 flex justify-center">
-                        <div className="inline-flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[28px] p-2 pr-4 shadow-2xl shadow-indigo-500/10 group">
-                            <motion.button
-                                whileTap={{ scale: 0.9 }}
-                                onClick={toggleLike}
-                                className={clsx(
-                                    "flex items-center gap-2.5 px-6 py-3.5 rounded-[22px] transition-all duration-500",
-                                    isLiked
-                                        ? "bg-red-500 text-white shadow-xl shadow-red-500/30"
-                                        : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-                                )}
-                            >
-                                <Heart size={18} className={clsx("transition-transform duration-300", isLiked ? "fill-white" : "group-hover:scale-110")} />
-                                <div className="flex flex-col items-start leading-none gap-0.5">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">{isLiked ? 'Loved' : 'Like'}</span>
-                                    <span className="text-[8px] font-bold opacity-60">{likeCount}</span>
-                                </div>
-                            </motion.button>
-
-                            <div className="w-px h-8 bg-white/10 mx-2" />
-
-                            <button
-                                onClick={handleDownload}
-                                className="flex items-center gap-3 px-8 py-3.5 rounded-[22px] bg-white text-gray-900 hover:bg-gray-100 transition-all group/dl"
-                            >
-                                <div className="flex flex-col items-end leading-none gap-0.5">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-right">Download</span>
-                                    <span className="text-[8px] font-black text-indigo-600 opacity-60">ORIGINAL 4K</span>
-                                </div>
-                                <Download size={18} className="group-hover/dl:translate-y-0.5 transition-transform" />
-                            </button>
-                        </div>
-                    </div>
+                {/* 操作按钮 (移除点赞按钮) */}
+                <div className="px-6 py-8">
+                    <button
+                        onClick={handleDownload}
+                        className="w-full bg-white text-gray-900 h-16 rounded-[24px] font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-gray-100 active:scale-[0.98] transition shadow-2xl shadow-indigo-500/10"
+                    >
+                        <Download size={20} />
+                        保存高清原图
+                    </button>
                 </div>
 
                 {/* Related Images Section */}

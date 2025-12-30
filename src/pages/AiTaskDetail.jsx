@@ -157,109 +157,99 @@ export default function AiTaskDetail() {
 
     return (
         <div className="min-h-screen w-full bg-black relative flex flex-col pb-24">
-            {/* Header */}
-            <div className="absolute top-0 w-full pt-14 px-6 z-40 flex justify-between items-center pointer-events-none">
-                <div
+            {/* Header (Non-floating) */}
+            <div className="w-full flex justify-between items-center px-6 py-4 bg-black border-b border-white/5">
+                <button
                     onClick={() => navigate(-1)}
-                    className="w-11 h-11 bg-white/10 backdrop-blur-2xl rounded-2xl flex items-center justify-center text-white cursor-pointer pointer-events-auto active:scale-95 transition border border-white/10"
+                    className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white active:scale-95 transition"
                 >
-                    <ChevronLeft size={24} />
-                </div>
-                <div
+                    <ChevronLeft size={20} />
+                </button>
+                <button
                     onClick={handleDelete}
-                    className="w-11 h-11 bg-red-500/20 backdrop-blur-2xl rounded-2xl flex items-center justify-center text-red-500 cursor-pointer pointer-events-auto active:scale-95 transition border border-red-500/20"
+                    className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-center text-red-500 active:scale-95 transition"
                 >
-                    <Trash2 size={20} />
-                </div>
+                    <Trash2 size={18} />
+                </button>
             </div>
 
-            {/* Image Preview */}
-            <div className="w-full flex-1 flex items-center justify-center p-6 min-h-[60vh]">
+            <div className="w-full flex-1 flex items-center justify-center p-6 min-h-[60vh] relative">
                 <motion.img
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     src={task.resultUrl}
-                    className="max-w-full max-h-[80vh] object-contain rounded-[40px] shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
+                    className="max-w-full max-h-[80vh] object-contain rounded-[32px] shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
                     alt="AI Result"
                 />
+            </div>
+
+            {/* Quick Previews (Moved here) */}
+            <div className="flex gap-3 px-6 py-2">
+                <button
+                    onClick={() => setPreviewType('mobile')}
+                    className="flex-1 bg-white/5 border border-white/10 text-white h-12 rounded-2xl font-bold text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                >
+                    <Smartphone size={14} /> 手机预览
+                </button>
+                <button
+                    onClick={() => setPreviewType('pc')}
+                    className="flex-1 bg-white/5 border border-white/10 text-white h-12 rounded-2xl font-bold text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                >
+                    <Monitor size={14} /> 电脑预览
+                </button>
+                <button
+                    onClick={() => setPreviewType('avatar')}
+                    className="flex-1 bg-white/5 border border-white/10 text-white h-12 rounded-2xl font-bold text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition"
+                >
+                    <UserCircle size={14} /> 头像预览
+                </button>
             </div>
 
             {/* Info Panel */}
             <div className="px-6 space-y-4">
                 <div className="bg-white/5 backdrop-blur-3xl rounded-[32px] p-8 border border-white/10 shadow-2xl">
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center justify-between mb-6">
                         <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <span className="px-3 py-1 bg-indigo-500 rounded-lg text-[9px] font-black text-white uppercase tracking-widest">
+                            <div className="flex items-center gap-2.5 mb-2">
+                                <span className="px-2.5 py-0.5 bg-indigo-500 rounded text-[8px] font-black text-white uppercase tracking-widest">
                                     {task.model}
                                 </span>
-                                <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-500 uppercase tracking-widest">
-                                    <Clock size={10} />
+                                <div className="flex items-center gap-1 text-[8px] font-bold text-gray-500 uppercase tracking-widest">
+                                    <Clock size={9} />
                                     {new Date(task.createdAt).toLocaleString()}
                                 </div>
                             </div>
-                            <h1 className="text-white text-3xl font-black tracking-tight leading-tight">AI 创作详情</h1>
+                            <h1 className="text-white text-2xl font-black tracking-tight leading-tight">AI 创作详情</h1>
                         </div>
                     </div>
 
                     {/* Prompt Box */}
-                    <div className="bg-white/5 rounded-2xl p-6 border border-white/5 relative group">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={14} className="text-indigo-400" />
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Prompt Logic</span>
+                    <div className="bg-white/5 rounded-2xl p-5 border border-white/5 relative group">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Sparkles size={12} className="text-indigo-400" />
+                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Prompt Logic</span>
                         </div>
-                        <p className="text-gray-200 text-sm leading-relaxed font-medium italic">
+                        <p className="text-gray-200 text-xs leading-relaxed font-medium italic">
                             "{task.prompt}"
                         </p>
-                        <button
-                            onClick={() => { navigate('/ai/image', { state: { prompt: task.prompt } }); }}
-                            className="mt-6 flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors"
-                        >
-                            <RefreshCw size={14} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">一键使用同款 Prompt</span>
-                        </button>
                     </div>
                 </div>
 
-                {/* Main Actions */}
-                <div className="flex flex-col gap-4">
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => setPreviewType('mobile')}
-                            className="flex-1 bg-white/5 backdrop-blur-xl border border-white/10 text-white h-14 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex flex-col items-center justify-center gap-1 active:scale-95 transition"
-                        >
-                            <Smartphone size={16} /> 手机预览
-                        </button>
-                        <button
-                            onClick={() => setPreviewType('pc')}
-                            className="flex-1 bg-white/5 backdrop-blur-xl border border-white/10 text-white h-14 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex flex-col items-center justify-center gap-1 active:scale-95 transition"
-                        >
-                            <Monitor size={16} /> 电脑预览
-                        </button>
-                        <button
-                            onClick={() => setPreviewType('avatar')}
-                            className="flex-1 bg-white/5 backdrop-blur-xl border border-white/10 text-white h-14 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex flex-col items-center justify-center gap-1 active:scale-95 transition"
-                        >
-                            <UserCircle size={16} /> 头像预览
-                        </button>
-                    </div>
-
-                    <div className="flex gap-4">
-                        <button
-                            onClick={handleDownload}
-                            className="flex-1 bg-white text-gray-900 h-16 rounded-[24px] font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-gray-100 active:scale-[0.98] transition shadow-2xl shadow-indigo-500/10"
-                        >
-                            <Download size={20} />
-                            下载原图
-                        </button>
-                        <button
-                            onClick={() => setShowSubmitModal(true)}
-                            className="flex-1 bg-indigo-600 text-white h-16 rounded-[24px] font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-indigo-500 active:scale-[0.98] transition shadow-2xl shadow-indigo-500/20"
-                        >
-                            <Send size={20} />
-                            发布至画廊
-                        </button>
-                    </div>
+                <div className="flex gap-4">
+                    <button
+                        onClick={handleDownload}
+                        className="flex-1 bg-white text-gray-900 h-16 rounded-[24px] font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-gray-100 active:scale-[0.98] transition shadow-2xl shadow-indigo-500/10"
+                    >
+                        <Download size={20} />
+                        下载原图
+                    </button>
+                    <button
+                        onClick={() => setShowSubmitModal(true)}
+                        className="flex-1 bg-indigo-600 text-white h-16 rounded-[24px] font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-indigo-500 active:scale-[0.98] transition shadow-2xl shadow-indigo-500/20"
+                    >
+                        <Send size={20} />
+                        发布至画廊
+                    </button>
                 </div>
             </div>
 
