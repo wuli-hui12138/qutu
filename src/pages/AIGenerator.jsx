@@ -272,46 +272,6 @@ export default function AIGenerator() {
                     <ArrowLeft size={18} />
                 </div>
 
-                {/* Model Switcher */}
-                <div className="absolute left-1/2 -translate-x-1/2">
-                    <div className="relative">
-                        <div
-                            onClick={() => setShowModelPicker(!showModelPicker)}
-                            className="flex items-center gap-2 px-4 py-1.5 bg-gray-50 border border-gray-200/50 rounded-full cursor-pointer hover:bg-gray-100 transition-all select-none group shadow-sm"
-                        >
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]" />
-                            <span className="text-xs font-bold text-gray-700">{selectedModel}</span>
-                            <ChevronDown size={14} className={clsx("text-gray-400 group-hover:text-gray-600 transition-transform", showModelPicker && "rotate-180")} />
-                        </div>
-
-                        <AnimatePresence>
-                            {showModelPicker && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    className="absolute top-12 left-1/2 -translate-x-1/2 bg-white border border-gray-100 rounded-[20px] py-2 w-52 z-50 shadow-2xl shadow-gray-200/50"
-                                >
-                                    <p className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">选择绘画模型</p>
-                                    {models.map(m => (
-                                        <button
-                                            key={m}
-                                            onClick={() => { setSelectedModel(m); setShowModelPicker(false); }}
-                                            className={clsx(
-                                                "w-full text-left px-4 py-2.5 text-sm font-medium transition-all flex items-center justify-between group",
-                                                selectedModel === m ? "text-indigo-600 bg-indigo-50" : "text-gray-600 hover:bg-gray-50"
-                                            )}
-                                        >
-                                            {m}
-                                            {selectedModel === m && <Check size={14} />}
-                                        </button>
-                                    ))}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                </div>
-
                 <div className="w-9 h-9" />
             </header>
 
@@ -352,18 +312,18 @@ export default function AIGenerator() {
                             </AnimatePresence>
                         </div>
 
-                        {/* Aspect Ratio & Generate */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
+                        {/* Composite Action Capsule */}
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end bg-gray-50/50 p-6 rounded-[32px] border border-gray-100/50">
                             <div className="lg:col-span-2 space-y-4">
-                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">选择画幅比例 (参数联动)</span>
-                                <div className="flex gap-4">
+                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">选择画幅比例</span>
+                                <div className="flex gap-3">
                                     {aspectRatios.map(ar => (
                                         <button
                                             key={ar.label}
                                             onClick={() => handleARChange(ar.label)}
                                             className={clsx(
-                                                "flex-1 py-4 rounded-2xl border transition-all flex items-center justify-center gap-3",
-                                                aspectRatio === ar.label ? "bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm" : "bg-gray-50 border-gray-100 text-gray-400 hover:bg-white hover:border-gray-200"
+                                                "flex-1 py-3.5 rounded-2xl border transition-all flex items-center justify-center gap-2",
+                                                aspectRatio === ar.label ? "bg-white border-indigo-200 text-indigo-600 shadow-sm" : "bg-white/50 border-gray-100 text-gray-400 hover:bg-white hover:border-gray-200"
                                             )}
                                         >
                                             {ar.icon}
@@ -373,19 +333,77 @@ export default function AIGenerator() {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={handleGenerate}
-                                disabled={!prompt.trim() || isGenerating}
-                                className={clsx(
-                                    "w-full py-5 rounded-[24px] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-xl",
-                                    prompt.trim() && !isGenerating
-                                        ? "bg-indigo-600 text-white font-black uppercase text-sm tracking-[0.2em] hover:bg-indigo-700 shadow-indigo-100"
-                                        : "bg-gray-100 text-gray-300 cursor-not-allowed shadow-none"
-                                )}
-                            >
-                                {isGenerating ? <RefreshCw size={20} className="animate-spin" /> : <Zap size={20} className="fill-current" />}
-                                {isGenerating ? '正在提交...' : '立即生成'}
-                            </button>
+                            <div className="lg:col-span-2 flex gap-3 h-[68px]">
+                                {/* Secondary: Model Picker */}
+                                <div className="relative group flex-shrink-0 w-44">
+                                    <div
+                                        onClick={() => setShowModelPicker(!showModelPicker)}
+                                        className="h-full px-5 bg-white border border-gray-100 rounded-[24px] flex flex-col justify-center cursor-pointer hover:border-indigo-200 hover:shadow-md transition-all active:scale-95 shadow-sm"
+                                    >
+                                        <div className="flex items-center gap-1.5 mb-0.5">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Active Model</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[13px] font-black text-gray-700 truncate max-w-[100px]">{selectedModel}</span>
+                                            <ChevronDown size={14} className={clsx("text-gray-400", showModelPicker && "rotate-180")} />
+                                        </div>
+                                    </div>
+
+                                    <AnimatePresence>
+                                        {showModelPicker && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                className="absolute bottom-full mb-3 left-0 w-full bg-white border border-gray-100 rounded-[24px] py-3 z-[60] shadow-[0_20px_60px_rgba(0,0,0,0.1)] backdrop-blur-3xl"
+                                            >
+                                                <p className="px-5 py-2 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Architecture</p>
+                                                <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                                                    {models.map(m => (
+                                                        <button
+                                                            key={m}
+                                                            onClick={() => { setSelectedModel(m); setShowModelPicker(false); }}
+                                                            className={clsx(
+                                                                "w-full text-left px-5 py-3 text-[12px] font-bold transition-all flex items-center justify-between group",
+                                                                selectedModel === m ? "text-indigo-600 bg-indigo-50/50" : "text-gray-600 hover:bg-gray-50"
+                                                            )}
+                                                        >
+                                                            {m}
+                                                            {selectedModel === m && <Check size={14} className="text-indigo-500" />}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
+                                {/* Primary: Generate Button */}
+                                <button
+                                    onClick={handleGenerate}
+                                    disabled={!prompt.trim() || isGenerating}
+                                    className={clsx(
+                                        "flex-1 h-full rounded-[24px] flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-2xl relative overflow-hidden group/btn",
+                                        prompt.trim() && !isGenerating
+                                            ? "bg-indigo-600 text-white font-black uppercase text-sm tracking-[0.2em] hover:bg-indigo-700 shadow-indigo-200"
+                                            : "bg-gray-100 text-gray-300 cursor-not-allowed shadow-none border border-gray-200"
+                                    )}
+                                >
+                                    {isGenerating ? (
+                                        <RefreshCw size={20} className="animate-spin text-white/50" />
+                                    ) : (
+                                        <>
+                                            <Zap size={20} className="fill-current group-hover/btn:scale-110 transition-transform" />
+                                            <span className="relative z-10 transition-all group-hover/btn:tracking-[0.3em]">立即生成</span>
+                                        </>
+                                    )}
+                                    {/* Subtle Glow Effect */}
+                                    {prompt.trim() && !isGenerating && (
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
