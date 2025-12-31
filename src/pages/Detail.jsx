@@ -179,7 +179,7 @@ export default function Detail() {
                             "w-10 h-10 rounded-xl flex items-center justify-center transition-all border",
                             isLiked
                                 ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20"
-                                : "bg-white/5 border-white/10 text-white"
+                                : "bg-white border-white text-gray-900"
                         )}
                     >
                         <Heart size={18} className={isLiked ? "fill-white" : ""} />

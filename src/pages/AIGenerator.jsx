@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
     Sparkles,
     Image as ImageIcon,
@@ -34,6 +34,7 @@ import PreviewOverlay from '../components/PreviewOverlay';
 
 export default function AIGenerator() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [prompt, setPrompt] = useState('');
     const [negativePrompt, setNegativePrompt] = useState('');
     const [showNegative, setShowNegative] = useState(false);
@@ -71,6 +72,13 @@ export default function AIGenerator() {
     ];
 
     useEffect(() => {
+        // Handle prompt from navigation state (e.g., from Detail.jsx)
+        if (location.state?.prompt) {
+            setPrompt(location.state.prompt);
+            // Clear state after reading to prevent re-fill on refresh
+            window.history.replaceState({}, document.title);
+        }
+
         const fetchModels = async () => {
             try {
                 const res = await fetch('/api/ai/models', { method: 'POST' });
