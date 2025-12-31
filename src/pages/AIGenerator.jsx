@@ -276,9 +276,9 @@ export default function AIGenerator() {
             </header>
 
             <div className="flex-1 overflow-y-auto hide-scrollbar bg-gray-50/50">
-                <main className="max-w-6xl mx-auto px-8 py-10">
+                <main className="max-w-4xl mx-auto px-6 py-8">
                     {/* Creation Area */}
-                    <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-8">
+                    <div className="space-y-10">
                         <div className="space-y-4">
                             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">灵感提示词</span>
                             <div className="relative group">
@@ -312,9 +312,10 @@ export default function AIGenerator() {
                             </AnimatePresence>
                         </div>
 
-                        {/* Composite Action Capsule */}
-                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end bg-gray-50/50 p-6 rounded-[32px] border border-gray-100/50">
-                            <div className="lg:col-span-2 space-y-4">
+                        {/* Composite Action Section */}
+                        <div className="space-y-8">
+                            {/* Aspect Ratio Selection */}
+                            <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm space-y-4">
                                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">选择画幅比例</span>
                                 <div className="flex gap-3">
                                     {aspectRatios.map(ar => (
@@ -323,7 +324,7 @@ export default function AIGenerator() {
                                             onClick={() => handleARChange(ar.label)}
                                             className={clsx(
                                                 "flex-1 py-3.5 rounded-2xl border transition-all flex items-center justify-center gap-2",
-                                                aspectRatio === ar.label ? "bg-white border-indigo-200 text-indigo-600 shadow-sm" : "bg-white/50 border-gray-100 text-gray-400 hover:bg-white hover:border-gray-200"
+                                                aspectRatio === ar.label ? "bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm" : "bg-gray-50/50 border-gray-100 text-gray-400 hover:bg-white hover:border-gray-200"
                                             )}
                                         >
                                             {ar.icon}
@@ -333,44 +334,47 @@ export default function AIGenerator() {
                                 </div>
                             </div>
 
-                            <div className="lg:col-span-2 flex gap-3 h-[68px]">
-                                {/* Secondary: Model Picker */}
-                                <div className="relative group flex-shrink-0 w-44">
+                            {/* Integrated Model & Generate Bar */}
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                {/* Model Picker - Primary Secondary */}
+                                <div className="relative group w-full sm:w-60 h-[72px]">
                                     <div
                                         onClick={() => setShowModelPicker(!showModelPicker)}
-                                        className="h-full px-5 bg-white border border-gray-100 rounded-[24px] flex flex-col justify-center cursor-pointer hover:border-indigo-200 hover:shadow-md transition-all active:scale-95 shadow-sm"
+                                        className="h-full px-6 bg-white border border-gray-100 rounded-[28px] flex flex-col justify-center cursor-pointer hover:border-indigo-200 hover:shadow-lg transition-all active:scale-[0.98] shadow-sm overflow-hidden"
                                     >
                                         <div className="flex items-center gap-1.5 mb-0.5">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Active Model</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Architecture</span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[13px] font-black text-gray-700 truncate max-w-[100px]">{selectedModel}</span>
-                                            <ChevronDown size={14} className={clsx("text-gray-400", showModelPicker && "rotate-180")} />
+                                            <span className="text-[14px] font-black text-gray-800 truncate">{selectedModel}</span>
+                                            <ChevronDown size={14} className={clsx("text-gray-400 transition-transform duration-300", showModelPicker && "rotate-180")} />
                                         </div>
                                     </div>
 
                                     <AnimatePresence>
                                         {showModelPicker && (
                                             <motion.div
-                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                className="absolute bottom-full mb-3 left-0 w-full bg-white border border-gray-100 rounded-[24px] py-3 z-[60] shadow-[0_20px_60px_rgba(0,0,0,0.1)] backdrop-blur-3xl"
+                                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                className="absolute bottom-full mb-4 left-0 w-full sm:w-72 bg-white/90 backdrop-blur-2xl border border-gray-100 rounded-[32px] py-3 z-[60] shadow-[0_20px_70px_rgba(0,0,0,0.15)] ring-1 ring-black/5"
                                             >
-                                                <p className="px-5 py-2 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Architecture</p>
-                                                <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                                                <div className="px-6 py-2 border-b border-gray-50 mb-2">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Available Models</p>
+                                                </div>
+                                                <div className="max-h-60 overflow-y-auto custom-scrollbar px-2">
                                                     {models.map(m => (
                                                         <button
                                                             key={m}
                                                             onClick={() => { setSelectedModel(m); setShowModelPicker(false); }}
                                                             className={clsx(
-                                                                "w-full text-left px-5 py-3 text-[12px] font-bold transition-all flex items-center justify-between group",
+                                                                "w-full text-left px-4 py-3.5 rounded-2xl text-[13px] font-bold transition-all flex items-center justify-between group",
                                                                 selectedModel === m ? "text-indigo-600 bg-indigo-50/50" : "text-gray-600 hover:bg-gray-50"
                                                             )}
                                                         >
                                                             {m}
-                                                            {selectedModel === m && <Check size={14} className="text-indigo-500" />}
+                                                            {selectedModel === m && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -379,28 +383,27 @@ export default function AIGenerator() {
                                     </AnimatePresence>
                                 </div>
 
-                                {/* Primary: Generate Button */}
+                                {/* Main Action: Generate */}
                                 <button
                                     onClick={handleGenerate}
                                     disabled={!prompt.trim() || isGenerating}
                                     className={clsx(
-                                        "flex-1 h-full rounded-[24px] flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-2xl relative overflow-hidden group/btn",
+                                        "flex-1 h-[72px] rounded-[28px] flex items-center justify-center gap-4 transition-all active:scale-[0.97] shadow-2xl relative overflow-hidden group/btn",
                                         prompt.trim() && !isGenerating
-                                            ? "bg-indigo-600 text-white font-black uppercase text-sm tracking-[0.2em] hover:bg-indigo-700 shadow-indigo-200"
-                                            : "bg-gray-100 text-gray-300 cursor-not-allowed shadow-none border border-gray-200"
+                                            ? "bg-indigo-600 text-white font-black uppercase text-[15px] tracking-[0.3em] hover:bg-indigo-700 shadow-indigo-300/40"
+                                            : "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none border border-gray-200"
                                     )}
                                 >
                                     {isGenerating ? (
-                                        <RefreshCw size={20} className="animate-spin text-white/50" />
+                                        <RefreshCw size={24} className="animate-spin text-white/40" />
                                     ) : (
                                         <>
-                                            <Zap size={20} className="fill-current group-hover/btn:scale-110 transition-transform" />
-                                            <span className="relative z-10 transition-all group-hover/btn:tracking-[0.3em]">立即生成</span>
+                                            <Zap size={22} className={clsx("transition-transform duration-500", prompt.trim() ? "fill-white" : "fill-gray-300")} />
+                                            <span className="relative z-10 transition-all">立即生成</span>
                                         </>
                                     )}
-                                    {/* Subtle Glow Effect */}
                                     {prompt.trim() && !isGenerating && (
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-in-out" />
                                     )}
                                 </button>
                             </div>
@@ -434,7 +437,7 @@ export default function AIGenerator() {
                 </main>
 
                 {/* Results Section */}
-                <section className="bg-white border-t border-gray-100">
+                <section className="bg-white border-t border-gray-100 mt-20">
                     <div className="max-w-6xl mx-auto px-8 py-16">
                         <div className="flex items-center justify-between mb-10">
                             <div className="flex items-center gap-3">
@@ -470,8 +473,6 @@ export default function AIGenerator() {
                                             alt="result"
                                         />
 
-
-
                                         {/* Simple Metadata Overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6">
                                             <p className="text-white text-[10px] font-black uppercase tracking-widest opacity-80 mb-2">查看详情</p>
@@ -500,8 +501,7 @@ export default function AIGenerator() {
                         imageSrc={previewImage}
                         onClose={() => setPreviewType(null)}
                     />
-                )
-                }
+                )}
             </AnimatePresence>
 
             {/* Submit Modal */}
@@ -512,123 +512,94 @@ export default function AIGenerator() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-white w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl border border-white/20"
+                            className="bg-white w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl"
                         >
-                            <div className="p-8 flex flex-col relative text-left">
-                                <button onClick={() => setShowSubmitModal(false)} className="absolute right-6 top-6 p-2 text-gray-300 hover:text-gray-900 transition-colors">
-                                    <X size={20} />
+                            <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-900">发布创作</h3>
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Submit to Community Gallery</p>
+                                </div>
+                                <button onClick={() => setShowSubmitModal(false)} className="p-2 hover:bg-gray-50 rounded-xl transition-colors">
+                                    <X size={20} className="text-gray-400" />
                                 </button>
+                            </div>
 
-                                <div className="mb-8">
-                                    <h2 className="text-lg font-black text-gray-900 tracking-tight">发布作品审核</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 italic text-left">Submit for Review</p>
+                            <form onSubmit={handleSubmitForReview} className="p-8 space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">标题</label>
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold focus:outline-none focus:border-indigo-200 transition-all"
+                                        placeholder="创作标题..."
+                                        required
+                                    />
                                 </div>
 
-                                <form onSubmit={handleSubmitForReview} className="space-y-6">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">作品标题 (必填)</label>
-                                        <input
-                                            required
-                                            value={formData.title}
-                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white transition-all shadow-sm"
-                                            placeholder="给您的创作起个名字"
-                                        />
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">分类</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {categories.map(cat => (
+                                            <button
+                                                key={cat.id}
+                                                type="button"
+                                                onClick={() => toggleMeta('categories', cat.name)}
+                                                className={clsx(
+                                                    "px-4 py-2 rounded-xl text-[11px] font-bold transition-all border",
+                                                    formData.categories.split(',').includes(cat.name)
+                                                        ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200"
+                                                        : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                                                )}
+                                            >
+                                                {cat.name}
+                                            </button>
+                                        ))}
                                     </div>
+                                </div>
 
-                                    <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">选择分类 (必选)</label>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {categories.map(cat => (
-                                                <button
-                                                    key={cat.id}
-                                                    type="button"
-                                                    onClick={() => toggleMeta('categories', cat.name)}
-                                                    className={clsx(
-                                                        "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                                        formData.categories.split(',').includes(cat.name)
-                                                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100"
-                                                            : "bg-gray-50 text-gray-400 border border-gray-100 hover:bg-gray-100"
-                                                    )}
-                                                >
-                                                    {cat.name}
-                                                </button>
-                                            ))}
-                                        </div>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">标签</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {tags.map(tag => (
+                                            <button
+                                                key={tag.id}
+                                                type="button"
+                                                onClick={() => toggleMeta('tags', tag.name)}
+                                                className={clsx(
+                                                    "px-4 py-2 rounded-xl text-[11px] font-bold transition-all border",
+                                                    formData.tags.split(',').includes(tag.name)
+                                                        ? "bg-gray-900 border-gray-900 text-white shadow-lg shadow-gray-200"
+                                                        : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                                                )}
+                                            >
+                                                #{tag.name}
+                                            </button>
+                                        ))}
                                     </div>
+                                </div>
 
-                                    <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 block">常用标签 (多选)</label>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {tags.map(tag => (
-                                                <button
-                                                    key={tag.id}
-                                                    type="button"
-                                                    onClick={() => toggleMeta('tags', tag.name)}
-                                                    className={clsx(
-                                                        "px-3 py-1.5 rounded-full text-[9px] font-bold transition-all border",
-                                                        formData.tags.split(',').includes(tag.name)
-                                                            ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-                                                            : "bg-white border-gray-100 text-gray-400 hover:border-indigo-200"
-                                                    )}
-                                                >
-                                                    #{tag.name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-4 flex gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowSubmitModal(false)}
-                                            className="px-6 py-4 rounded-[20px] text-[11px] font-black uppercase tracking-widest bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all font-sans"
-                                        >
-                                            取消
-                                        </button>
-                                        <button
-                                            disabled={submitLoading}
-                                            type="submit"
-                                            className={clsx(
-                                                "flex-1 py-4 rounded-[20px] text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3",
-                                                submitLoading ? "bg-gray-100 text-gray-400 animate-pulse" : "bg-gray-900 text-white hover:bg-black active:scale-[0.98]"
-                                            )}
-                                        >
-                                            {submitLoading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />}
-                                            {submitLoading ? '提交中...' : '提交人工审核'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                <button
+                                    type="submit"
+                                    disabled={submitLoading}
+                                    className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-sm tracking-[0.2em] shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3 mt-4"
+                                >
+                                    {submitLoading ? <RefreshCw size={20} className="animate-spin" /> : <Send size={20} />}
+                                    {submitLoading ? '提交中...' : '确认发布'}
+                                </button>
+                            </form>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
             <style>{`
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-                .hide-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                .break-inside-avoid {
-                    break-inside: avoid;
-                }
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                .break-inside-avoid { break-inside: avoid; }
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-                @keyframes progress {
-                    0% { width: 0%; }
-                    100% { width: 100%; }
-                }
-                .animate-progress {
-                    animation: progress 20s linear infinite;
-                }
-                .uppercase-buttons button {
-                    text-transform: uppercase;
-                }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
             `}</style>
         </div>
     );
