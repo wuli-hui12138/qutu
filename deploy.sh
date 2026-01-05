@@ -6,7 +6,7 @@ echo "🚀 开始一键部署流程..."
 
 # 1. 前端构建 (uni-app H5)
 echo "📦 正在构建 H5 前端..."
-npm install
+npm install --legacy-peer-deps
 npm run build:h5
 
 if [ $? -eq 0 ]; then
@@ -19,7 +19,7 @@ fi
 # 2. 后端构建 (NestJS)
 echo "⚙️ 正在构建后端服务..."
 cd backend
-npm install --production
+npm install --production --legacy-peer-deps
 
 # Prisma 初始化
 echo "💎 同步数据库结构..."
