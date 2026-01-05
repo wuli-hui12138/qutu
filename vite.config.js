@@ -1,20 +1,20 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import uni from '@dcloudio/vite-plugin-uni'
+import { UnifiedViteWeappTailwindcssPlugin as uvwt } from 'weapp-tailwindcss/vite'
+import tailwindcss from 'tailwindcss'
+import autoprefixer from 'autoprefixer'
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-      '/uploads': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      }
-    }
-  }
+  plugins: [
+    uni(),
+    uvwt(),
+  ],
+  css: {
+    postcss: {
+      plugins: [
+        tailwindcss(),
+        autoprefixer(),
+      ],
+    },
+  },
 })

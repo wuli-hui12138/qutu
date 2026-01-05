@@ -1,0 +1,59 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "趣图匣子"
+			}
+		},
+		{
+			"path": "pages/detail/detail",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "图片详情"
+			}
+		},
+		{
+			"path": "pages/ai/generator",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "AI 创作"
+			}
+		},
+		{
+			"path": "pages/ai/history",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "历史创作"
+			}
+		},
+		{
+			"path": "pages/ai/detail",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "创作详情"
+			}
+		},
+		{
+			"path": "pages/discover/discover",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "发现"
+			}
+		},
+		{
+			"path": "pages/upload/upload",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "上传"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "趣图匣子",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#F9FAFB"
+	}
+}
