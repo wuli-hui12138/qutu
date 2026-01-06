@@ -20,9 +20,11 @@ export class UsersService {
         });
     }
 
-    async findOne(id: number) {
+    async findOne(id: any) {
+        const numId = typeof id === 'number' ? id : parseInt(String(id), 10);
+        if (isNaN(numId)) return null;
         return this.prisma.user.findUnique({
-            where: { id },
+            where: { id: numId },
             include: {
                 _count: {
                     select: { followers: true, following: true, images: true }

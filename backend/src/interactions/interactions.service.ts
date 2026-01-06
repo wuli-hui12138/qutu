@@ -62,9 +62,11 @@ export class InteractionsService {
         return { success: true };
     }
 
-    async getFavorites(userId: number) {
+    async getFavorites(userId: any) {
+        const numId = typeof userId === 'number' ? userId : parseInt(String(userId), 10);
+        if (isNaN(numId)) return [];
         return this.prisma.favorite.findMany({
-            where: { userId },
+            where: { userId: numId },
             include: {
                 image: {
                     include: {
@@ -93,9 +95,11 @@ export class InteractionsService {
         });
     }
 
-    async getHistory(userId: number) {
+    async getHistory(userId: any) {
+        const numId = typeof userId === 'number' ? userId : parseInt(String(userId), 10);
+        if (isNaN(numId)) return [];
         return this.prisma.history.findMany({
-            where: { userId },
+            where: { userId: numId },
             include: {
                 image: {
                     include: {

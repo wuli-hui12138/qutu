@@ -46,20 +46,24 @@ export class AiService {
     }
 
     async getTasks(userId?: any, limit = 10) {
-        const parsedUserId = userId ? parseInt(String(userId), 10) : null;
-        const isValidUser = parsedUserId && !isNaN(parsedUserId);
+        // Strict numeric check to avoid partial parsing like "123-uuid" -> 123
+        const numId = userId !== undefined && userId !== null ? Number(userId) : NaN;
+        const isValidUser = !isNaN(numId) && typeof numId === 'number';
 
         return this.prisma.aiTask.findMany({
-            where: isValidUser ? { userId: parsedUserId } : {},
+            where: isValidUser ? { userId: numId } : {},
             orderBy: { createdAt: 'desc' },
             take: limit
         });
     }
 
-    async getChatHistory(userId: number, model?: string, limit = 5) {
+    async getChatHistory(userId: any, model?: string, limit = 5) {
+        const numId = userId !== undefined && userId !== null ? Number(userId) : NaN;
+        const isValidUser = !isNaN(numId);
+
         return this.prisma.aiChat.findMany({
             where: {
-                userId,
+                ...(isValidUser ? { userId: numId } : { userId: -1 }), // If no valid ID, return empty (unlikely user -1 exists)
                 ...(model ? { model } : {})
             },
             orderBy: { updatedAt: 'desc' },

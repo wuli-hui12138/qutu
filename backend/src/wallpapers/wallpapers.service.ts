@@ -133,9 +133,11 @@ export class WallpapersService {
     });
   }
 
-  findOne(id: number) {
+  findOne(id: any) {
+    const numId = typeof id === 'number' ? id : parseInt(String(id), 10);
+    if (isNaN(numId)) return null;
     return this.prisma.image.findUnique({
-      where: { id },
+      where: { id: numId },
       include: {
         categories: true,
         tags: true,
@@ -166,7 +168,10 @@ export class WallpapersService {
     });
   }
 
-  async update(id: number, data: any) {
+  async update(id: any, data: any) {
+    const numId = typeof id === 'number' ? id : parseInt(String(id), 10);
+    if (isNaN(numId)) throw new Error('Invalid ID');
+
     const { categories, tags, ...rest } = data;
 
     const tagArray = tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim()).filter(Boolean)) : undefined;
@@ -219,8 +224,11 @@ export class WallpapersService {
     });
   }
 
-  async remove(id: number) {
-    const image = await this.prisma.image.findUnique({ where: { id } });
+  async remove(id: any) {
+    const numId = typeof id === 'number' ? id : parseInt(String(id), 10);
+    if (isNaN(numId)) throw new Error('Invalid ID');
+
+    const image = await this.prisma.image.findUnique({ where: { id: numId } });
     if (image) {
       // Try to delete files
       const fs = require('fs');
