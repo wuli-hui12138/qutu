@@ -43,6 +43,13 @@
 			}
 		},
 		{
+			"path": "pages/user/profile",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "个人中心"
+			}
+		},
+		{
 			"path": "pages/upload/upload",
 			"style": {
 				"navigationStyle": "custom",

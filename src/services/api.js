@@ -47,6 +47,11 @@ export const aiService = {
     getModels: () => request({ url: '/api/ai/models', method: 'POST' }),
 }
 
+export const usersService = {
+    login: (data) => request({ url: '/api/users/login', method: 'POST', data }),
+    findOne: (id) => request({ url: `/api/users/${id}` }),
+}
+
 export const tagsService = {
     findAll: () => request({ url: '/api/tags' }),
 }
