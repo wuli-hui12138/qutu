@@ -5,11 +5,16 @@ import { PrismaService } from '../prisma.service';
 export class InteractionsService {
     constructor(private prisma: PrismaService) { }
 
-    async toggleFavorite(userId: number, imageId: number) {
+    async toggleFavorite(userId: any, imageId: any) {
+        const uId = typeof userId === 'number' ? userId : parseInt(String(userId), 10);
+        const iId = typeof imageId === 'number' ? imageId : parseInt(String(imageId), 10);
+        if (isNaN(uId)) throw new Error('Invalid UserId');
+        if (isNaN(iId)) throw new Error('Invalid ImageId');
+
         return this.prisma.$transaction(async (tx) => {
             const existing = await tx.favorite.findUnique({
                 where: {
-                    userId_imageId: { userId, imageId }
+                    userId_imageId: { userId: uId, imageId: iId }
                 }
             });
 
@@ -20,19 +25,19 @@ export class InteractionsService {
                 });
 
                 // Safety: Get current and decrement, ensuring >= 0
-                const img = await tx.image.findUnique({ where: { id: imageId } });
+                const img = await tx.image.findUnique({ where: { id: iId } });
                 const newImage = await tx.image.update({
-                    where: { id: imageId },
+                    where: { id: iId },
                     data: { likes: Math.max(0, (img?.likes || 1) - 1) }
                 });
                 return { isLiked: false, likes: newImage.likes };
             } else {
                 // Not liked, so LIKE
                 await tx.favorite.create({
-                    data: { userId, imageId }
+                    data: { userId: uId, imageId: iId }
                 });
                 const newImage = await tx.image.update({
-                    where: { id: imageId },
+                    where: { id: iId },
                     data: { likes: { increment: 1 } }
                 });
                 return { isLiked: true, likes: newImage.likes };
@@ -72,15 +77,19 @@ export class InteractionsService {
         });
     }
 
-    async recordHistory(userId: number, imageId: number) {
+    async recordHistory(userId: any, imageId: any) {
+        const uId = typeof userId === 'number' ? userId : parseInt(String(userId), 10);
+        const iId = typeof imageId === 'number' ? imageId : parseInt(String(imageId), 10);
+        if (isNaN(uId) || isNaN(iId)) return;
+
         return this.prisma.history.upsert({
             where: {
-                userId_imageId: { userId, imageId }
+                userId_imageId: { userId: uId, imageId: iId }
             },
             update: {
                 updatedAt: new Date()
             },
-            create: { userId, imageId }
+            create: { userId: uId, imageId: iId }
         });
     }
 

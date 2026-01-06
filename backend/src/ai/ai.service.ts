@@ -45,9 +45,12 @@ export class AiService {
         };
     }
 
-    async getTasks(userId?: number, limit = 10) {
+    async getTasks(userId?: any, limit = 10) {
+        const parsedUserId = userId ? parseInt(String(userId), 10) : null;
+        const isValidUser = parsedUserId && !isNaN(parsedUserId);
+
         return this.prisma.aiTask.findMany({
-            where: userId ? { userId } : {},
+            where: isValidUser ? { userId: parsedUserId } : {},
             orderBy: { createdAt: 'desc' },
             take: limit
         });
@@ -82,9 +85,11 @@ export class AiService {
         });
     }
 
-    async getTaskStatus(id: number) {
+    async getTaskStatus(id: any) {
+        const parsedId = typeof id === 'number' ? id : parseInt(String(id), 10);
+        if (isNaN(parsedId)) return null;
         return this.prisma.aiTask.findUnique({
-            where: { id }
+            where: { id: parsedId }
         });
     }
 
@@ -308,9 +313,12 @@ export class AiService {
         }
     }
 
-    async submitToGallery(taskId: number, data: { title: string, categories: string, tags: string, description?: string }) {
-        this.logger.log(`Submitting task ${taskId} to gallery: ${JSON.stringify(data)}`);
-        const task = await this.prisma.aiTask.findUnique({ where: { id: taskId } });
+    async submitToGallery(taskId: any, data: { title: string, categories: string, tags: string, description?: string }) {
+        const parsedTaskId = typeof taskId === 'number' ? taskId : parseInt(String(taskId), 10);
+        if (isNaN(parsedTaskId)) throw new Error('Invalid Task ID');
+
+        this.logger.log(`Submitting task ${parsedTaskId} to gallery: ${JSON.stringify(data)}`);
+        const task = await this.prisma.aiTask.findUnique({ where: { id: parsedTaskId } });
         if (!task || !task.resultUrl) {
             this.logger.error(`Task ${taskId} not found or has no resultUrl`);
             throw new Error('任务不存在或未完成');
