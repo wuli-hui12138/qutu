@@ -19,18 +19,21 @@ fi
 # 2. 后端构建 (NestJS)
 echo "⚙️ 正在构建后端服务..."
 cd backend
-npm install --production --legacy-peer-deps
+# 必须先安装全部依赖以获取 nest 和 prisma 命令行工具
+npm install --legacy-peer-deps
 
-# Prisma 初始化
+# Prisma 初始化 - 强制使用 5.22.0 版本以避免 Prisma 7 的重大变更报错
 echo "💎 同步数据库结构..."
-npx prisma generate
-npx prisma db push
+npx prisma@5.22.0 generate
+npx prisma@5.22.0 db push
 
 # 构建 NestJS
-npm run build
+npx nest build
 
 if [ $? -eq 0 ]; then
     echo "✅ 后端构建成功"
+    # 构建完成后可以清理开发依赖 (可选)
+    # npm prune --production
 else
     echo "❌ 后端构建失败"
     exit 1

@@ -50,10 +50,10 @@ npm run build:h5
 ### 3. 初始化项目
 在服务器终端进入 `backend` 目录，执行以下命令：
 ```bash
-npm install --production        # 安装生产环境依赖
-npx prisma generate              # 生成 Prisma Client
-npx prisma db push               # 同步数据库结构
-npm run build                    # 构建 NestJS 项目
+npm install --legacy-peer-deps   # 安装依赖 (构建需要 devDeps)
+npx prisma@5.22.0 generate       # 生成 Prisma Client (强制 5.22.0)
+npx prisma@5.22.0 db push        # 同步数据库结构
+npx nest build                   # 构建 NestJS 项目
 ```
 
 ### 4. 启动 Node 项目
@@ -90,3 +90,8 @@ npm run build                    # 构建 NestJS 项目
 - **接口 404**：检查 Nginx 反向代理配置中 `proxy_pass http://localhost:3000/;` 末尾的斜杠是否写错。
 - **数据库连接失败**：确保宝塔数据库管理中已放行 3306 端口（如果数据库不在本地），并检查 `.env` 配置。
 - **页面显示无数据**：执行 `curl -X POST http://localhost:3000/api/wallpapers/seed` 初始化种子数据（视实际 API 而定）。
+- **构建报错 EPERM (.user.ini)**：这是宝塔面板的安全锁定机制。请在服务器终端执行：
+    ```bash
+    chattr -i /www/wwwroot/qutu/dist/build/h5/.user.ini
+    ```
+    执行后重新运行构建即可。
