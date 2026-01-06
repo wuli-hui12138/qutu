@@ -164,7 +164,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { wallpapersService } from '../../services/api';
+import { wallpapersService, interactionsService } from '../../services/api';
 import { useUserStore } from '../../store/user';
 import { storage } from '../../utils';
 
@@ -184,6 +184,9 @@ const fetchData = async () => {
   if (!id.value) return;
   loading.value = true;
   try {
+    // Ensure user is initialized before checking like state
+    if (!userStore.id) await userStore.initUser();
+
     const data = await wallpapersService.findOne(id.value);
     image.value = data;
     likeCount.value = data.likes || 0;
@@ -204,7 +207,7 @@ const fetchData = async () => {
     
     related.value = [...fromTags, ...fromCats];
     
-    // Like state
+    // Like state from backend if possible, fallback to local for speed
     const likes = storage.get('qutu_likes') || [];
     isLiked.value = likes.includes(id.value);
     
@@ -216,7 +219,8 @@ const fetchData = async () => {
   }
 };
 
-const recordHistory = (img) => {
+const recordHistory = async (img) => {
+  // Local cache for speed
   const history = storage.get('qutu_history') || [];
   const filtered = history.filter(item => item.id !== img.id);
   const newHistory = [{
@@ -226,16 +230,26 @@ const recordHistory = (img) => {
     time: Date.now()
   }, ...filtered].slice(0, 50);
   storage.set('qutu_history', newHistory);
+
+  // Sync to backend
+  if (userStore.id) {
+    try {
+      await interactionsService.addHistory(userStore.id, img.id);
+    } catch (err) {
+      console.error('Sync history failed', err);
+    }
+  }
 };
 
 const toggleLike = async () => {
+  if (!userStore.id) await userStore.initUser();
   const userId = userStore.id;
   const prevLiked = isLiked.value;
   isLiked.value = !prevLiked;
   likeCount.value += prevLiked ? -1 : 1;
 
   try {
-    const data = await wallpapersService.toggleLike(id.value, userId);
+    const data = await interactionsService.toggleFavorite(userId, id.value);
     isLiked.value = data.isLiked;
     likeCount.value = data.likes;
     
@@ -272,7 +286,7 @@ const useAsPrompt = () => {
 
 const goBack = () => uni.navigateBack();
 const navigateToDetail = (newId) => uni.redirectTo({ url: `/pages/detail/detail?id=${newId}` });
-const navigateToProfile = () => uni.navigateTo({ url: `/pages/profile/profile?id=${image.value.author?.id}` });
+const navigateToProfile = () => uni.navigateTo({ url: `/pages/user/profile?id=${image.value.author?.id}` });
 const formatTime = (time) => {
   if (!time) return '';
   const date = new Date(time);

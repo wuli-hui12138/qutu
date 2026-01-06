@@ -71,10 +71,13 @@ export class AiService {
         });
     }
 
-    async saveChatHistory(userId: number, model: string, messages: any[]) {
+    async saveChatHistory(userId: any, model: string, messages: any[]) {
+        const numId = typeof userId === 'number' ? userId : parseInt(String(userId), 10);
+        if (isNaN(numId)) throw new Error('Invalid UserId');
+
         // Find existing chat for the same model for this user
         const existing = await this.prisma.aiChat.findFirst({
-            where: { userId, model }
+            where: { userId: numId, model }
         });
 
         if (existing) {
@@ -85,7 +88,7 @@ export class AiService {
         }
 
         return this.prisma.aiChat.create({
-            data: { userId, model, messages }
+            data: { userId: numId, model, messages }
         });
     }
 
@@ -139,7 +142,10 @@ export class AiService {
     /**
      * Start background generation
      */
-    async generateImage(prompt: string, userId?: number, model?: string, aspectRatio?: string): Promise<{ taskId: number }> {
+    async generateImage(prompt: string, userId?: any, model?: string, aspectRatio?: string): Promise<{ taskId: number }> {
+        const numUserId = userId !== undefined && userId !== null ? Number(userId) : NaN;
+        const validUserId = !isNaN(numUserId) ? numUserId : null;
+
         const dbApiKey = await this.systemConfigService.get('AI_API_KEY');
         const dbBaseUrl = await this.systemConfigService.get('AI_BASE_URL');
         const dbImagePath = await this.systemConfigService.get('AI_IMAGE_PATH') || '/v1/images/generations';
@@ -153,7 +159,7 @@ export class AiService {
         // 1. Create a task in DB
         const task = await this.prisma.aiTask.create({
             data: {
-                userId,
+                userId: validUserId,
                 prompt,
                 model: finalModel,
                 status: 'PROCESSING'
@@ -403,13 +409,18 @@ export class AiService {
         }
     }
 
-    async deleteTask(id: number) {
-        return this.deleteTasks([id]);
+    async deleteTask(id: any) {
+        const numId = typeof id === 'number' ? id : parseInt(String(id), 10);
+        if (isNaN(numId)) return;
+        return this.deleteTasks([numId]);
     }
 
-    async deleteTasks(ids: number[]) {
+    async deleteTasks(ids: any[]) {
+        const numIds = (ids || []).map(id => typeof id === 'number' ? id : parseInt(String(id), 10)).filter(id => !isNaN(id));
+        if (numIds.length === 0) return;
+
         const tasks = await this.prisma.aiTask.findMany({
-            where: { id: { in: ids } }
+            where: { id: { in: numIds } }
         });
 
         const isRemote = (url: string | null) => url && url.startsWith('http');
@@ -431,7 +442,7 @@ export class AiService {
         }
 
         return this.prisma.aiTask.deleteMany({
-            where: { id: { in: ids } }
+            where: { id: { in: numIds } }
         });
     }
 }

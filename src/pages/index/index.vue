@@ -82,6 +82,7 @@ import BannerSection from '../../components/BannerSection.vue';
 import ImageCard from '../../components/ImageCard.vue';
 import FloatingTabBar from '../../components/FloatingTabBar.vue';
 import { wallpapersService, categoriesService } from '../../services/api';
+import { useUserStore } from '../../store/user';
 
 const wallpapers = ref([]);
 const categories = ref([]);
@@ -109,7 +110,9 @@ const navigateTo = (url) => {
   uni.navigateTo({ url });
 };
 
-onMounted(() => {
+onMounted(async () => {
+  const userStore = useUserStore();
+  await userStore.initUser();
   fetchData();
 });
 </script>

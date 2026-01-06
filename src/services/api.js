@@ -30,7 +30,14 @@ const request = (options) => {
 export const wallpapersService = {
     findAll: (params) => request({ url: '/api/wallpapers', data: params }),
     findOne: (id) => request({ url: `/api/wallpapers/${id}` }),
-    toggleLike: (id, userId) => request({ url: `/api/wallpapers/${id}/like`, method: 'POST', data: { userId } }),
+    getRelated: (tag) => request({ url: `/api/wallpapers/related/${tag}` }),
+}
+
+export const interactionsService = {
+    toggleFavorite: (userId, imageId) => request({ url: '/api/interactions/favorite', method: 'POST', data: { userId, imageId } }),
+    getFavorites: (userId) => request({ url: `/api/interactions/favorites/${userId}` }),
+    addHistory: (userId, imageId) => request({ url: '/api/interactions/history', method: 'POST', data: { userId, imageId } }),
+    getHistory: (userId) => request({ url: `/api/interactions/history/${userId}` }),
 }
 
 export const categoriesService = {
@@ -48,7 +55,7 @@ export const aiService = {
 }
 
 export const usersService = {
-    login: (data) => request({ url: '/api/users/login', method: 'POST', data }),
+    login: (openid, nickname, avatar) => request({ url: '/api/users/login', method: 'POST', data: { openid, nickname, avatar } }),
     findOne: (id) => request({ url: `/api/users/${id}` }),
 }
 

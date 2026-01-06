@@ -123,7 +123,10 @@ const navigateTo = (url) => {
   uni.navigateTo({ url });
 };
 
-onShow(fetchProfile);
+onShow(async () => {
+  await userStore.initUser();
+  fetchProfile();
+});
 </script>
 
 <style scoped>

@@ -260,7 +260,8 @@ const navigateToTask = (id) => uni.navigateTo({ url: `/pages/ai/detail?id=${id}`
 
 let polling = null;
 
-onShow(() => {
+onShow(async () => {
+  await userStore.initUser();
   fetchTasks();
   if (!polling) {
     polling = setInterval(fetchTasks, 5000);

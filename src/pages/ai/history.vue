@@ -178,8 +178,8 @@ const handleBatchDelete = async () => {
 const goGenerator = () => uni.navigateBack();
 const formatDate = (date) => new Date(date).toLocaleDateString();
 
-onShow(() => {
-  userStore.initUser();
+onShow(async () => {
+  await userStore.initUser();
   fetchTasks();
 });
 </script>
