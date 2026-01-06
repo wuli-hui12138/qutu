@@ -72,6 +72,7 @@
         </view>
       </view>
     </view>
+    <FloatingTabBar />
   </view>
 </template>
 
@@ -79,6 +80,7 @@
 import { ref, onMounted } from 'vue';
 import BannerSection from '../../components/BannerSection.vue';
 import ImageCard from '../../components/ImageCard.vue';
+import FloatingTabBar from '../../components/FloatingTabBar.vue';
 import { wallpapersService, categoriesService } from '../../services/api';
 
 const wallpapers = ref([]);

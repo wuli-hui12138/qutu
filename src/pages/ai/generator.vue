@@ -170,12 +170,14 @@
         <button @tap="showSubmitModal = false">确定</button>
       </view>
     </view>
+    <FloatingTabBar />
   </view>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import { onLoad, onShow, onHide } from '@dcloudio/uni-app';
+import FloatingTabBar from '../../components/FloatingTabBar.vue';
 import { aiService } from '../../services/api';
 import { useUserStore } from '../../store/user';
 
@@ -282,6 +284,7 @@ onHide(() => {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
 }
 </style>

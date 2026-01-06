@@ -39,10 +39,12 @@ export const categoriesService = {
 
 export const aiService = {
     generate: (data) => request({ url: '/api/ai/generate', method: 'POST', data }),
-    getTasks: (userId) => request({ url: `/api/ai/tasks?userId=${userId}` }),
-    getTask: (id) => request({ url: `/api/ai/task/${id}` }),
+    getTasks: (userId) => request({ url: '/api/ai/tasks', method: 'POST', data: { userId } }),
+    getTaskStatus: (id) => request({ url: '/api/ai/task-status', method: 'POST', data: { id: Number(id) } }),
+    deleteTask: (id) => request({ url: '/api/ai/delete-task', method: 'POST', data: { id: Number(id) } }),
     deleteTasks: (ids) => request({ url: '/api/ai/delete-tasks', method: 'POST', data: { ids } }),
-    submitToGallery: (id, data) => request({ url: `/api/ai/submit-to-gallery/${id}`, method: 'POST', data }),
+    submitToGallery: (data) => request({ url: '/api/ai/submit-to-gallery', method: 'POST', data }),
+    getModels: () => request({ url: '/api/ai/models', method: 'POST' }),
 }
 
 export const tagsService = {

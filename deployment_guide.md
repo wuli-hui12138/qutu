@@ -95,3 +95,8 @@ npx nest build                   # 构建 NestJS 项目
     chattr -i /www/wwwroot/qutu/dist/build/h5/.user.ini
     ```
     执行后重新运行构建即可。
+
+- **清理测试数据**：如果您想在正式上线前清空所有图片和用户记录，但**保留**分类、标签和 AI 模型配置，请在 `backend` 目录运行：
+    ```bash
+    npm run db:clear
+    ```

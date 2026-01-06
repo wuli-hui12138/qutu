@@ -92,12 +92,14 @@
         </view>
       </view>
     </view>
+    <FloatingTabBar />
   </view>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
+import FloatingTabBar from '../../components/FloatingTabBar.vue';
 import { aiService } from '../../services/api';
 import { useUserStore } from '../../store/user';
 

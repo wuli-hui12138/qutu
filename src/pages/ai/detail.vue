@@ -162,6 +162,7 @@ const formData = ref({
 
 onLoad((options) => {
   id.value = options.id;
+  fetchTask();
 });
 
 const fetchTask = async () => {
@@ -241,7 +242,7 @@ const submitForReview = async () => {
   submitLoading.value = true;
   try {
     await aiService.submitToGallery({
-      taskId: id.value,
+      taskId: Number(id.value),
       ...formData.value
     });
     uni.showToast({ title: '提交成功' });
@@ -257,7 +258,7 @@ const goBack = () => uni.navigateBack();
 const formatDate = (date) => new Date(date).toLocaleString();
 const setPreview = (type) => uni.showToast({ title: `${type}预览开发中`, icon: 'none' });
 
-onMounted(fetchTask);
+onMounted(() => {});
 </script>
 
 <style scoped>

@@ -22,16 +22,17 @@
         <view class="absolute inset-0 z-20 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></view>
       </view>
 
-      <view class="p-4 bg-white/80 backdrop-blur-sm text-left">
-        <view class="text-xs font-black text-gray-900 truncate mb-2.5 px-0.5 tracking-tight group-hover:text-indigo-600 transition-colors">
-          {{ title || '未命名作品' }}
+      <view class="p-4 bg-white/70 backdrop-blur-md text-left">
+        <view class="text-[11px] font-black text-gray-900 truncate mb-1.5 px-0.5 tracking-tight group-hover:text-indigo-600 transition-colors uppercase">
+          {{ title || 'Untitled Artwork' }}
         </view>
 
-        <view class="flex flex-wrap gap-2 min-h-[16px]">
-          <view v-for="cat in (categories || []).slice(0, 1)" :key="cat.id" class="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg tracking-tighter uppercase whitespace-nowrap">
+        <view class="flex items-center gap-2 min-h-[16px] opacity-60">
+          <view v-for="cat in (categories || []).slice(0, 1)" :key="cat.id" class="text-[8px] font-black text-indigo-600 tracking-tighter uppercase whitespace-nowrap">
             {{ cat.name }}
           </view>
-          <view v-for="tag in (tags || []).slice(0, 2)" :key="tag.id" class="text-[9px] font-bold text-gray-400 bg-gray-50/50 px-2.5 py-1 rounded-lg tracking-tighter lowercase whitespace-nowrap border border-gray-100">
+          <view class="w-1 h-1 bg-gray-300 rounded-full"></view>
+          <view v-for="tag in (tags || []).slice(0, 1)" :key="tag.id" class="text-[8px] font-bold text-gray-400 tracking-tighter lowercase whitespace-nowrap">
             #{{ tag.name }}
           </view>
         </view>
