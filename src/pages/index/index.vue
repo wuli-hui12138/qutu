@@ -3,7 +3,7 @@
     <!-- Header -->
     <view class="fixed top-0 inset-x-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-md pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
       <view class="w-8"></view>
-      <text class="text-lg font-bold text-gray-900 dark:text-white tracking-wide">WALLPAPER</text>
+      <text class="text-lg font-bold text-gray-900 dark:text-white tracking-wide">壁纸中心</text>
       <view class="w-8 flex items-center justify-end">
         <view class="w-6 h-6 text-gray-900 dark:text-white">
            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -58,8 +58,8 @@
 
         <!-- Waterfall Title -->
         <view class="px-4 mb-4 flex items-center justify-between">
-          <text class="text-lg font-bold text-gray-900 dark:text-white">Trending Now</text>
-          <text class="text-xs text-gray-400 dark:text-gray-600">View All ></text>
+          <text class="text-lg font-bold text-gray-900 dark:text-white">今日推荐</text>
+          <text class="text-xs text-gray-400 dark:text-gray-600">查看更多 ></text>
         </view>
 
         <!-- Waterfall Feed -->
@@ -136,10 +136,10 @@ const banners = ref([
 ]);
 
 const categories = ref([
-  { id: 'rank', name: 'Rank' },
-  { id: '4k', name: '4K' },
-  { id: 'live', name: 'Live' },
-  { id: 'avatar', name: 'Avatar' }
+  { id: 'rank', name: '排行榜' },
+  { id: '4k', name: '4K专区' },
+  { id: 'live', name: '动态壁纸' },
+  { id: 'avatar', name: '头像' }
 ]);
 
 const fetchTasks = async () => {
@@ -183,7 +183,7 @@ const previewImage = (url) => {
 };
 
 const navigateToCreate = () => {
-  uni.navigateTo({ url: '/pages/ai/creation' });
+  uni.navigateTo({ url: '/pages/upload/upload' });
 };
 
 onShow(() => {

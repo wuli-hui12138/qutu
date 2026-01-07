@@ -6,7 +6,7 @@
         <text class="text-gray-400 text-lg">🔍</text>
         <input 
           class="flex-1 text-base text-gray-900 dark:text-white"
-          placeholder="Search wallpapers..." 
+          placeholder="搜索壁纸..." 
           placeholder-class="text-gray-400"
         />
       </view>
@@ -17,7 +17,7 @@
         
         <!-- Trending Searches -->
         <view class="mb-8">
-          <text class="text-lg font-bold text-gray-900 dark:text-white mb-4 block">Trending Searches</text>
+          <text class="text-lg font-bold text-gray-900 dark:text-white mb-4 block">热门搜索</text>
           <view class="flex flex-wrap gap-2">
             <view 
               v-for="tag in trendingTags" 
@@ -36,35 +36,35 @@
             <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-blue-100">
               <image src="https://picsum.photos/400/400?random=10" mode="aspectFill" class="w-full h-full" />
               <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">Nature</text>
+                <text class="text-white font-bold text-lg">自然风光</text>
               </view>
             </view>
             <!-- Large Item 2 -->
             <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-purple-100">
               <image src="https://picsum.photos/400/400?random=11" mode="aspectFill" class="w-full h-full" />
               <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">Abstract</text>
+                <text class="text-white font-bold text-lg">抽象艺术</text>
               </view>
             </view>
             <!-- Wide Item -->
             <view class="col-span-2 aspect-[2/1] relative rounded-3xl overflow-hidden bg-red-100">
               <image src="https://picsum.photos/800/400?random=12" mode="aspectFill" class="w-full h-full" />
                <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">Cars</text>
+                <text class="text-white font-bold text-lg">豪车超跑</text>
               </view>
             </view>
             <!-- Small Item 3 -->
             <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-pink-100">
               <image src="https://picsum.photos/400/400?random=13" mode="aspectFill" class="w-full h-full" />
                <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">Girls</text>
+                <text class="text-white font-bold text-lg">美女写真</text>
               </view>
             </view>
              <!-- Small Item 4 -->
             <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-zinc-100">
               <image src="https://picsum.photos/400/400?random=14" mode="aspectFill" class="w-full h-full" />
                <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">Textures</text>
+                <text class="text-white font-bold text-lg">极简纹理</text>
               </view>
             </view>
           </view>
@@ -72,7 +72,7 @@
 
         <!-- Top Downloaded -->
         <view class="mb-4">
-           <text class="text-lg font-bold text-gray-900 dark:text-white mb-4 block">Top 3 Downloaded This Week</text>
+           <text class="text-lg font-bold text-gray-900 dark:text-white mb-4 block">本周在榜下载</text>
            <view class="space-y-4">
              <view v-for="(item, i) in topList" :key="i" class="flex items-center gap-4">
                <image :src="item.image" mode="aspectFill" class="w-20 h-20 rounded-2xl bg-gray-200 block shrink-0" />

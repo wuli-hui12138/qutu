@@ -38,10 +38,10 @@
          
          <!-- Title & Tags -->
          <view class="mb-4">
-           <text class="text-xl font-bold block mb-2">{{ title || 'Mountain Lake Reflection' }}</text>
+           <text class="text-xl font-bold block mb-2">{{ title || '山川湖泊倒影' }}</text>
            <view class="flex flex-wrap gap-2">
-             <view class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium">#Nature</view>
-             <view class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium">#Blue</view>
+             <view class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium">#自然</view>
+             <view class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium">#蓝色</view>
              <view class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium">#4K</view>
            </view>
          </view>
@@ -49,9 +49,9 @@
          <!-- Actions Row -->
          <view class="flex items-center justify-between gap-4 mt-4">
            <!-- Preview -->
-           <view class="flex flex-col items-center gap-1 active:scale-95 transition-transform" @tap="showToast('Preview Mode')">
+           <view class="flex flex-col items-center gap-1 active:scale-95 transition-transform" @tap="showToast('预览模式')">
              <text class="text-2xl">👁️</text>
-             <text class="text-[10px] text-gray-300 uppercase">Preview</text>
+             <text class="text-[10px] text-gray-300 uppercase">预览</text>
            </view>
 
            <!-- Download Button (Prominent) -->
@@ -59,19 +59,19 @@
              class="flex-1 h-12 rounded-full bg-white text-black font-bold flex items-center justify-center shadow-lg active:scale-95 transition-transform"
              @tap="downloadImage"
            >
-             Download
+             下载原图
            </view>
 
            <!-- Favorite -->
            <view class="flex flex-col items-center gap-1 active:scale-95 transition-transform" @tap="toggleFavorite">
              <text class="text-2xl">{{ isFavorite ? '★' : '☆' }}</text>
-             <text class="text-[10px] text-gray-300 uppercase">Favorite</text>
+             <text class="text-[10px] text-gray-300 uppercase">收藏</text>
            </view>
 
            <!-- Share -->
            <view class="flex flex-col items-center gap-1 active:scale-95 transition-transform" @tap="share">
              <text class="text-2xl">↗️</text>
-             <text class="text-[10px] text-gray-300 uppercase">Share</text>
+             <text class="text-[10px] text-gray-300 uppercase">分享</text>
            </view>
          </view>
 

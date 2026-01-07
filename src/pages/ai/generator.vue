@@ -8,7 +8,7 @@
       
       <!-- Header -->
       <view class="pt-12 px-6 pb-4 flex items-center justify-between">
-        <text class="text-2xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">AI CREATOR</text>
+        <text class="text-2xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">AI 创作</text>
         <view class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm">
            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
         </view>
@@ -20,7 +20,7 @@
         <view class="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 mb-8 shadow-xl shadow-purple-900/20">
           <textarea 
             v-model="prompt"
-            placeholder="Describe your dream wallpaper..." 
+            placeholder="描述你梦想中的壁纸..." 
             placeholder-class="text-gray-400"
             class="w-full h-32 text-lg text-white leading-relaxed mb-4 p-0 bg-transparent selection:bg-purple-500/30"
             :maxlength="200"
@@ -37,12 +37,12 @@
           :disabled="isGenerating"
         >
           <view v-if="isGenerating" class="animate-spin mr-2 text-white">⟳</view>
-          <text class="text-white font-bold text-lg tracking-wide">{{ isGenerating ? 'CREATING...' : 'GENERATE' }}</text>
+          <text class="text-white font-bold text-lg tracking-wide">{{ isGenerating ? '生成中...' : '立即生成' }}</text>
         </button>
 
         <!-- Style Selector -->
         <view class="mb-8">
-          <text class="text-sm font-bold text-gray-400 mb-4 block uppercase tracking-wider">Choose Style</text>
+          <text class="text-sm font-bold text-gray-400 mb-4 block uppercase tracking-wider">选择风格</text>
           <scroll-view scroll-x class="w-full whitespace-nowrap -mx-6 px-6" :show-scrollbar="false">
              <view class="flex gap-4">
                <view 
@@ -54,7 +54,7 @@
                >
                  <image :src="style.preview" mode="aspectFill" class="w-full h-full" />
                  <view class="absolute inset-0 bg-black/40 flex items-center justify-center">
-                   <text class="text-xs font-bold text-white text-center">{{ style.name }}</text>
+                   <text class="text-xs font-bold text-white text-center">{{ style.label }}</text>
                  </view>
                </view>
              </view>
@@ -63,7 +63,7 @@
 
         <!-- Gallery / Recent Results -->
         <view>
-          <text class="text-sm font-bold text-gray-400 mb-4 block uppercase tracking-wider">Generated Results</text>
+          <text class="text-sm font-bold text-gray-400 mb-4 block uppercase tracking-wider">生成结果</text>
           <view class="grid grid-cols-2 gap-4">
              <view v-if="isGenerating" class="aspect-[4/5] rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center animate-pulse">
                 <text class="text-purple-400 text-2xl">✨</text>
@@ -98,11 +98,11 @@ const isGenerating = ref(false);
 const selectedStyle = ref('Cyberpunk');
 
 const styles = [
-  { name: 'Cyberpunk', preview: 'https://picsum.photos/100/100?random=101' },
-  { name: 'Watercolor', preview: 'https://picsum.photos/100/100?random=102' },
-  { name: '3D Render', preview: 'https://picsum.photos/100/100?random=103' },
-  { name: 'Anime', preview: 'https://picsum.photos/100/100?random=104' },
-  { name: 'Oil Painting', preview: 'https://picsum.photos/100/100?random=105' },
+  { name: 'Cyberpunk', label: '赛博朋克', preview: 'https://picsum.photos/100/100?random=101' },
+  { name: 'Watercolor', label: '水彩画', preview: 'https://picsum.photos/100/100?random=102' },
+  { name: '3D Render', label: '3D渲染', preview: 'https://picsum.photos/100/100?random=103' },
+  { name: 'Anime', label: '二次元', preview: 'https://picsum.photos/100/100?random=104' },
+  { name: 'Oil Painting', label: '油画', preview: 'https://picsum.photos/100/100?random=105' },
 ];
 
 const results = ref([

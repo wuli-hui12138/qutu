@@ -69,6 +69,33 @@
 				"navigationStyle": "custom",
 				"navigationBarTitleText": "专题"
 			}
+		},
+		{
+			"path": "pages/admin/images",
+			"style": {
+				"navigationStyle": "default",
+				"navigationBarTitleText": "作品管理",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/admin/tags",
+			"style": {
+				"navigationStyle": "default",
+				"navigationBarTitleText": "分类/标签管理",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/admin/ai_config",
+			"style": {
+				"navigationStyle": "default",
+				"navigationBarTitleText": "AI配置",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
 		}
 	],
 	"globalStyle": {

@@ -9,7 +9,7 @@
              <polyline points="9 22 9 12 15 12 15 22"></polyline>
            </svg>
         </view>
-        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/index/index') ? 'text-black dark:text-white' : 'text-gray-400']">Home</text>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/index/index') ? 'text-black dark:text-white' : 'text-gray-400']">首页</text>
       </view>
 
       <!-- Discovery -->
@@ -20,7 +20,7 @@
              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
            </svg>
         </view>
-        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/discover/discover') ? 'text-black dark:text-white' : 'text-gray-400']">Explore</text>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/discover/discover') ? 'text-black dark:text-white' : 'text-gray-400']">发现</text>
       </view>
 
       <!-- AI -->
@@ -30,7 +30,7 @@
              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
            </svg>
         </view>
-        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/ai/generator') ? 'text-purple-600' : 'text-gray-400']">AI</text>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/ai/generator') ? 'text-purple-600' : 'text-gray-400']">AI绘画</text>
       </view>
 
       <!-- Topics -->
@@ -49,7 +49,7 @@
              <line x1="1" y1="14" x2="4" y2="14"></line>
            </svg>
         </view>
-        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/topics/topics') ? 'text-black dark:text-white' : 'text-gray-400']">Topics</text>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/topics/topics') ? 'text-black dark:text-white' : 'text-gray-400']">专题</text>
       </view>
 
       <!-- Me -->
@@ -60,7 +60,7 @@
              <circle cx="12" cy="7" r="4"></circle>
            </svg>
         </view>
-        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/user/profile') ? 'text-black dark:text-white' : 'text-gray-400']">Me</text>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/user/profile') ? 'text-black dark:text-white' : 'text-gray-400']">我的</text>
       </view>
     </view>
     <view class="h-safe-area-bottom"></view>
