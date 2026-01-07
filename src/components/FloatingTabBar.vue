@@ -1,154 +1,100 @@
 <template>
-  <view class="fixed-bottom-nav">
-    <view class="nav-container">
-      <view 
-        v-for="item in tabs" 
-        :key="item.path" 
-        @tap="switchTab(item.path)"
-        :class="['nav-item', currentPath === item.path ? 'active' : '']"
-      >
-        <view class="icon-wrapper">
-          <view v-html="currentPath === item.path ? item.activeIcon : item.icon" class="svg-icon"></view>
-          <view v-if="currentPath === item.path" class="active-dot"></view>
+  <view class="fixed bottom-0 inset-x-0 z-50 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-t border-gray-100 dark:border-white/5 pb-safe">
+    <view class="h-16 flex items-center justify-around px-2">
+      <!-- Home -->
+      <view class="flex-1 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all group" @tap="switchTab('/pages/index/index')">
+        <view :class="['w-6 h-6 transition-colors', isCurrent('/pages/index/index') ? 'text-black dark:text-white' : 'text-gray-400']">
+           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+             <polyline points="9 22 9 12 15 12 15 22"></polyline>
+           </svg>
         </view>
-        <text class="nav-label">{{ item.label }}</text>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/index/index') ? 'text-black dark:text-white' : 'text-gray-400']">Home</text>
+      </view>
+
+      <!-- Discovery -->
+      <view class="flex-1 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all group" @tap="switchTab('/pages/discover/discover')">
+        <view :class="['w-6 h-6 transition-colors', isCurrent('/pages/discover/discover') ? 'text-black dark:text-white' : 'text-gray-400']">
+           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <circle cx="12" cy="12" r="10"></circle>
+             <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+           </svg>
+        </view>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/discover/discover') ? 'text-black dark:text-white' : 'text-gray-400']">Explore</text>
+      </view>
+
+      <!-- AI -->
+      <view class="flex-1 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all group" @tap="switchTab('/pages/ai/generator')">
+        <view :class="['w-6 h-6 transition-colors', isCurrent('/pages/ai/generator') ? 'text-purple-600' : 'text-gray-400']">
+           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+           </svg>
+        </view>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/ai/generator') ? 'text-purple-600' : 'text-gray-400']">AI</text>
+      </view>
+
+      <!-- Topics -->
+      <view class="flex-1 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all group" @tap="switchTab('/pages/topics/topics')">
+        <view :class="['w-6 h-6 transition-colors', isCurrent('/pages/topics/topics') ? 'text-black dark:text-white' : 'text-gray-400']">
+           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+             <rect x="9" y="9" width="6" height="6"></rect>
+             <line x1="9" y1="1" x2="9" y2="4"></line>
+             <line x1="15" y1="1" x2="15" y2="4"></line>
+             <line x1="9" y1="20" x2="9" y2="23"></line>
+             <line x1="15" y1="20" x2="15" y2="23"></line>
+             <line x1="20" y1="9" x2="23" y2="9"></line>
+             <line x1="20" y1="14" x2="23" y2="14"></line>
+             <line x1="1" y1="9" x2="4" y2="9"></line>
+             <line x1="1" y1="14" x2="4" y2="14"></line>
+           </svg>
+        </view>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/topics/topics') ? 'text-black dark:text-white' : 'text-gray-400']">Topics</text>
+      </view>
+
+      <!-- Me -->
+      <view class="flex-1 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all group" @tap="switchTab('/pages/user/profile')">
+        <view :class="['w-6 h-6 transition-colors', isCurrent('/pages/user/profile') ? 'text-black dark:text-white' : 'text-gray-400']">
+           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+             <circle cx="12" cy="7" r="4"></circle>
+           </svg>
+        </view>
+        <text :class="['text-[10px] font-medium tracking-wide', isCurrent('/pages/user/profile') ? 'text-black dark:text-white' : 'text-gray-400']">Me</text>
       </view>
     </view>
+    <view class="h-safe-area-bottom"></view>
   </view>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref } from 'vue';
 
-const currentPath = ref('/pages/index/index');
-
-const tabs = [
-  {
-    label: '浏览',
-    path: '/pages/index/index',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
-    activeIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
-  },
-  {
-    label: '发现',
-    path: '/pages/discover/discover',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
-    activeIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
-  },
-  {
-    label: '创作',
-    path: '/pages/ai/generator',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>',
-    activeIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>'
-  },
-  {
-    label: '我的',
-    path: '/pages/user/profile',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    activeIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
-  }
-];
-
-const switchTab = (path) => {
-  if (currentPath.value === path) return;
-  uni.reLaunch({
-    url: path
-  });
+const isCurrent = (path) => {
+  const pages = getCurrentPages();
+  if (pages.length === 0) return false;
+  const current = `/${pages[pages.length - 1].route}`;
+  return current === path;
 };
 
-onMounted(() => {
-  const pages = getCurrentPages();
-  const page = pages[pages.length - 1];
-  if (page) {
-    currentPath.value = '/' + page.route;
-  }
-});
+const switchTab = (path) => {
+  if (isCurrent(path)) return;
+  uni.reLaunch({ url: path });
+};
+
+const handleAction = () => {
+  // Navigate to creation page which we will build
+  uni.navigateTo({ url: '/pages/ai/creation' });
+};
 </script>
 
 <style scoped>
-.fixed-bottom-nav {
-  position: fixed;
-  bottom: 30rpx;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  z-index: 999;
-  pointer-events: none;
+.pb-safe {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
 }
-
-.nav-container {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  padding: 12rpx 40rpx;
-  border-radius: 40rpx;
-  display: flex;
-  align-items: center;
-  gap: 60rpx;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  pointer-events: auto;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rpx;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.icon-wrapper {
-  width: 44rpx;
-  height: 44rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.svg-icon {
-  color: #9ca3af;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-item.active .svg-icon {
-  color: #000;
-  transform: translateY(-2rpx);
-}
-
-.nav-label {
-  font-size: 20rpx;
-  font-weight: 800;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.nav-item.active .nav-label {
-  color: #000;
-}
-
-.active-dot {
-  position: absolute;
-  bottom: -15rpx;
-  width: 8rpx;
-  height: 8rpx;
-  background: #000;
-  border-radius: 50%;
-  animation: dotIn 0.3s ease-out;
-}
-
-@keyframes dotIn {
-  from { transform: scale(0); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-.nav-item:active {
-  transform: scale(0.9);
+.h-safe-area-bottom {
+  height: constant(safe-area-inset-bottom);
+  height: env(safe-area-inset-bottom);
 }
 </style>

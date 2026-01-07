@@ -1,8 +1,8 @@
 <template>
-  <view class="image-card" @tap="navigateToDetail">
-    <view class="card-content block rounded-[28px] overflow-hidden shadow-sm bg-white mb-4 active:scale-[0.98] transition-all group border border-gray-100">
-      <view :class="['image-container relative overflow-hidden bg-gray-50', customClass]">
-        <!-- LCP Blur Placeholder -->
+  <view class="image-card animate-in" @tap="navigateToDetail">
+    <view class="relative group overflow-hidden rounded-[24px] bg-card glass border border-glass active:scale-[0.98] transition-all duration-300 shadow-sm hover:shadow-lg dark:shadow-none">
+      <!-- Image Layer -->
+      <view class="relative aspect-[3/4] overflow-hidden">
         <image
           v-if="blurData"
           :src="blurData"
@@ -10,31 +10,33 @@
           :class="['absolute inset-0 z-0 transition-opacity duration-1000', isLoaded ? 'opacity-0' : 'opacity-100']"
           style="filter: blur(20px); transform: scale(1.2);"
         />
-
         <image
           :src="src"
-          mode="widthFix"
+          mode="aspectFill"
           @load="onImageLoad"
-          :class="['relative z-10 w-full transition-all duration-500', isLoaded ? 'opacity-100' : 'opacity-0', 'group-hover:scale-110']"
+          :class="['relative z-10 w-full h-full transition-transform duration-700', isLoaded ? 'opacity-100' : 'opacity-0', 'group-hover:scale-110']"
           lazy-load
         />
-        
-        <view class="absolute inset-0 z-20 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></view>
+        <!-- Gradient Overlay -->
+        <view class="absolute inset-x-0 bottom-0 z-20 h-2/3 bg-gradient-to-t from-bg-card via-bg-card/50 to-transparent"></view>
       </view>
 
-      <view class="p-4 bg-white/70 backdrop-blur-md text-left">
-        <view class="text-[11px] font-black text-gray-900 truncate mb-1.5 px-0.5 tracking-tight group-hover:text-indigo-600 transition-colors uppercase">
-          {{ title || 'Untitled Artwork' }}
-        </view>
-
-        <view class="flex items-center gap-2 min-h-[16px] opacity-60">
-          <view v-for="cat in (categories || []).slice(0, 1)" :key="cat.id" class="text-[8px] font-black text-indigo-600 tracking-tighter uppercase whitespace-nowrap">
+      <!-- Glass Content Info -->
+      <view class="absolute inset-x-0 bottom-0 z-30 p-4 pt-10">
+        <text class="block text-[11px] font-black text-main truncate tracking-tight uppercase mb-1 transition-colors">
+          {{ title || 'Celestial Fragment' }}
+        </text>
+        <view class="flex items-center gap-2 overflow-hidden">
+          <view v-for="cat in (categories || []).slice(0, 1)" :key="cat.id" class="px-2 py-0.5 rounded-md bg-primary/10 text-[7px] font-black text-primary uppercase tracking-widest border border-primary/20 backdrop-blur-sm">
             {{ cat.name }}
           </view>
-          <view class="w-1 h-1 bg-gray-300 rounded-full"></view>
-          <view v-for="tag in (tags || []).slice(0, 1)" :key="tag.id" class="text-[8px] font-bold text-gray-400 tracking-tighter lowercase whitespace-nowrap">
-            #{{ tag.name }}
-          </view>
+        </view>
+      </view>
+
+      <!-- Hover Action -->
+      <view class="absolute top-4 right-4 z-40 opacity-0 group-active:opacity-100 transition-opacity">
+        <view class="w-8 h-8 rounded-full bg-card/80 backdrop-blur-xl border border-glass flex items-center justify-center text-[10px] text-primary shadow-sm">
+          ❤
         </view>
       </view>
     </view>
@@ -50,12 +52,10 @@ const props = defineProps({
   title: String,
   categories: Array,
   tags: Array,
-  blurData: String,
-  customClass: String
+  blurData: String
 });
 
 const isLoaded = ref(false);
-
 const onImageLoad = () => {
   isLoaded.value = true;
 };
@@ -70,8 +70,5 @@ const navigateToDetail = () => {
 <style scoped>
 .image-card {
   break-inside: avoid;
-}
-.image-container image {
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 </style>

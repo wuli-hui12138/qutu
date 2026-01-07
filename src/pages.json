@@ -22,6 +22,13 @@
 			}
 		},
 		{
+			"path": "pages/ai/creation",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "创作"
+			}
+		},
+		{
 			"path": "pages/ai/history",
 			"style": {
 				"navigationStyle": "custom",
@@ -54,6 +61,13 @@
 			"style": {
 				"navigationStyle": "custom",
 				"navigationBarTitleText": "上传"
+			}
+		},
+		{
+			"path": "pages/topics/topics",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "专题"
 			}
 		}
 	],

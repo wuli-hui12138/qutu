@@ -1,14 +1,109 @@
 <template>
-  <view class="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
-    <view class="text-4xl mb-4 text-gray-300">🌍</view>
-    <text class="text-xl font-black text-gray-900 mb-2">发现更多</text>
-    <text class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-10">Exploration Coming Soon</text>
-    <button @tap="goBack" class="px-10 py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all">返回</button>
+  <view class="bg-white dark:bg-black min-h-screen pb-24 transition-colors duration-300">
+    <!-- Header: Search -->
+    <view class="fixed top-0 inset-x-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md pt-12 pb-4 px-4 border-b border-gray-100 dark:border-white/5">
+      <view class="h-12 bg-gray-100 dark:bg-zinc-800 rounded-2xl flex items-center px-4 gap-3">
+        <text class="text-gray-400 text-lg">🔍</text>
+        <input 
+          class="flex-1 text-base text-gray-900 dark:text-white"
+          placeholder="Search wallpapers..." 
+          placeholder-class="text-gray-400"
+        />
+      </view>
+    </view>
+
+    <scroll-view scroll-y class="h-screen pt-32" :show-scrollbar="false">
+      <view class="pb-32 px-4">
+        
+        <!-- Trending Searches -->
+        <view class="mb-8">
+          <text class="text-lg font-bold text-gray-900 dark:text-white mb-4 block">Trending Searches</text>
+          <view class="flex flex-wrap gap-2">
+            <view 
+              v-for="tag in trendingTags" 
+              :key="tag" 
+              class="px-4 py-2 bg-gray-100 dark:bg-zinc-800 rounded-full active:scale-95 transition-transform"
+            >
+              <text class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ tag }}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- Categories Grid -->
+        <view class="mb-8">
+          <view class="grid grid-cols-2 gap-3">
+            <!-- Large Item 1 -->
+            <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-blue-100">
+              <image src="https://picsum.photos/400/400?random=10" mode="aspectFill" class="w-full h-full" />
+              <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                <text class="text-white font-bold text-lg">Nature</text>
+              </view>
+            </view>
+            <!-- Large Item 2 -->
+            <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-purple-100">
+              <image src="https://picsum.photos/400/400?random=11" mode="aspectFill" class="w-full h-full" />
+              <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                <text class="text-white font-bold text-lg">Abstract</text>
+              </view>
+            </view>
+            <!-- Wide Item -->
+            <view class="col-span-2 aspect-[2/1] relative rounded-3xl overflow-hidden bg-red-100">
+              <image src="https://picsum.photos/800/400?random=12" mode="aspectFill" class="w-full h-full" />
+               <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                <text class="text-white font-bold text-lg">Cars</text>
+              </view>
+            </view>
+            <!-- Small Item 3 -->
+            <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-pink-100">
+              <image src="https://picsum.photos/400/400?random=13" mode="aspectFill" class="w-full h-full" />
+               <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                <text class="text-white font-bold text-lg">Girls</text>
+              </view>
+            </view>
+             <!-- Small Item 4 -->
+            <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-zinc-100">
+              <image src="https://picsum.photos/400/400?random=14" mode="aspectFill" class="w-full h-full" />
+               <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                <text class="text-white font-bold text-lg">Textures</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- Top Downloaded -->
+        <view class="mb-4">
+           <text class="text-lg font-bold text-gray-900 dark:text-white mb-4 block">Top 3 Downloaded This Week</text>
+           <view class="space-y-4">
+             <view v-for="(item, i) in topList" :key="i" class="flex items-center gap-4">
+               <image :src="item.image" mode="aspectFill" class="w-20 h-20 rounded-2xl bg-gray-200 block shrink-0" />
+               <view class="flex-1 min-w-0">
+                 <text class="text-base font-bold text-gray-900 dark:text-white block truncate mb-1">{{ item.title }}</text>
+                 <text class="text-xs text-gray-500 dark:text-gray-400 block">By {{ item.author }}</text>
+                 <view class="mt-2 flex items-center gap-1 text-orange-500">
+                   <text class="text-xs">⬇️</text>
+                   <text class="text-xs font-bold">{{ item.downloads }} Downloads</text>
+                 </view>
+               </view>
+             </view>
+           </view>
+        </view>
+
+      </view>
+    </scroll-view>
+
     <FloatingTabBar />
   </view>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import FloatingTabBar from '../../components/FloatingTabBar.vue';
-const goBack = () => uni.navigateBack();
+
+const trendingTags = ['Anime', 'Dark', 'Minimal', 'Nature', 'Apith', 'Colox', 'World', 'Space'];
+
+const topList = ref([
+  { title: "Mountain Lake Reflection", author: "NatureLover", downloads: "12.5k", image: "https://picsum.photos/200/200?random=20" },
+  { title: "Neon Cyberpunk City", author: "FutureArt", downloads: "10.2k", image: "https://picsum.photos/200/200?random=21" },
+  { title: "Deep Space Nebula", author: "AstroBoy", downloads: "8.9k", image: "https://picsum.photos/200/200?random=22" },
+]);
 </script>
