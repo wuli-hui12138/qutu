@@ -90,7 +90,7 @@ const handleSelect = (id) => {
 };
 
 const edit = (img) => {
-  uni.showToast({ title: '暂不支持编辑', icon: 'none' });
+  uni.navigateTo({ url: `/pages/upload/upload?id=${img.id}` }); 
 };
 
 const toggleOneStatus = async (img) => {

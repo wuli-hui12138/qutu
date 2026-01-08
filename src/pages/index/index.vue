@@ -1,7 +1,7 @@
 <template>
   <view class="bg-gray-50 dark:bg-black min-h-screen pb-24 transition-colors duration-300">
     <!-- Header -->
-    <view class="fixed top-0 inset-x-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-md pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
+    <view class="fixed top-0 inset-x-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-md pt-8 pb-2 px-4 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
       <view class="w-8"></view>
       <text class="text-lg font-bold text-gray-900 dark:text-white tracking-wide">壁纸中心</text>
       <view class="w-8 flex items-center justify-end">
@@ -59,7 +59,7 @@
         <!-- Waterfall Title -->
         <view class="px-4 mb-4 flex items-center justify-between">
           <text class="text-lg font-bold text-gray-900 dark:text-white">今日推荐</text>
-          <text class="text-xs text-gray-400 dark:text-gray-600">查看更多 ></text>
+          <text class="text-xs text-gray-400 dark:text-gray-600" @tap="uni.switchTab({ url: '/pages/discover/discover' })">查看更多 ></text>
         </view>
 
         <!-- Waterfall Feed -->

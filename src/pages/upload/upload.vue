@@ -130,6 +130,27 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to fetch categories:', error);
   }
+  
+  // Check for edit mode
+  const pages = getCurrentPages();
+  const options = pages[pages.length - 1].options;
+  if (options.id) {
+    uni.setNavigationBarTitle({ title: '编辑壁纸' });
+    try {
+      const data = await wallpapersService.findOne(options.id);
+      if (data) {
+        form.value.title = data.title;
+        form.value.description = data.description;
+        form.value.category = data.categories?.[0]?.name;
+        form.value.tags = data.tags?.map(t => t.name) || [];
+        imagePath.value = data.url;
+        // Store ID for update
+        form.value.id = data.id;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 });
 
 const isValid = computed(() => {
@@ -166,8 +187,42 @@ const submit = () => {
   if (!isValid.value) return;
   submitting.value = true;
   
+  if (form.value.id) {
+     // Edit Mode
+     // For simplicity using same endpoint or separate?
+     // Since uploadFile doesn't support PATCH easily with file + data mixed comfortably in all proxy scenarios,
+     // we might need a separate logic. But let's assume update logic.
+     // To simplify, if user didn't change image, we just use API JSON update. 
+     // If user changed image (blob/tmp path), we use upload.
+     
+     const isNewImage = imagePath.value.startsWith('blob:') || imagePath.value.startsWith('http://tmp') || imagePath.value.startsWith('wxfile');
+     
+     if (!isNewImage) {
+        // Just update metadata
+        uni.request({
+            url: `/api/wallpapers/${form.value.id}`,
+            method: 'PATCH',
+            data: {
+               title: form.value.title,
+               description: form.value.description,
+               categories: form.value.category,
+               tags: form.value.tags.join(','),
+               // Keep existing visibility status
+               isVisible: true 
+            },
+            success: (res) => {
+                uni.showToast({ title: '更新成功', icon: 'success' });
+                setTimeout(() => uni.navigateBack(), 1500);
+            },
+            fail: () => uni.showToast({ title: '更新失败', icon: 'none' }),
+            complete: () => submitting.value = false
+        });
+        return;
+     }
+  }
+
   uni.uploadFile({
-    url: '/api/wallpapers', // Proxied to localhost:3000/wallpapers
+    url: '/api/wallpapers', 
     filePath: imagePath.value,
     name: 'file',
     formData: {
@@ -178,9 +233,10 @@ const submit = () => {
     },
     success: (uploadFileRes) => {
       if (uploadFileRes.statusCode === 201 || uploadFileRes.statusCode === 200) {
-         uni.showToast({ title: '发布成功! 等待审核', icon: 'success' });
+         uni.showToast({ title: form.value.id ? '更新成功' : '发布成功! 等待审核', icon: 'success' });
          setTimeout(() => {
-            uni.switchTab({ url: '/pages/index/index' });
+            if (form.value.id) uni.navigateBack();
+            else uni.switchTab({ url: '/pages/index/index' });
          }, 1500);
       } else {
         uni.showToast({ title: '发布失败', icon: 'none' });
