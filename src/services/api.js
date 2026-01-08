@@ -29,8 +29,11 @@ const request = (options) => {
 
 export const wallpapersService = {
     findAll: (params) => request({ url: '/api/wallpapers', data: params }),
+    findAllAdmin: (search) => request({ url: '/api/wallpapers/admin', data: { search } }),
     findOne: (id) => request({ url: `/api/wallpapers/${id}` }),
     getRelated: (tag) => request({ url: `/api/wallpapers/related/${tag}` }),
+    updateStatus: (id, status) => request({ url: `/api/wallpapers/${id}/status`, method: 'PATCH', data: { status } }),
+    remove: (id) => request({ url: `/api/wallpapers/${id}`, method: 'DELETE' }),
 }
 
 export const interactionsService = {

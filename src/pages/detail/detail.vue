@@ -36,15 +36,19 @@
     >
        <view class="glass rounded-[32px] p-5 border border-white/20 backdrop-blur-xl bg-black/40 text-white">
          
-         <!-- Title & Tags -->
-         <view class="mb-4">
-           <text class="text-xl font-bold block mb-2">{{ title || '山川湖泊倒影' }}</text>
-           <view class="flex flex-wrap gap-2">
-             <view class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium">#自然</view>
-             <view class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium">#蓝色</view>
-             <view class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium">#4K</view>
-           </view>
-         </view>
+          <!-- Title & Tags -->
+          <view class="mb-4">
+            <text class="text-xl font-bold block mb-2">{{ title }}</text>
+            <view class="flex flex-wrap gap-2">
+              <view 
+                v-for="(tag, index) in tags" 
+                :key="index"
+                class="px-3 py-1 rounded-full bg-white/20 text-xs font-medium"
+              >
+                #{{ tag.name }}
+              </view>
+            </view>
+          </view>
 
          <!-- Actions Row -->
          <view class="flex items-center justify-between gap-4 mt-4">
@@ -84,15 +88,36 @@
 <script setup>
 import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
+import { wallpapersService } from '../../services/api';
 
-const currentImage = ref('https://picsum.photos/800/1200?random=88');
+const currentImage = ref('');
 const showControls = ref(true);
 const isFavorite = ref(false);
 const title = ref('');
+const tags = ref([]);
+const wallpaper = ref(null);
 
-onLoad(() => {
-  // Simulate loading params
+onLoad((options) => {
+  if (options.id) {
+    fetchDetail(options.id);
+  }
 });
+
+const fetchDetail = async (id) => {
+  try {
+    const data = await wallpapersService.findOne(id);
+    if (data) {
+      wallpaper.value = data;
+      // Prefer original URL, fallback to thumb
+      currentImage.value = data.url || data.thumb; 
+      title.value = data.title;
+      tags.value = data.tags || [];
+    }
+  } catch (err) {
+    console.error(err);
+    uni.showToast({ title: '加载失败', icon: 'none' });
+  }
+};
 
 const goBack = () => uni.navigateBack();
 
@@ -102,18 +127,48 @@ const toggleControls = () => {
 
 const toggleFavorite = () => {
   isFavorite.value = !isFavorite.value;
-  uni.showToast({ title: isFavorite.value ? 'Added to Favorites' : 'Removed', icon: 'none' });
+  uni.showToast({ title: isFavorite.value ? '已收藏' : '取消收藏', icon: 'none' });
 };
 
 const downloadImage = () => {
-  uni.showToast({ title: 'Downloading...', icon: 'loading' });
-  setTimeout(() => {
-    uni.showToast({ title: 'Saved to Album', icon: 'success' });
-  }, 1500);
+  if (!currentImage.value) return;
+  
+  uni.showLoading({ title: '下载中...' });
+  
+  // Backend proxy handles /uploads path
+  const url = currentImage.value.startsWith('http') ? currentImage.value : currentImage.value;
+  
+  uni.downloadFile({
+    url: url,
+    success: (res) => {
+      if (res.statusCode === 200) {
+        uni.saveImageToPhotosAlbum({
+          filePath: res.tempFilePath,
+          success: () => {
+            uni.hideLoading();
+            uni.showToast({ title: '已保存到相册', icon: 'success' });
+          },
+          fail: (err) => {
+            uni.hideLoading();
+            console.error(err);
+            uni.showToast({ title: '保存失败', icon: 'none' });
+          }
+        });
+      } else {
+        uni.hideLoading();
+        uni.showToast({ title: '下载失败', icon: 'none' });
+      }
+    },
+    fail: (err) => {
+      uni.hideLoading();
+      console.error(err);
+      uni.showToast({ title: '网络错误', icon: 'none' });
+    }
+  });
 };
 
 const showToast = (msg) => uni.showToast({ title: msg, icon: 'none' });
-const share = () => showToast('Share Menu Open');
+const share = () => showToast('分享菜单已打开');
 </script>
 
 <style scoped>

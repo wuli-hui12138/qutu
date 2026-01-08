@@ -47,6 +47,19 @@
               />
             </view>
 
+             <!-- Category -->
+            <view>
+              <text class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">分类</text>
+              <picker mode="selector" :range="categories" @change="handleCategoryChange">
+                 <view class="w-full py-3 border-b border-gray-200 dark:border-zinc-800 flex justify-between items-center">
+                   <text :class="form.category ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-700'" class="text-lg font-medium">
+                     {{ form.category || '选择分类' }}
+                   </text>
+                   <text class="text-gray-400">></text>
+                 </view>
+              </picker>
+            </view>
+
              <!-- Tags -->
             <view>
               <text class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">标签</text>
@@ -95,20 +108,32 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { categoriesService } from '../../services/api';
 
 const imagePath = ref('');
 const submitting = ref(false);
 const form = ref({
   title: '',
   tags: [],
-  description: ''
+  description: '',
+  category: ''
 });
 
 const commonTags = ['Minimalist', 'Nature', 'Cyberpunk', 'Abstract', 'Anime', 'Dark', 'City'];
+const categories = ref([]);
+
+onMounted(async () => {
+  try {
+    const res = await categoriesService.findAll();
+    categories.value = res.map(c => c.name);
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+  }
+});
 
 const isValid = computed(() => {
-  return imagePath.value && form.value.title.trim() && form.value.tags.length > 0;
+  return imagePath.value && form.value.title.trim() && form.value.category;
 });
 
 const goBack = () => uni.navigateBack();
@@ -119,12 +144,7 @@ const chooseImage = () => {
     sizeType: ['original', 'compressed'],
     sourceType: ['album', 'camera'],
     success: (res) => {
-      // Mock upload processing
-      uni.showLoading({ title: '处理中...' });
-      setTimeout(() => {
-         imagePath.value = res.tempFilePaths[0];
-         uni.hideLoading();
-      }, 500);
+      imagePath.value = res.tempFilePaths[0];
     }
   });
 };
@@ -133,22 +153,46 @@ const toggleTag = (tag) => {
   if (form.value.tags.includes(tag)) {
     form.value.tags = form.value.tags.filter(t => t !== tag);
   } else {
-    if (form.value.tags.length >= 3) return; // Limit to 3 tags
+    if (form.value.tags.length >= 5) return;
     form.value.tags.push(tag);
   }
+};
+
+const handleCategoryChange = (e) => {
+  form.value.category = categories.value[e.detail.value];
 };
 
 const submit = () => {
   if (!isValid.value) return;
   submitting.value = true;
   
-  // Simulate API call
-  setTimeout(() => {
-    submitting.value = false;
-    uni.showToast({ title: '发布成功!', icon: 'success' });
-    setTimeout(() => {
-       uni.switchTab({ url: '/pages/index/index' });
-    }, 1500);
-  }, 2000);
+  uni.uploadFile({
+    url: '/api/wallpapers', // Proxied to localhost:3000/wallpapers
+    filePath: imagePath.value,
+    name: 'file',
+    formData: {
+      title: form.value.title,
+      description: form.value.description,
+      categories: form.value.category,
+      tags: form.value.tags.join(',')
+    },
+    success: (uploadFileRes) => {
+      if (uploadFileRes.statusCode === 201 || uploadFileRes.statusCode === 200) {
+         uni.showToast({ title: '发布成功! 等待审核', icon: 'success' });
+         setTimeout(() => {
+            uni.switchTab({ url: '/pages/index/index' });
+         }, 1500);
+      } else {
+        uni.showToast({ title: '发布失败', icon: 'none' });
+      }
+    },
+    fail: (err) => {
+      console.error(err);
+      uni.showToast({ title: '网络错误', icon: 'none' });
+    },
+    complete: () => {
+      submitting.value = false;
+    }
+  });
 };
 </script>

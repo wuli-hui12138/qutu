@@ -68,7 +68,7 @@
             v-for="item in tasks" 
             :key="item.id"
             class="break-inside-avoid bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-white/5 relative group active:scale-95 transition-all duration-200"
-            @tap="previewImage(item.resultUrl)"
+            @tap="previewImage(item)"
           >
             <!-- Image -->
             <view class="w-full relative">
@@ -85,16 +85,16 @@
             
             <!-- Info -->
             <view class="p-3">
-              <text class="text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-1 mb-1">{{ item.model || 'Untitled' }}</text>
+              <text class="text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-1 mb-1">{{ item.model }}</text>
               <view class="flex items-center justify-between">
                 <view class="flex items-center gap-1">
                    <view class="w-4 h-4 rounded-full bg-gray-200 overflow-hidden">
                       <image src="/static/logo.png" mode="aspectFill" class="w-full h-full" />
                    </view>
-                   <text class="text-[10px] text-gray-500">User</text>
+                   <text class="text-[10px] text-gray-500">{{ item.authorName }}</text>
                 </view>
                 <view class="flex items-center gap-1">
-                  <text class="text-[10px] text-gray-400">❤️ 1.2k</text>
+                  <text class="text-[10px] text-gray-400">❤️ {{ item.likes }}</text>
                 </view>
               </view>
             </view>
@@ -124,9 +124,9 @@
 import { ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import FloatingTabBar from '../../components/FloatingTabBar.vue';
-import { aiService } from '../../services/api';
+import { wallpapersService } from '../../services/api';
 
-const tasks = ref([]);
+const tasks = ref([]); // Keeping variable name mostly for simplicity, but it stores wallpapers now
 const loading = ref(true);
 
 const banners = ref([
@@ -142,27 +142,19 @@ const categories = ref([
   { id: 'avatar', name: '头像' }
 ]);
 
-const fetchTasks = async () => {
+const fetchWallpapers = async () => {
   loading.value = true;
   try {
-    // Mock user ID 1 for now
-    const res = await aiService.getTasks(1); 
-    tasks.value = (res || []).filter(t => t.status === 'COMPLETED').map(t => ({
+    const res = await wallpapersService.findAll();
+    tasks.value = res.map(t => ({
       ...t,
-      // Random mock data for UI
-      resultUrl: t.resultUrl || `https://picsum.photos/400/${Math.floor(Math.random() * 300 + 500)}?random=${t.id}`,
-      model: t.model || 'Mountain View',
-    })).reverse();
-    
-    // Fallback if no tasks
-    if (tasks.value.length === 0) {
-       tasks.value = Array(10).fill(0).map((_, i) => ({
-         id: i,
-         resultUrl: `https://picsum.photos/400/${Math.floor(Math.random() * 300 + 400)}?random=${i}`,
-         model: 'Wallpaper Item',
-         prompt: 'A beautiful scenery'
-       }));
-    }
+      // Use thumb if available, or fall back to url. 
+      // Backend returns /uploads/... paths. 
+      resultUrl: t.thumb || t.url, 
+      model: t.title || 'Untitled',
+      authorName: t.author?.nickname || 'User',
+      likes: t.likes || 0
+    }));
   } catch (err) {
     console.error(err);
   } finally {
@@ -171,14 +163,12 @@ const fetchTasks = async () => {
 };
 
 const loadMore = () => {
-  // Mock pagination
   console.log("Loading more...");
 };
 
-const previewImage = (url) => {
-  // Navigate to detail page instead of simple preview
+const previewImage = (item) => {
   uni.navigateTo({
-    url: '/pages/detail/detail' 
+    url: `/pages/detail/detail?id=${item.id}` 
   });
 };
 
@@ -187,6 +177,6 @@ const navigateToCreate = () => {
 };
 
 onShow(() => {
-  fetchTasks();
+  fetchWallpapers();
 });
 </script>
