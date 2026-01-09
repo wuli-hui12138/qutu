@@ -230,24 +230,30 @@ export class WallpapersService {
 
     const image = await this.prisma.image.findUnique({ where: { id: numId } });
     if (image) {
-      // Try to delete files
-      const fs = require('fs');
-      const path = require('path');
-      const root = path.join(__dirname, '..', '..', 'uploads');
+      // Try to delete local files
+      const root = join(process.cwd(), 'uploads');
 
       try {
-        const filesToDelete = [
-          path.join(root, path.basename(image.url)),
-          path.join(root, path.basename(image.thumb))
-        ];
-        filesToDelete.forEach(p => {
-          if (fs.existsSync(p)) fs.unlinkSync(p);
-        });
+        const deleteIfLocal = (urlOrPath: string) => {
+          if (!urlOrPath) return;
+          // Only delete if it looks like a local path (starts with /uploads/) and is not an external URL
+          if (urlOrPath.startsWith('/uploads/') && !urlOrPath.startsWith('http')) {
+            const filename = urlOrPath.replace('/uploads/', '');
+            const filePath = join(root, filename);
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+          }
+        };
+
+        deleteIfLocal(image.url);
+        deleteIfLocal(image.thumb);
+
       } catch (e) {
         console.error('Failed to delete files:', e);
       }
     }
-    return this.prisma.image.delete({ where: { id } });
+    return this.prisma.image.delete({ where: { id: numId } });
   }
 
   async seed() {
