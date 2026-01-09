@@ -173,6 +173,27 @@ const downloadImage = () => {
           success: () => {
             uni.hideLoading();
             uni.showToast({ title: '已保存到相册', icon: 'success' });
+            
+            // Save to local download history
+            try {
+                const history = uni.getStorageSync('my_downloads') || [];
+                // Avoid duplicates
+                const exists = history.some(h => h.id === wallpaper.value.id);
+                if (!exists) {
+                    history.unshift({
+                        id: wallpaper.value.id,
+                        url: wallpaper.value.url,
+                        thumb: wallpaper.value.thumb,
+                        title: wallpaper.value.title,
+                        downloadedAt: new Date().toISOString()
+                    });
+                    // Limit to 50
+                    if (history.length > 50) history.pop();
+                    uni.setStorageSync('my_downloads', history);
+                }
+            } catch (e) {
+                console.error(e);
+            }
           },
           fail: (err) => {
             uni.hideLoading();

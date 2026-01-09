@@ -1,95 +1,74 @@
 <template>
-  <view class="bg-white dark:bg-black min-h-screen pb-24 transition-colors duration-300">
+  <view class="bg-gray-50 dark:bg-black min-h-screen flex flex-col transition-colors duration-300">
     <!-- Header: Search -->
-    <view class="fixed top-0 inset-x-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md pt-12 pb-4 px-4 border-b border-gray-100 dark:border-white/5">
-      <view class="h-12 bg-gray-100 dark:bg-zinc-800 rounded-2xl flex items-center px-4 gap-3">
-        <text class="text-gray-400 text-lg">🔍</text>
-        <input 
-          class="flex-1 text-base text-gray-900 dark:text-white"
-          placeholder="搜索壁纸..." 
-          placeholder-class="text-gray-400"
-        />
-      </view>
+    <view class="bg-white dark:bg-black p-4 pt-12 sticky top-0 z-40 border-b border-gray-100 dark:border-white/5">
+       <view class="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full px-4 h-10">
+          <text class="text-gray-400 mr-2">🔍</text>
+          <input 
+             v-model="searchQuery"
+             class="flex-1 text-sm text-gray-900 dark:text-white"
+             placeholder="搜索壁纸..."
+             placeholder-class="text-gray-400"
+             confirm-type="search"
+             @confirm="handleSearch"
+          />
+          <view v-if="searchQuery" @tap="clearSearch" class="w-5 h-5 flex items-center justify-center text-gray-400">
+             <text class="text-xs">✕</text>
+          </view>
+       </view>
+       
+       <!-- Quick Filters (Tags & Categories) -->
+       <scroll-view scroll-x class="mt-3 whitespace-nowrap -mx-4 px-4 w-screen" :show-scrollbar="false">
+          <view class="flex gap-2">
+             <view 
+               class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
+               :class="!activeFilter ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-gray-400'"
+               @tap="clearFilters"
+             >
+               全部
+             </view>
+             <view 
+               v-for="tag in filterTags" 
+               :key="tag"
+               class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
+               :class="activeFilter === tag ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-gray-400'"
+               @tap="applyFilter(tag)"
+             >
+               {{ tag }}
+             </view>
+          </view>
+       </scroll-view>
     </view>
 
-    <scroll-view scroll-y class="h-screen pt-32" :show-scrollbar="false">
-      <view class="pb-32 px-4">
-        
-        <!-- Trending Searches -->
-        <view class="mb-8">
-          <text class="text-lg font-bold text-gray-900 dark:text-white mb-4 block">热门搜索</text>
-          <view class="flex flex-wrap gap-2">
-            <view 
-              v-for="tag in trendingTags" 
-              :key="tag" 
-              class="px-4 py-2 bg-gray-100 dark:bg-zinc-800 rounded-full active:scale-95 transition-transform"
-            >
-              <text class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ tag }}</text>
-            </view>
-          </view>
-        </view>
+    <!-- Results (Waterfall) -->
+    <scroll-view scroll-y class="flex-1 p-4" @scrolltolower="loadMore">
+       <view v-if="loading && results.length === 0" class="flex items-center justify-center py-20">
+          <text class="text-gray-400">加载中...</text>
+       </view>
+       
+       <view v-else-if="results.length === 0" class="flex flex-col items-center justify-center py-20 text-gray-400 gap-2">
+          <text class="text-4xl">🌵</text>
+          <text class="text-sm">暂无相关壁纸</text>
+       </view>
 
-        <!-- Categories Grid -->
-        <view class="mb-8">
-          <view class="grid grid-cols-2 gap-3">
-            <!-- Large Item 1 -->
-            <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-blue-100">
-              <image src="https://picsum.photos/400/400?random=10" mode="aspectFill" class="w-full h-full" />
-              <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">自然风光</text>
-              </view>
-            </view>
-            <!-- Large Item 2 -->
-            <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-purple-100">
-              <image src="https://picsum.photos/400/400?random=11" mode="aspectFill" class="w-full h-full" />
-              <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">抽象艺术</text>
-              </view>
-            </view>
-            <!-- Wide Item -->
-            <view class="col-span-2 aspect-[2/1] relative rounded-3xl overflow-hidden bg-red-100">
-              <image src="https://picsum.photos/800/400?random=12" mode="aspectFill" class="w-full h-full" />
-               <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">豪车超跑</text>
-              </view>
-            </view>
-            <!-- Small Item 3 -->
-            <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-pink-100">
-              <image src="https://picsum.photos/400/400?random=13" mode="aspectFill" class="w-full h-full" />
-               <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">美女写真</text>
-              </view>
-            </view>
-             <!-- Small Item 4 -->
-            <view class="col-span-1 aspect-square relative rounded-3xl overflow-hidden bg-zinc-100">
-              <image src="https://picsum.photos/400/400?random=14" mode="aspectFill" class="w-full h-full" />
-               <view class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <text class="text-white font-bold text-lg">极简纹理</text>
-              </view>
-            </view>
-          </view>
-        </view>
-
-        <!-- Top Downloaded -->
-        <view class="mb-4">
-           <text class="text-lg font-bold text-gray-900 dark:text-white mb-4 block">本周热门榜单</text>
-           <view class="space-y-4">
-             <view v-for="(item, i) in topList" :key="i" class="flex items-center gap-4 bg-white dark:bg-zinc-900 p-2 rounded-2xl active:scale-98 transition-transform" @tap="goToDetail(item.id)">
-               <text class="text-xl font-bold text-gray-300 italic w-6 text-center">{{ i + 1 }}</text>
-               <image :src="item.image" mode="aspectFill" class="w-16 h-16 rounded-xl bg-gray-200 block shrink-0" />
-               <view class="flex-1 min-w-0">
-                 <text class="text-base font-bold text-gray-900 dark:text-white block truncate mb-1">{{ item.title }}</text>
-                 <text class="text-xs text-gray-500 dark:text-gray-400 block">By {{ item.author }}</text>
-               </view>
-               <view class="flex flex-col items-end gap-1 text-orange-500 pr-2">
-                   <text class="text-xs">🔥</text>
-                   <text class="text-xs font-bold">{{ item.downloads }}</text>
-               </view>
+       <view v-else class="columns-2 gap-3 space-y-3">
+          <view 
+             v-for="item in results" 
+             :key="item.id"
+             class="break-inside-avoid bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-sm relative active:opacity-90 transition-opacity"
+             @tap="goToDetail(item.id)"
+          >
+             <image :src="item.thumb || item.url" mode="widthFix" class="w-full bg-gray-200 min-h-[100px]" lazy-load />
+             <view class="p-2">
+                <text class="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">{{ item.title }}</text>
+                <view class="flex items-center justify-between mt-1">
+                   <text class="text-[10px] text-gray-500">{{ item.category }}</text>
+                   <!-- <text class="text-[10px] text-gray-400">❤️ {{ item.likes }}</text> -->
+                </view>
              </view>
-           </view>
-        </view>
-
-      </view>
+          </view>
+       </view>
+       <view class="h-10"></view>
     </scroll-view>
 
     <FloatingTabBar />
@@ -99,50 +78,82 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import FloatingTabBar from '../../components/FloatingTabBar.vue';
-import { tagsService, wallpapersService } from '../../services/api';
+import { tagsService, wallpapersService, categoriesService } from '../../services/api';
 
-const trendingTags = ref([]);
-const topList = ref([]);
-const categoryImages = ref([]); // To populate the grid
+const searchQuery = ref('');
+const activeFilter = ref('');
+const filterTags = ref([]);
+const results = ref([]);
+const loading = ref(false);
 
 const fetchData = async () => {
-  try {
-    // 1. Fetch Tags
-    const tags = await tagsService.findAll();
-    trendingTags.value = tags.slice(0, 10).map(t => t.name);
-
-    // 2. Fetch Wallpapers (Simulating "Top Download" by fetching all for now, as we don't have detailed download stats yet)
-    // We can use the 'views' or 'likes' from seed data as a proxy for popularity
-    const wallpapers = await wallpapersService.findAll();
-    
-    // Process for Top List
-    topList.value = wallpapers
-      .sort((a, b) => (b.likes || 0) - (a.likes || 0)) // Sort by likes for now
-      .slice(0, 5)
-      .map(w => ({
-        id: w.id,
-        title: w.title,
-        author: w.author?.nickname || 'Qutu User',
-        downloads: w.likes + ' Likes', // Using likes as proxy
-        image: w.thumb || w.url
-      }));
-
-    // Process for Category Grid (Just taking random ones for visual variety in this grid for now)
-    // In a real scenario, we might want to fetch by specific categories
-    if (wallpapers.length > 0) {
-        categoryImages.value = wallpapers.slice(0, 4);
+    loading.value = true;
+    try {
+        // Build query params
+        const params = {};
+        if (searchQuery.value) params.search = searchQuery.value;
+        if (activeFilter.value) {
+            // Simple heuristic to check if it's a category or tag, or just send both
+            // Backend supports filtering by both. Let's assume users click tags/cats
+            params.tags = activeFilter.value; 
+            // Also try sending as category if no results? exact match?
+            // For simplicity, passing as tag first.
+        }
+        
+        const res = await wallpapersService.findAll(params);
+        results.value = res;
+    } catch (e) {
+        console.error(e);
+        uni.showToast({ title: '加载失败', icon: 'none' });
+    } finally {
+        loading.value = false;
     }
+};
 
-  } catch (error) {
-    console.error("Discover data fetch failed", error);
-  }
+const fetchFilters = async () => {
+    try {
+        const [cats, tags] = await Promise.all([
+            categoriesService.findAll(),
+            tagsService.findAll()
+        ]);
+        // Combine them for quick filter chips
+        filterTags.value = [
+            ...cats.map(c => c.name),
+            ...tags.map(t => t.name)
+        ].slice(0, 15); // limit chips
+    } catch (e) { console.error(e); }
+};
+
+const handleSearch = () => {
+    fetchData();
+};
+
+const clearSearch = () => {
+    searchQuery.value = '';
+    fetchData();
+};
+
+const applyFilter = (tag) => {
+    activeFilter.value = tag;
+    fetchData();
+};
+
+const clearFilters = () => {
+    activeFilter.value = '';
+    fetchData();
 };
 
 const goToDetail = (id) => {
     uni.navigateTo({ url: `/pages/detail/detail?id=${id}` });
 }
 
+// Reuse logic?
+const loadMore = () => {
+    // TODO: Pagination
+}
+
 onMounted(() => {
-  fetchData();
+    fetchFilters();
+    fetchData();
 });
 </script>

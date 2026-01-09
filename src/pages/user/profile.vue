@@ -9,91 +9,51 @@
         <view class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-black"></view>
       </view>
     </view>
+  <view class="bg-gray-50 dark:bg-black min-h-screen text-gray-900 dark:text-white transition-colors duration-300">
+    <!-- Clean Header -->
+    <view class="pt-12 px-6 pb-6 bg-white dark:bg-black border-b border-gray-100 dark:border-white/5">
+       <view class="flex items-center gap-4">
+         <view class="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
+            <image src="/static/logo.png" mode="aspectFill" class="w-full h-full" />
+         </view>
+         <view>
+            <text class="text-xl font-bold block">{{ userInfo.nickname || '未登录用户' }}</text>
+            <text class="text-xs text-gray-500 mt-1">ID: {{ userInfo.openid || 'Guest' }}</text>
+         </view>
+       </view>
+    </view>
 
-    <scroll-view scroll-y class="h-screen" :show-scrollbar="false">
-      <view class="pb-32">
-        
-        <!-- User Info -->
-        <view class="px-6 flex items-center gap-5 mb-8">
-           <view class="w-20 h-20 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-lg">
-             <image :src="userInfo.avatar || 'https://picsum.photos/seed/user/200'" mode="aspectFill" class="w-full h-full" />
-           </view>
-           <view class="flex-1">
-             <text class="text-2xl font-bold text-gray-900 dark:text-white block">{{ userInfo.nickname || 'Alex' }}</text>
-             <view class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full mt-2">
-               <view class="w-3 h-3 text-black dark:text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-               </view>
-               <text class="text-xs font-medium text-gray-500 dark:text-gray-400">创作者</text>
-             </view>
-           </view>
-        </view>
+    <!-- Content Tabs -->
+    <view class="flex items-center justify-around border-b border-gray-200 dark:border-white/5 bg-white dark:bg-black sticky top-0 z-10">
+       <view 
+         v-for="tab in tabs" 
+         :key="tab.key"
+         class="py-3 px-4 text-sm font-medium relative"
+         :class="activeTab === tab.key ? 'text-black dark:text-white' : 'text-gray-400'"
+         @tap="activeTab = tab.key; loadTabData()"
+       >
+         {{ tab.name }}
+         <view v-if="activeTab === tab.key" class="absolute bottom-0 inset-x-4 h-0.5 bg-black dark:bg-white rounded-full"></view>
+       </view>
+    </view>
 
-        <!-- Stats -->
-        <view class="flex items-center justify-around px-6 mb-8">
-          <view class="flex flex-col items-center">
-             <text class="text-lg font-bold text-gray-900 dark:text-white">5.2k</text>
-             <text class="text-xs text-gray-500">粉丝</text>
-          </view>
-          <view class="flex flex-col items-center">
-             <text class="text-lg font-bold text-gray-900 dark:text-white">12k</text>
-             <text class="text-xs text-gray-500">获赞</text>
-          </view>
-          <view class="flex flex-col items-center">
-             <text class="text-lg font-bold text-gray-900 dark:text-white">45k</text>
-             <text class="text-xs text-gray-500">下载</text>
-          </view>
-        </view>
+    <!-- Tab Content -->
+    <scroll-view scroll-y class="flex-1 p-4" style="height: calc(100vh - 200px);">
+       
+       <!-- Empty State -->
+       <view v-if="currentList.length === 0" class="flex flex-col items-center justify-center py-20 opacity-50">
+          <text class="text-3xl mb-2">📁</text>
+          <text class="text-sm">暂无记录</text>
+       </view>
 
-        <!-- VIP Banner -->
-        <view class="px-6 mb-8">
-          <view class="w-full h-24 rounded-2xl bg-gradient-to-r from-gray-900 via-gray-800 to-black text-white p-5 flex items-center justify-between shadow-xl shadow-orange-500/10 border border-orange-500/20 relative overflow-hidden group">
-            <!-- Shine effect -->
-            <view class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></view>
-            
-            <view class="z-10">
-               <view class="flex items-center gap-2 mb-1">
-                  <view class="w-5 h-5 text-yellow-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path></svg>
-                  </view>
-                  <text class="font-bold text-lg text-yellow-500">升级会员</text>
-               </view>
-               <text class="text-xs text-gray-400">当前积分: 1200</text>
-            </view>
-            <view class="w-5 h-5 text-gray-500">
-               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </view>
-          </view>
-        </view>
-
-        <!-- Tabs -->
-        <view class="flex border-b border-gray-100 dark:border-white/5 px-6 mb-4 sticky top-16 bg-white dark:bg-black z-30">
+       <!-- Grid List -->
+       <view v-else class="grid grid-cols-3 gap-2">
           <view 
-            v-for="tab in ['历史记录', '我的收藏', '我的作品']" 
-            :key="tab"
-            class="mr-8 pb-3 relative text-sm font-bold transition-colors"
-            :class="activeTab === tab ? 'text-gray-900 dark:text-white' : 'text-gray-400'"
-            @tap="activeTab = tab"
+            v-for="item in currentList"
+            :key="item.id"
+            class="aspect-square bg-gray-200 rounded-lg overflow-hidden relative"
+            @tap="goToDetail(item.id)"
           >
-            {{ tab }}
-            <view v-if="activeTab === tab" class="absolute bottom-0 inset-x-0 h-0.5 bg-gray-900 dark:bg-white rounded-full"></view>
-          </view>
-        </view>
-
-        <!-- Content Grid (Mock) -->
-        <view class="grid grid-cols-3 gap-1 px-4 mb-8">
-           <view 
-             v-for="i in 6" 
-             :key="i" 
-             class="aspect-[3/4] bg-gray-100 dark:bg-zinc-800 rounded-lg overflow-hidden"
-             @tap="navigateToDetail(i)"
-           >
-             <image :src="`https://picsum.photos/300/400?random=${i + (activeTab === '我的作品' ? 100 : 0)}`" mode="aspectFill" class="w-full h-full" />
-           </view>
-        </view>
-        
-        <!-- Creator Tools -->
-        <view v-if="isCreator" class="px-6 mb-8">
            <text class="text-sm font-bold text-gray-900 dark:text-white mb-4 block">创作者工具</text>
            <view class="bg-gray-50 dark:bg-zinc-900/50 rounded-2xl overflow-hidden px-4 border border-gray-100 dark:border-white/5">
              <view 
