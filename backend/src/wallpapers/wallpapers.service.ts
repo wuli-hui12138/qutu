@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateWallpaperDto } from './dto/create-wallpaper.dto';
 import { UpdateWallpaperDto } from './dto/update-wallpaper.dto';
 import { PrismaService } from '../prisma.service';
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class WallpapersService {
