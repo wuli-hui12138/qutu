@@ -40,17 +40,10 @@
         <!-- Categories -->
         <view class="flex items-center justify-between px-6 mb-8 overflow-x-auto no-scrollbar">
           <view v-for="(cat, index) in categories" :key="index" class="flex flex-col items-center gap-2">
-            <view 
+           <view 
               class="w-14 h-14 rounded-full flex items-center justify-center text-gray-700 dark:text-white border border-gray-100 dark:border-white/10 shadow-sm bg-white dark:bg-zinc-800"
             >
-              <!-- Rank -->
-              <svg v-if="cat.id === 'rank'" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-              <!-- 4K -->
-              <svg v-if="cat.id === '4k'" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              <!-- Live -->
-              <svg v-if="cat.id === 'live'" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-              <!-- Avatar -->
-              <svg v-if="cat.id === 'avatar'" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <text class="text-xl font-bold">{{ cat.name[0] }}</text>
             </view>
             <text class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ cat.name }}</text>
           </view>
@@ -124,7 +117,7 @@
 import { ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import FloatingTabBar from '../../components/FloatingTabBar.vue';
-import { wallpapersService } from '../../services/api';
+import { wallpapersService, categoriesService } from '../../services/api';
 
 const tasks = ref([]); // Keeping variable name mostly for simplicity, but it stores wallpapers now
 const loading = ref(true);
@@ -135,12 +128,17 @@ const banners = ref([
   { title: "Abstract Dreams", image: "https://picsum.photos/800/400?random=3" }
 ]);
 
-const categories = ref([
-  { id: 'rank', name: '排行榜' },
-  { id: '4k', name: '4K专区' },
-  { id: 'live', name: '动态壁纸' },
-  { id: 'avatar', name: '头像' }
-]);
+const categories = ref([]);
+
+const fetchCategories = async () => {
+  try {
+     const res = await categoriesService.findAll();
+     // Take first 4 or specific mapped ones
+     categories.value = res.slice(0, 5); 
+  } catch (e) {
+     console.error(e);
+  }
+};
 
 const fetchWallpapers = async () => {
   loading.value = true;
@@ -177,6 +175,7 @@ const navigateToCreate = () => {
 };
 
 onShow(() => {
+  fetchCategories();
   fetchWallpapers();
 });
 </script>
